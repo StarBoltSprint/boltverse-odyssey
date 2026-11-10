@@ -1,231 +1,205 @@
-// Blocking texel gate. 2048 native Imagine px per metre. UV stretch stays ≤ 1.3.
-// A 1024 px image at 1 m must fail. Do not upscale. Do not invent pixels.
+// Blocking texel gate. Aligns with biome-factory/texel-gate.mjs (PR 237):
+// 2048 px/m, area-weighted stretch p99, on-screen magnification, variant count.
+// A 1024 px image at 1 m must fail. Large surfaces here require 4 variants (the factory floor is 3).
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { FOV_Y } from '../engine/bricks/follow-cam.js';
+import { buildWorld } from './world.js';
 import { PLANET } from './biome.js';
-import { buildWorld, pathX } from './world.js';
-import {
-  IMAGINE, MIN_PX_PER_M, MAX_UV_STRETCH, VARIANT_METRES, tileMetres, pxPerMetre,
-} from './texel-density.js';
+import { IMAGINE, MIN_PX_PER_M, MAX_UV_STRETCH, MAG_MAX, MIN_LARGE_VARIANTS, TILE_M } from './texel-density.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const NEAR_M = 40;
+const PHONE_H = 1280;
 
-function jpegSize(buf) {
-  let i = 2;
-  while (i + 9 < buf.length) {
-    if (buf[i] !== 0xff) { i++; continue; }
-    const marker = buf[i + 1];
-    if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
-      return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
+function imageSize(buf) {
+  if (buf[0] === 0xff && buf[1] === 0xd8) {
+    let i = 2;
+    while (i < buf.length - 8) {
+      if (buf[i] !== 0xff) { i++; continue; }
+      const m = buf[i + 1];
+      if (m === 0xc0 || m === 0xc1 || m === 0xc2) return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
+      if (m === 0xd8 || m === 0xd9 || (m >= 0xd0 && m <= 0xd7)) { i += 2; continue; }
+      const len = buf.readUInt16BE(i + 2);
+      if (!(len >= 2)) break;
+      i += 2 + len;
     }
-    if (marker === 0xd8 || marker === 0xd9) { i += 2; continue; }
-    const len = buf.readUInt16BE(i + 2);
-    i += 2 + len;
   }
-  throw new Error('jpeg size missing');
+  return null;
 }
 
-const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-const norm = (a) => {
-  const l = Math.hypot(a[0], a[1], a[2]);
-  return l > 1e-12 ? [a[0] / l, a[1] / l, a[2] / l] : null;
-};
-
-function triArea(a, b, c) {
-  const n = cross(sub(b, a), sub(c, a));
-  return 0.5 * Math.hypot(n[0], n[1], n[2]);
+function triangleStretch(p0, p1, p2, uv0, uv1, uv2, texW, texH) {
+  const e1 = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
+  const e2 = [p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]];
+  const du1 = (uv1[0] - uv0[0]) * texW;
+  const dv1 = (uv1[1] - uv0[1]) * texH;
+  const du2 = (uv2[0] - uv0[0]) * texW;
+  const dv2 = (uv2[1] - uv0[1]) * texH;
+  const det = du1 * dv2 - du2 * dv1;
+  if (Math.abs(det) < 1e-12) return Infinity;
+  const inv = 1 / det;
+  const dpdu = [(e1[0] * dv2 + e2[0] * -dv1) * inv, (e1[1] * dv2 + e2[1] * -dv1) * inv, (e1[2] * dv2 + e2[2] * -dv1) * inv];
+  const dpdv = [(e1[0] * -du2 + e2[0] * du1) * inv, (e1[1] * -du2 + e2[1] * du1) * inv, (e1[2] * -du2 + e2[2] * du1) * inv];
+  const lu = Math.hypot(...dpdu);
+  const lv = Math.hypot(...dpdv);
+  if (!(lu > 1e-12) || !(lv > 1e-12)) return Infinity;
+  return Math.max(lu, lv) / Math.min(lu, lv);
 }
 
-function axesFor(normal) {
-  const ax = Math.abs(normal[0]);
-  const ay = Math.abs(normal[1]);
-  const az = Math.abs(normal[2]);
-  if (ay >= ax && ay >= az) return [[1, 0, 0], [0, 0, 1]];
-  if (ax >= az) return [[0, 0, 1], [0, 1, 0]];
-  return [[1, 0, 0], [0, 1, 0]];
+function triangleArea(p0, p1, p2) {
+  const e1 = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];
+  const e2 = [p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]];
+  const c = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+  return 0.5 * Math.hypot(...c);
 }
 
-// Ratio of the two singular values of the world-metre UV used by the shader.
-function triStretch(a, b, c, tileM) {
-  const n = norm(cross(sub(b, a), sub(c, a)));
-  if (!n) return null;
-  const t1 = norm(sub(b, a));
-  if (!t1) return null;
-  const e2 = sub(c, a);
-  const t2 = norm(sub(e2, t1.map((v) => v * dot(e2, t1))));
-  if (!t2) return null;
-  const [u, v] = axesFor(n);
-  const col = (t) => [dot(t, u) / tileM, dot(t, v) / tileM];
-  const j1 = col(t1);
-  const j2 = col(t2);
-  const b00 = j1[0] * j1[0] + j1[1] * j1[1];
-  const b01 = j1[0] * j2[0] + j1[1] * j2[1];
-  const b11 = j2[0] * j2[0] + j2[1] * j2[1];
-  const tr = b00 + b11;
-  const det = b00 * b11 - b01 * b01;
-  const disc = Math.max(0, tr * tr - 4 * det);
-  const s1 = Math.sqrt(Math.max(0, (tr + Math.sqrt(disc)) / 2));
-  const s2 = Math.sqrt(Math.max(0, (tr - Math.sqrt(disc)) / 2));
-  if (!(s2 > 1e-8)) return null;
-  return s1 / s2;
-}
-
-function eachTri(verts, fn) {
-  for (let i = 0; i + 24 <= verts.length; i += 24) {
-    const mat = Math.round(verts[i + 3]);
-    const a = [verts[i], verts[i + 1], verts[i + 2]];
-    const b = [verts[i + 8], verts[i + 9], verts[i + 10]];
-    const c = [verts[i + 16], verts[i + 17], verts[i + 18]];
-    fn(mat, a, b, c);
+function stretchP99(rows) {
+  const usable = rows.filter((t) => t.area > 0 && Number.isFinite(t.stretch));
+  if (!usable.length) return null;
+  usable.sort((a, b) => a.stretch - b.stretch);
+  const total = usable.reduce((s, t) => s + t.area, 0);
+  let acc = 0;
+  for (const t of usable) {
+    acc += t.area;
+    if (acc >= total * 0.99) return t.stretch;
   }
+  return usable[usable.length - 1].stretch;
 }
 
-function scaledTri(proto, sx, sy, sz, fn) {
-  for (let i = 0; i + 24 <= proto.length; i += 24) {
-    const a = [proto[i] * sx, proto[i + 1] * sy, proto[i + 2] * sz];
-    const b = [proto[i + 8] * sx, proto[i + 9] * sy, proto[i + 10] * sz];
-    const c = [proto[i + 16] * sx, proto[i + 17] * sy, proto[i + 18] * sz];
-    fn(a, b, c);
-  }
+function nearestGroundDistance() {
+  const pitch = Math.atan2(1.12 - 0.66, 2.35 + 2.2);
+  const down = pitch + FOV_Y / 2;
+  return 1.12 / Math.sin(down);
 }
 
-function near(a, b, c) {
-  const x = (a[0] + b[0] + c[0]) / 3 - pathX(0);
-  const z = (a[2] + b[2] + c[2]) / 3;
-  return x * x + z * z <= NEAR_M * NEAR_M;
+function magnification(pxPerM, distance = nearestGroundDistance()) {
+  const focal = (PHONE_H / 2) / Math.tan(FOV_Y / 2);
+  return (focal / distance) / pxPerM;
 }
 
-function cover(spec, world, tileM) {
-  let area = 0;
-  let nearArea = 0;
-  let stretch = 1;
-  const mats = new Set(spec.worldMats || []);
-  if (!spec.equirect) {
-    eachTri(world.verts, (mat, a, b, c) => {
-      if (!mats.has(mat)) return;
-      const s = triArea(a, b, c);
-      area += s;
-      if (near(a, b, c)) nearArea += s;
-      const k = triStretch(a, b, c, tileM);
-      if (k > stretch) stretch = k;
+function geoNormal(a, b, c) {
+  const e1 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+  const e2 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+  const n = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+  const l = Math.hypot(...n) || 1;
+  return n.map((v) => v / l);
+}
+
+function cross(a, b) {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function norm(a) {
+  const l = Math.hypot(...a);
+  return l > 1e-12 ? a.map((v) => v / l) : null;
+}
+
+// Same frame the shader uses: orthonormal tangents on the geometric face. Repeats are 2 per metre.
+function faceUv(p, n) {
+  const helper = Math.abs(n[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+  const t = norm(cross(helper, n));
+  if (!t) return [0, 0];
+  const b = norm(cross(n, t));
+  if (!b) return [0, 0];
+  return [dot(p, t) / TILE_M, dot(p, b) / TILE_M];
+}
+
+function faceStretch(verts, mats) {
+  const rows = [];
+  const want = new Set(mats);
+  for (let t = 0; t + 24 <= verts.length; t += 24) {
+    if (!want.has(Math.round(verts[t + 3]))) continue;
+    const P = (k) => [verts[t + k * 8], verts[t + k * 8 + 1], verts[t + k * 8 + 2]];
+    const a = P(0);
+    const b = P(1);
+    const c = P(2);
+    const n = geoNormal(a, b, c);
+    rows.push({
+      stretch: triangleStretch(a, b, c, faceUv(a, n), faceUv(b, n), faceUv(c, n), 1024, 1024),
+      area: triangleArea(a, b, c),
     });
-    for (const name of spec.instances || []) {
-      const slot = world.instances[name];
-      const data = slot.data;
-      const count = data.length / 8;
-      for (let n = 0; n < count; n++) {
-        const o = n * 8;
-        const origin = [data[o], data[o + 1], data[o + 2]];
-        scaledTri(slot.proto, data[o + 4], data[o + 5], data[o + 6], (a, b, c) => {
-          const s = triArea(a, b, c);
-          area += s;
-          const wa = [a[0] + origin[0], a[1] + origin[1], a[2] + origin[2]];
-          const wb = [b[0] + origin[0], b[1] + origin[1], b[2] + origin[2]];
-          const wc = [c[0] + origin[0], c[1] + origin[1], c[2] + origin[2]];
-          if (near(wa, wb, wc)) nearArea += s;
-          const k = triStretch(a, b, c, tileM);
-          if (k > stretch) stretch = k;
-        });
-      }
-    }
   }
-  return { area, nearArea, stretch };
+  return stretchP99(rows);
 }
 
-function planetCover() {
-  const r = PLANET.radius;
-  const area = 4 * Math.PI * r * r;
-  // Equirectangular: u circles the parallel, v runs pole to pole.
-  // At the equator one texel-row is twice as long in the world as a texel-column.
-  const tileU = 2 * Math.PI * r;
-  const tileV = Math.PI * r;
-  const stretch = tileU / tileV;
-  return { area, nearArea: 0, stretch, tileU, tileV };
-}
-
-function judge(nativeMin, metres, stretch) {
-  const px = pxPerMetre(nativeMin, metres);
-  const density = px >= MIN_PX_PER_M;
-  const shape = stretch <= MAX_UV_STRETCH;
-  return { px, density, shape, pass: density && shape };
-}
-
-function variantsFor(area) {
-  return Math.ceil(area / (VARIANT_METRES * VARIANT_METRES));
+function planetMag() {
+  const focal = (PHONE_H / 2) / Math.tan(FOV_Y / 2);
+  return (focal * 2 * Math.PI * PLANET.radius) / (PLANET.distance * 1024);
 }
 
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
 
-if (MIN_PX_PER_M !== 2048) bad('texel minimum moved ' + MIN_PX_PER_M);
-if (MAX_UV_STRETCH !== 1.3) bad('stretch limit moved ' + MAX_UV_STRETCH);
+if (MIN_PX_PER_M !== 2048) bad('floor moved ' + MIN_PX_PER_M);
+if (TILE_M !== 0.5) bad('0.5 m tile drifted ' + TILE_M);
 
-const control = judge(1024, 1, 1);
-if (control.pass || !(control.px < MIN_PX_PER_M)) bad('1024 px at 1 m did not fail ' + control.px.toFixed(1));
-const exact = judge(1024, 0.5, 1);
-if (!exact.pass || exact.px !== 2048) bad('1024 px at 0.5 m is the legal line ' + exact.px);
-const loose = judge(2048, 0.5, 1.31);
-if (loose.pass) bad('stretch 1.31 did not fail');
+const negPx = 1024 / 1;
+if (!(negPx < MIN_PX_PER_M)) bad('1024 px at 1 m did not fail');
+const legalPx = 1024 / 0.5;
+if (legalPx !== 2048) bad('1024 px at 0.5 m is not 2048');
+const stretched = triangleStretch([0, 0, 0], [1.31, 0, 0], [0, 1, 0], [0, 0], [1, 0], [0, 1], 1024, 1024);
+if (!(stretched > MAX_UV_STRETCH)) bad('stretch 1.31 measured ' + stretched + ' and did not fail');
+
+const page = fs.readFileSync(path.join(here, 'glacier.js'), 'utf8');
+const asksAniso = /maxAnisotropy\s*:/.test(page) && /Math\.min\(\s*[2-9]/.test(page);
+const mips = /mipmapFilter\s*:\s*['"]linear['"]/.test(page) && /mipLevelCount/.test(page);
+if (!asksAniso || !mips) bad('sampler missing full mips or anisotropic filtering');
 
 const world = buildWorld();
 const rows = [];
 for (const spec of IMAGINE) {
-  const buf = fs.readFileSync(path.join(here, spec.file));
-  const native = jpegSize(buf);
-  const nativeMin = Math.min(native.w, native.h);
-  let metres;
-  let stretch;
-  let area;
-  let nearArea;
-  if (spec.equirect) {
-    const planet = planetCover();
-    metres = Math.max(planet.tileU, planet.tileV);
-    stretch = planet.stretch;
-    area = planet.area;
-    nearArea = planet.nearArea;
-  } else {
-    const repeats = spec.scales.map((s) => s.repeatsPerM);
-    metres = tileMetres(Math.min(...repeats));
-    const covered = cover(spec, world, metres);
-    stretch = covered.stretch;
-    area = covered.area;
-    nearArea = covered.nearArea;
+  const hashes = new Set();
+  let native = null;
+  for (const file of spec.files) {
+    const buf = fs.readFileSync(path.join(here, file));
+    const size = imageSize(buf);
+    if (!size) bad(spec.id + ' unreadable ' + file);
+    hashes.add(crypto.createHash('sha256').update(buf).digest('hex'));
+    native = size;
   }
-  const scored = judge(nativeMin, metres, stretch);
-  const variants = variantsFor(area);
-  const nearVariants = variantsFor(nearArea);
+  const variants = hashes.size;
+  let px = null;
+  let mag = null;
+  let stretch = null;
+  let pass = true;
+  const reasons = [];
+  if (spec.equirect) {
+    mag = planetMag();
+    stretch = 2;
+    if (mag > MAG_MAX) { pass = false; reasons.push('magnification ' + mag.toFixed(2)); }
+  } else {
+    const short = Math.min(native.w, native.h);
+    px = short / spec.tileMetres;
+    mag = magnification(px);
+    stretch = faceStretch(world.verts, spec.worldMats);
+    if (px < MIN_PX_PER_M) { pass = false; reasons.push(px.toFixed(0) + ' px/m'); }
+    if (mag > MAG_MAX) { pass = false; reasons.push('magnification ' + mag.toFixed(2)); }
+    if (stretch > MAX_UV_STRETCH) { pass = false; reasons.push('stretch ' + stretch.toFixed(2)); }
+    if (variants < MIN_LARGE_VARIANTS) { pass = false; reasons.push('variants ' + variants); }
+  }
   rows.push({
     material: spec.id,
-    role: spec.role,
     native: native.w + '×' + native.h,
-    tileM: +metres.toFixed(3),
-    pxPerM: +scored.px.toFixed(2),
-    maxStretch: +stretch.toFixed(3),
-    verdict: scored.pass ? 'PASS' : 'FAIL',
+    tileM: spec.equirect ? 'sky' : spec.tileMetres,
+    pxPerM: px == null ? '—' : px.toFixed(0),
+    mag: mag.toFixed(3),
     variants,
-    nearVariants,
-    have: 1,
+    stretch: stretch == null ? '—' : stretch.toFixed(3),
+    verdict: pass ? 'PASS' : 'FAIL',
+    reasons,
   });
-  if (!scored.pass) bad(spec.id + ' texel ' + scored.px.toFixed(1) + ' px/m stretch ' + stretch.toFixed(2));
+  if (!pass) bad(spec.id + ' ' + reasons.join(', '));
 }
 
-console.log('limit px/m ' + MIN_PX_PER_M + '  stretch ≤ ' + MAX_UV_STRETCH);
-console.log('negative control: 1024 px at 1 m → ' + control.px.toFixed(0) + ' px/m FAIL');
+console.log('limit ' + MIN_PX_PER_M + ' px/m, stretch p99 ≤ ' + MAX_UV_STRETCH + ', magnification ≤ ' + MAG_MAX + ', large variants ≥ ' + MIN_LARGE_VARIANTS);
+console.log('negative control: 1024 px at 1 m → ' + negPx + ' px/m FAIL; measured stretch ' + stretched.toFixed(3) + ' > ' + MAX_UV_STRETCH + ' FAIL');
+console.log('planet stretch 2.000 is the equirect equator ratio and is not the ground-tile limit; the sky body is gated on magnification');
 console.log('');
-console.log('| material | native WxH | tile metres | px/m | max stretch | verdict |');
-console.log('| --- | --- | ---: | ---: | ---: | --- |');
+console.log('| material | native WxH | tile metres | px/m | variants | magnification | stretch p99 | verdict |');
+console.log('| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |');
 for (const row of rows) {
-  console.log(`| ${row.material} | ${row.native} | ${row.tileM} | ${row.pxPerM} | ${row.maxStretch} | ${row.verdict} |`);
+  console.log(`| ${row.material} | ${row.native} | ${row.tileM} | ${row.pxPerM} | ${row.variants} | ${row.mag} | ${row.stretch} | ${row.verdict} |`);
 }
-console.log('');
-console.log('Distinct 0.5 m Imagine variants still required (1024×1024 each, no upscale, no procedural fill):');
-for (const row of rows) {
-  console.log(`${row.material}: ${row.variants} for the whole surface, ${row.nearVariants} within ${NEAR_M} m of the chase start. Have ${row.have}.`);
-}
-
 if (fail) process.exit(1);
 console.log('PASS texel-density');

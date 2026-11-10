@@ -61,8 +61,8 @@ struct U {
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
 @group(0) @binding(2) var atex: texture_2d<f32>;
-@group(0) @binding(3) var snowTex: texture_2d<f32>;
-@group(0) @binding(4) var wallTex: texture_2d<f32>;
+@group(0) @binding(3) var snowArr: texture_2d_array<f32>;
+@group(0) @binding(4) var iceArr: texture_2d_array<f32>;
 @group(0) @binding(5) var planetTex: texture_2d<f32>;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32 };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
@@ -158,7 +158,7 @@ fn darken15(c: vec3f) -> vec3f {
   let n = normalize(v.n);
   let q = normalize(v.w - u.planet.xyz);
   let uv = vec2f(atan2(q.z, q.x) * 0.1591549 + 0.5, asin(clamp(q.y, -1.0, 1.0)) * 0.31831 + 0.5);
-  let alb = textureSampleLevel(planetTex, samp, uv, 0.0).rgb;
+  let alb = textureSampleGrad(planetTex, samp, uv, dpdx(uv), dpdy(uv)).rgb;
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   var col = alb * dawnIrr(n);
@@ -292,8 +292,32 @@ async function main() {
     }
     return tex;
   }
-  const snowTex = await loadAlbedo('./tex/glacier-snow-floor.jpg');
-  const wallTex = await loadAlbedo('./tex/glacier-ice-wall.jpg');
+  async function loadArray(files) {
+    const imgs = [];
+    for (const file of files) {
+      const res = await fetch(new URL(file, import.meta.url).href);
+      if (!res.ok) throw new Error('albedo missing ' + file);
+      imgs.push(await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' }));
+    }
+    const w0 = imgs[0].width;
+    const h0 = imgs[0].height;
+    const levels = Math.floor(Math.log2(Math.max(w0, h0))) + 1;
+    const tex = dev.createTexture({
+      size: [w0, h0, imgs.length], mipLevelCount: levels, format: 'rgba8unorm-srgb',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+    for (let layer = 0; layer < imgs.length; layer++) {
+      for (let level = 0; level < levels; level++) {
+        const w = Math.max(1, w0 >> level);
+        const h = Math.max(1, h0 >> level);
+        const src = level === 0 ? imgs[layer] : await createImageBitmap(imgs[layer], { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' });
+        dev.queue.copyExternalImageToTexture({ source: src }, { texture: tex, mipLevel: level, origin: [0, 0, layer] }, [w, h]);
+      }
+    }
+    return tex;
+  }
+  const snowTex = await loadArray(['./tex/snow/v1.jpg', './tex/snow/v2.jpg', './tex/snow/v3.jpg', './tex/snow/v4.jpg']);
+  const wallTex = await loadArray(['./tex/ice/v1.jpg', './tex/ice/v2.jpg', './tex/ice/v3.jpg', './tex/ice/v4.jpg']);
   const planetTex = await loadAlbedo('./tex/glacier-planet-surface.jpg');
 
   const mk = (data, usage) => {
@@ -316,7 +340,7 @@ async function main() {
   const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
   const planetVerts = world.planet.length / 8;
   const ub = dev.createBuffer({ size: 256, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
+  const aniso = Math.min(8, ad.limits.maxSamplerAnisotropy || 1);
   const samp = dev.createSampler({
     magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
     addressModeU: 'repeat', addressModeV: 'repeat',
@@ -325,16 +349,16 @@ async function main() {
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
     { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
-    { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: {} },
-    { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 5, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
   const bg = dev.createBindGroup({ layout: bgl, entries: [
     { binding: 0, resource: { buffer: ub } },
     { binding: 1, resource: samp },
     { binding: 2, resource: atlas.createView() },
-    { binding: 3, resource: snowTex.createView() },
-    { binding: 4, resource: wallTex.createView() },
+    { binding: 3, resource: snowTex.createView({ dimension: '2d-array' }) },
+    { binding: 4, resource: wallTex.createView({ dimension: '2d-array' }) },
     { binding: 5, resource: planetTex.createView() },
   ] });
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });

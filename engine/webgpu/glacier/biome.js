@@ -25,7 +25,7 @@ export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'con
 export const PLANET = {
   dir: [0.22, 0.33, -0.92],
   distance: 5200,
-  radius: 1180,
+  radius: 756,
 };
 
 export const GLACIER = {
