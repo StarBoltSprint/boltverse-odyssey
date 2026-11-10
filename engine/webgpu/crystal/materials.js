@@ -3,14 +3,23 @@ import { shadeAt } from '../biome-factory/night-rig.js';
 // Tile metres are the declared period, not a measured fit.
 // The house sky is an equirectangular 2:1. A 16:9 plate is not that map.
 export const CANDIDATE = 'materials-v2-r2';
-export const TILE_M = { ground: 3, wall: 2, crystal: 0.5, architecture: 2, violet: 0.5, stream: 2 };
+// Each native 1024 image covers 0.5 m. 1024 / 0.5 = 2048 px/m. Do not widen a tile.
+export const TILE_M = { ground: 0.5, wall: 0.5, crystal: 0.5, architecture: 0.5, violet: 0.5, stream: 0.5 };
+export const VARIANTS = {
+  ground: ['basalt-ground/v1.jpg', 'basalt-ground/v2.jpg', 'basalt-ground/v3.jpg', 'basalt-ground/v4.jpg'],
+  wall: ['obsidian-wall/v1.jpg', 'obsidian-wall/v2.jpg', 'obsidian-wall/v3.jpg', 'obsidian-wall/v4.jpg'],
+  crystal: ['cyan-facets/v1.jpg', 'cyan-facets/v2.jpg', 'cyan-facets/v3.jpg'],
+  architecture: ['architectural-stone/v1.jpg', 'architectural-stone/v2.jpg', 'architectural-stone/v3.jpg', 'architectural-stone/v4.jpg'],
+  violet: ['violet-mineral/v1.jpg', 'violet-mineral/v2.jpg', 'violet-mineral/v3.jpg'],
+  stream: ['stream-surface/v1.jpg', 'stream-surface/v2.jpg', 'stream-surface/v3.jpg', 'stream-surface/v4.jpg'],
+};
 export const ALBEDO = {
-  ground: 'basalt-ground.jpg',
-  wall: 'obsidian-wall.jpg',
-  crystal: 'cyan-facets.jpg',
-  architecture: 'architectural-stone.jpg',
-  violet: 'violet-mineral.jpg',
-  stream: 'stream-surface.jpg',
+  ground: VARIANTS.ground[0],
+  wall: VARIANTS.wall[0],
+  crystal: VARIANTS.crystal[0],
+  architecture: VARIANTS.architecture[0],
+  violet: VARIANTS.violet[0],
+  stream: VARIANTS.stream[0],
 };
 export const MISSING_SLOTS = ['sky-equirect'];
 

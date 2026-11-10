@@ -6,7 +6,7 @@ import { makeCircleCollide } from '../engine/bricks/circle-collide.js';
 import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
 import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '../engine/bricks/planet-sphere.js';
 import { CRYSTAL, PLANET } from './biome.js';
-import { materialGate, TILE_M, ALBEDO } from './materials.js';
+import { materialGate, TILE_M, VARIANTS } from './materials.js';
 import { shadeFns, SHADE, tileScales, WATER_WAVE } from '../biome-factory/shade.js';
 import { LIGHT, lightWgsl } from './light.js';
 import { buildWorld, demoSteer, proofInput, skyProofInput, integrate, spawn, terrH, pathX } from './world.js';
@@ -74,12 +74,12 @@ struct U {
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
-@group(0) @binding(2) var groundTex: texture_2d<f32>;
-@group(0) @binding(6) var wallTex: texture_2d<f32>;
-@group(0) @binding(7) var crysTex: texture_2d<f32>;
-@group(0) @binding(8) var archTex: texture_2d<f32>;
-@group(0) @binding(9) var violetTex: texture_2d<f32>;
-@group(0) @binding(10) var streamTex: texture_2d<f32>;
+@group(0) @binding(2) var groundTex: texture_2d_array<f32>;
+@group(0) @binding(6) var wallTex: texture_2d_array<f32>;
+@group(0) @binding(7) var crysTex: texture_2d_array<f32>;
+@group(0) @binding(8) var archTex: texture_2d_array<f32>;
+@group(0) @binding(9) var violetTex: texture_2d_array<f32>;
+@group(0) @binding(10) var streamTex: texture_2d_array<f32>;
 @group(0) @binding(3) var atex: texture_2d<f32>;
 @group(0) @binding(4) var planetTex: texture_2d<f32>;
 @group(0) @binding(5) var planetSamp: sampler;
@@ -182,6 +182,26 @@ fn gHash(p: vec2f) -> vec2f {
   let n = sin(vec2f(dot(p, vec2f(127.1, 311.7)), dot(p, vec2f(269.5, 183.3)))) * 43758.5453;
   return fract(n);
 }
+fn varPair(cell: vec2f, n: i32) -> vec2i {
+  let h = gHash(cell + vec2f(9.2, 2.8));
+  let a = i32(floor(h.x * f32(n))) % n;
+  let b = (a + 1 + i32(floor(h.y * f32(max(n - 1, 1))))) % n;
+  return vec2i(a, b);
+}
+fn varMix(tex: texture_2d_array<f32>, uv: vec2f, n: i32) -> vec3f {
+  let id = varPair(floor(uv), n);
+  let k = smoothstep(0.25, 0.75, fract(uv).x * 0.6 + fract(uv).y * 0.4);
+  return mix(textureSample(tex, samp, uv, id.x).rgb, textureSample(tex, samp, uv, id.y).rgb, k);
+}
+fn triVar(tex: texture_2d_array<f32>, p: vec3f, nrm: vec3f, sc: f32, layers: i32) -> vec3f {
+  // A face at 45° projects with stretch 1/|n| ≈ 1.41. Divide by |n| (floor 0.5) so the
+  // sample stays at or above the native repeat. Weaker axes are not densified past 2×.
+  let an = abs(nrm);
+  let kx = sc / max(an.x, 0.5);
+  let ky = sc / max(an.y, 0.5);
+  let kz = sc / max(an.z, 0.5);
+  return triMix(varMix(tex, p.zy * kx, layers), varMix(tex, p.xz * ky, layers), varMix(tex, p.xy * kz, layers), nrm);
+}
 fn gSamp(uv: vec2f) -> vec3f {
   let cell = floor(uv);
   let f = fract(uv);
@@ -191,9 +211,10 @@ fn gSamp(uv: vec2f) -> vec3f {
   let rq = vec2f(q.x * cos(rot) - q.y * sin(rot), q.x * sin(rot) + q.y * cos(rot));
   let a = fract(h * 0.71 + rq + vec2f(0.5));
   let h2 = gHash(cell + vec2f(1.7, 3.1));
-  let b = fract(h2 * 0.63 + rq * 0.96 + vec2f(0.5));
+  let b = fract(h2 * 0.63 + rq + vec2f(0.5));
   let k = smoothstep(0.3, 0.7, f.x * 0.65 + f.y * 0.35 + h.y * 0.12);
-  return mix(textureSample(groundTex, samp, a).rgb, textureSample(groundTex, samp, b).rgb, k);
+  let id = varPair(cell, 4);
+  return mix(textureSample(groundTex, samp, a, id.x).rgb, textureSample(groundTex, samp, b, id.y).rgb, k);
 }
 fn gH(uv: vec2f) -> f32 {
   return dot(gSamp(uv), vec3f(0.3, 0.5, 0.2));
@@ -207,9 +228,8 @@ fn gH(uv: vec2f) -> f32 {
   let scV = ${SC.violet};
   let scS = ${SC.stream};
   let gUv = v.w.xz * scG;
-  let gFine = gSamp(gUv);
-  let gWide = gSamp(gUv * 0.28);
-  var gnd = mix(gWide, gFine, 0.64);
+  // One native repeat. A second sample at a smaller UV scale stretches the photo past 1.3.
+  var gnd = gSamp(gUv);
   let gE = 0.07;
   let gH0 = gH(gUv);
   let gHx = gH(gUv + vec2f(gE, 0.0));
@@ -217,35 +237,17 @@ fn gH(uv: vec2f) -> f32 {
   var glow = 0.0;
   ${world.pools.reduce((s, _v, i) => i % 3 ? s : s + `glow = max(glow, smoothstep(${world.pools[i + 2].toFixed(2)}, ${(world.pools[i + 2] * 0.22).toFixed(2)}, length(v.w.xz - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
   glow = glow * glow * (0.6 + 0.4 * skyNoise(v.w * 0.55));
-  let wallFine = triMix(
-    textureSample(wallTex, samp, v.w.zy * scW).rgb,
-    textureSample(wallTex, samp, v.w.xz * scW).rgb,
-    textureSample(wallTex, samp, v.w.xy * scW).rgb, n);
-  let wall = triMix(
-    textureSampleLevel(wallTex, samp, v.w.zy * scW, 5.0).rgb,
-    textureSampleLevel(wallTex, samp, v.w.xz * scW, 5.0).rgb,
-    textureSampleLevel(wallTex, samp, v.w.xy * scW, 5.0).rgb, n);
-  let cry = triMix(
-    textureSample(crysTex, samp, v.w.zy * scC).rgb,
-    textureSample(crysTex, samp, v.w.xz * scC).rgb,
-    textureSample(crysTex, samp, v.w.xy * scC).rgb, n);
-  let arch = triMix(
-    textureSample(archTex, samp, v.w.zy * scA).rgb,
-    textureSample(archTex, samp, v.w.xz * scA).rgb,
-    textureSample(archTex, samp, v.w.xy * scA).rgb, n);
-  let vio = triMix(
-    textureSample(violetTex, samp, v.w.zy * scV).rgb,
-    textureSample(violetTex, samp, v.w.xz * scV).rgb,
-    textureSample(violetTex, samp, v.w.xy * scV).rgb, n);
+  let wallFine = triVar(wallTex, v.w, n, scW, 4);
+  let wall = wallFine;
+  let cry = triVar(crysTex, v.w, n, scC, 3);
+  let arch = triVar(archTex, v.w, n, scA, 4);
+  let vio = triVar(violetTex, v.w, n, scV, 3);
   let flow = vec2f(v.w.x, v.w.z + u.cam.w * 0.35) * scS;
-  let waterAlb = textureSample(streamTex, samp, flow).rgb;
+  let waterAlb = varMix(streamTex, flow, 4);
   let tip = clamp(abs(v.uv.x), 0.0, 1.0);
   let view0 = normalize(u.cam.xyz - v.w);
   let ip = v.w + view0 * (0.55 * (1.0 - tip));
-  let inner = triMix(
-    textureSample(crysTex, samp, ip.zy * scC).rgb,
-    textureSample(crysTex, samp, ip.xz * scC).rgb,
-    textureSample(crysTex, samp, ip.xy * scC).rgb, n);
+  let inner = triVar(crysTex, ip, n, scC, 3);
   let m = v.mat;
   if (m > 4.5 && m < 5.5) {
     if (u.misc.z > 0.5 && u.misc.z < 1.5) {
@@ -279,10 +281,7 @@ fn gH(uv: vec2f) -> f32 {
     n = normalize(n + vec3f(j, j * 0.28, -j) * 0.1);
   }
   if (m > 5.5 && m < 6.5) {
-    let mid = triMix(
-      textureSampleLevel(wallTex, samp, v.w.zy * scW, 2.0).rgb,
-      textureSampleLevel(wallTex, samp, v.w.xz * scW, 2.0).rgb,
-      textureSampleLevel(wallTex, samp, v.w.xy * scW, 2.0).rgb, n);
+    let mid = wall;
     let crev = smoothstep(0.22, 0.02, skyNoise(v.w * 0.85));
     alb = mix(wall, mid, 0.82) * (1.0 - crev * 0.3);
     let e = 0.4;
@@ -499,6 +498,38 @@ async function loadTex(dev, url) {
   return { tex, w: bmp.width, h: bmp.height, bmp };
 }
 
+async function loadVariantArray(dev, urls) {
+  const bmps = [];
+  for (const url of urls) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('asset missing ' + url + ' HTTP ' + res.status);
+    bmps.push(await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' }));
+  }
+  const w = bmps[0].width;
+  const h = bmps[0].height;
+  for (const bmp of bmps) {
+    if (bmp.width !== w || bmp.height !== h) throw new Error('variant size');
+  }
+  const levels = Math.floor(Math.log2(Math.max(w, h))) + 1;
+  const tex = dev.createTexture({
+    size: [w, h, bmps.length],
+    format: 'rgba8unorm-srgb',
+    mipLevelCount: levels,
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+  });
+  for (let layer = 0; layer < bmps.length; layer++) {
+    const canvas = new OffscreenCanvas(w, h);
+    canvas.getContext('2d').drawImage(bmps[layer], 0, 0);
+    for (let level = 0; level < levels; level++) {
+      const lw = Math.max(1, w >> level);
+      const lh = Math.max(1, h >> level);
+      const src = level === 0 ? canvas : await createImageBitmap(canvas, { resizeWidth: lw, resizeHeight: lh, resizeQuality: 'high' });
+      dev.queue.copyExternalImageToTexture({ source: src }, { texture: tex, mipLevel: level, origin: [0, 0, layer] }, [lw, lh]);
+    }
+  }
+  return { tex, w, h, layers: bmps.length, bmp: bmps[0] };
+}
+
 async function loadAlbedo(dev, url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error('asset missing ' + url + ' HTTP ' + res.status);
@@ -552,13 +583,14 @@ async function main() {
     });
     breathClip = { texture: tex, sync() {}, cfg: {}, cache: new Map(), missing: String(err && err.message || err) };
   }
+  const variantUrls = (key) => VARIANTS[key].map((file) => new URL(file, matRoot).href);
   const [ground, wall, crystalAlb, archAlb, violetAlb, streamAlb, atlas, feet, planetBmp] = await Promise.all([
-    loadAlbedo(dev, new URL(ALBEDO.ground, matRoot).href),
-    loadAlbedo(dev, new URL(ALBEDO.wall, matRoot).href),
-    loadAlbedo(dev, new URL(ALBEDO.crystal, matRoot).href),
-    loadAlbedo(dev, new URL(ALBEDO.architecture, matRoot).href),
-    loadAlbedo(dev, new URL(ALBEDO.violet, matRoot).href),
-    loadAlbedo(dev, new URL(ALBEDO.stream, matRoot).href),
+    loadVariantArray(dev, variantUrls('ground')),
+    loadVariantArray(dev, variantUrls('wall')),
+    loadVariantArray(dev, variantUrls('crystal')),
+    loadVariantArray(dev, variantUrls('architecture')),
+    loadVariantArray(dev, variantUrls('violet')),
+    loadVariantArray(dev, variantUrls('stream')),
     loadTex(dev, new URL(CRYSTAL.bolt, import.meta.url).href),
     (async () => {
       const bmp = await createImageBitmap(await (await fetch(new URL(CRYSTAL.bolt, import.meta.url).href)).blob(), { colorSpaceConversion: 'none' });
@@ -634,30 +666,30 @@ async function main() {
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-    { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 5, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-    { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: {} },
-    { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: {} },
-    { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: {} },
-    { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: {} },
-    { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 18, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
   const planetSamp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'clamp-to-edge', maxAnisotropy: aniso });
   const bg = await noteErr('bind group', async () => dev.createBindGroup({ layout: bgl, entries: [
     { binding: 0, resource: { buffer: ub } },
     { binding: 1, resource: samp },
-    { binding: 2, resource: ground.tex.createView() },
+    { binding: 2, resource: ground.tex.createView({ dimension: '2d-array' }) },
     { binding: 3, resource: atlas.tex.createView() },
     { binding: 4, resource: planetTex.createView() },
     { binding: 5, resource: planetSamp },
-    { binding: 6, resource: wall.tex.createView() },
-    { binding: 7, resource: crystalAlb.tex.createView() },
-    { binding: 8, resource: archAlb.tex.createView() },
-    { binding: 9, resource: violetAlb.tex.createView() },
-    { binding: 10, resource: streamAlb.tex.createView() },
+    { binding: 6, resource: wall.tex.createView({ dimension: '2d-array' }) },
+    { binding: 7, resource: crystalAlb.tex.createView({ dimension: '2d-array' }) },
+    { binding: 8, resource: archAlb.tex.createView({ dimension: '2d-array' }) },
+    { binding: 9, resource: violetAlb.tex.createView({ dimension: '2d-array' }) },
+    { binding: 10, resource: streamAlb.tex.createView({ dimension: '2d-array' }) },
     { binding: 18, resource: breathClip.texture.createView() },
   ] }));
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });

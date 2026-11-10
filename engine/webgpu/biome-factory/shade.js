@@ -39,8 +39,11 @@ export function shadeFns() {
 fn sunN() -> vec3f { return normalize(u.sun.xyz); }
 ${nightWgsl()}
 fn triMix(sx: vec3f, sy: vec3f, sz: vec3f, n: vec3f) -> vec3f {
-  let bn = abs(n); let b = bn / (bn.x + bn.y + bn.z + 1e-4);
-  return sx * b.x + sy * b.y + sz * b.z;
+  // One projection. A blended second axis is edge-on and smears the photo into streaks.
+  let an = abs(n);
+  if (an.x >= an.y && an.x >= an.z) { return sx; }
+  if (an.y >= an.z) { return sy; }
+  return sz;
 }
 fn present(c: vec3f) -> vec4f {
   return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
