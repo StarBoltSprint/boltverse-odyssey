@@ -1,0 +1,23 @@
+{
+  "stream-surface": {
+    "aspect_ratio": "1:1",
+    "physical_period_metres": [
+      2,
+      2
+    ],
+    "description": "Create a genuinely new dedicated Grok Imagine video-game WATER SURFACE BASE COLOR texture. Entire square is turquoise stream water intrinsic colour, medium rich clean turquoise with restrained fine cyan and teal variation, uniform subtle short organic ripple traces distributed evenly at centimetre scale across a 2 metre square patch. Perfectly overhead orthographic flat surface, neutral uniform shadowless illumination. Low contrast fine variation only; no bright white streaks, no specular glints, no reflections, no caustic lighting, no baked shadows, no foam, no waves rendered in perspective, no directional brightness gradient. No river banks, shoreline, rocks, objects, ground, scenery, horizon, lettering or borders. Real-time house shader supplies motion, reflection, transparency and lighting; image is only intrinsic colour, NOT a rendered river scene. Aim for naturally continuous tile edges and no identifiable repeated motifs. No reference image or concept-image pixels."
+  },
+  "violet-mineral": {
+    "aspect_ratio": "1:1",
+    "physical_period_metres": [
+      0.5,
+      0.5
+    ],
+    "description": "Create a genuinely new dedicated Grok Imagine video-game CRYSTAL SURFACE BASE COLOR texture. Entire square filled by one continuous flat amethyst violet mineral surface, rich medium violet with restrained subtle lavender and blue-violet intrinsic colour variation. A 0.5 metre square patch ON a large crystal face, actual shape supplied separately as real 3D geometry. Very fine evenly distributed mineral grain and delicate microscopic growth striations, low contrast irregular variation, no isolated large colour patches. Uniform neutral shadowless illumination, orthographic straight-on flat scan. No crystal objects, no gemstone pile, no rainbow shard mosaic, no rendered polygon facets, no perspective, no relief shading, no dark cracks, no shadows, no specular highlights, no white veins, no bloom, no glow, no lighting gradients. No scenery, lettering, borders, chrome or metal. Aim for naturally continuous tile edges without distinctive repeat motifs. No reference image or concept-image pixels."
+  },
+  "sky-panorama": {
+    "aspect_ratio": "16:9",
+    "physical_period_metres": null,
+    "description": "Create a genuinely new dedicated Grok Imagine SKY-ONLY panoramic environment image for a premium real-time cyan-violet cosmic canyon world. Wide full-frame celestial atmosphere, nuanced deep indigo and midnight blue with extraordinarily delicate sweeping translucent violet and cyan interstellar haze, sparse tiny varied dim stars, beautiful spacious restrained cinematic colour. Sky only everywhere: no ground, no landscape, no mountains, no visible horizon line, no structures, no objects, no suns, no moons and absolutely NO PLANET; planet is a separate real 3D sphere. No text, lettering, frame or vignette. Compose as a continuous horizontal panoramic celestial field suitable for environment-background mapping, keeping left and right edge sky colour and nebulosity closely matched, avoiding distinctive bright features crossing either edge. Quiet top and bottom regions, no perspective vanishing point, no lens flare. Do not draw a sphere, a scene, or a canyon. Native wide image without crops or stretching; no reference image inputs or concept-image pixels. This is an environment sky backdrop, not a surface material."
+  }
+}

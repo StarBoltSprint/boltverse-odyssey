@@ -1,0 +1,194 @@
+{
+  "panels": [
+    {
+      "id": "ground-raw",
+      "r": {
+        "mean": 76.28,
+        "pstdev": 8.31,
+        "n": 16384
+      },
+      "g": {
+        "mean": 77.31,
+        "pstdev": 8.48,
+        "n": 16384
+      },
+      "b": {
+        "mean": 78.99,
+        "pstdev": 8.47,
+        "n": 16384
+      },
+      "sourceMean": [
+        74.63,
+        75.7,
+        77.53
+      ]
+    },
+    {
+      "id": "ground-lit",
+      "r": {
+        "mean": 68.2,
+        "pstdev": 7.42,
+        "n": 16384
+      },
+      "g": {
+        "mean": 69.13,
+        "pstdev": 7.58,
+        "n": 16384
+      },
+      "b": {
+        "mean": 70.62,
+        "pstdev": 7.58,
+        "n": 16384
+      }
+    },
+    {
+      "id": "ground-uv",
+      "r": {
+        "mean": 74.76,
+        "pstdev": 4.22,
+        "n": 16384
+      },
+      "g": {
+        "mean": 75.77,
+        "pstdev": 4.23,
+        "n": 16384
+      },
+      "b": {
+        "mean": 77.54,
+        "pstdev": 4.16,
+        "n": 16384
+      },
+      "periodSad": 0,
+      "periodPx": 128,
+      "tileMetres": 3
+    },
+    {
+      "id": "wall-bevel",
+      "r": {
+        "mean": 15.64,
+        "pstdev": 5.82,
+        "n": 6693
+      },
+      "g": {
+        "mean": 16.11,
+        "pstdev": 6.06,
+        "n": 6693
+      },
+      "b": {
+        "mean": 17.37,
+        "pstdev": 6.52,
+        "n": 6693
+      }
+    },
+    {
+      "id": "cyan-gem",
+      "r": {
+        "mean": 26.88,
+        "pstdev": 9.4,
+        "n": 6186
+      },
+      "g": {
+        "mean": 106.09,
+        "pstdev": 37.01,
+        "n": 6186
+      },
+      "b": {
+        "mean": 123.07,
+        "pstdev": 42.87,
+        "n": 6186
+      }
+    },
+    {
+      "id": "violet-gem",
+      "r": {
+        "mean": 67.83,
+        "pstdev": 27.26,
+        "n": 6219
+      },
+      "g": {
+        "mean": 53.37,
+        "pstdev": 21.49,
+        "n": 6219
+      },
+      "b": {
+        "mean": 89.73,
+        "pstdev": 36.01,
+        "n": 6219
+      }
+    },
+    {
+      "id": "stream",
+      "r": {
+        "mean": 49.73,
+        "pstdev": 1.26,
+        "n": 16384
+      },
+      "g": {
+        "mean": 154.73,
+        "pstdev": 2.02,
+        "n": 16384
+      },
+      "b": {
+        "mean": 159.57,
+        "pstdev": 2.08,
+        "n": 16384
+      }
+    },
+    {
+      "id": "ramp-raw",
+      "r": {
+        "mean": 126.72,
+        "pstdev": 71.33,
+        "n": 16384
+      },
+      "g": {
+        "mean": 126.72,
+        "pstdev": 71.33,
+        "n": 16384
+      },
+      "b": {
+        "mean": 126.72,
+        "pstdev": 71.33,
+        "n": 16384
+      },
+      "ends": [
+        17,
+        246
+      ],
+      "spread": 229
+    },
+    {
+      "id": "ramp-lit",
+      "r": {
+        "mean": 113.31,
+        "pstdev": 63.76,
+        "n": 16384
+      },
+      "g": {
+        "mean": 113.31,
+        "pstdev": 63.76,
+        "n": 16384
+      },
+      "b": {
+        "mean": 113.31,
+        "pstdev": 63.76,
+        "n": 16384
+      },
+      "ends": [
+        15,
+        220
+      ],
+      "spread": 205
+    }
+  ],
+  "scales": {
+    "ground": "0.33333333",
+    "wall": "0.50000000",
+    "crystal": "2.00000000",
+    "architecture": "0.50000000",
+    "violet": "2.00000000",
+    "stream": "0.50000000"
+  },
+  "shade": "shadeAlb",
+  "png": "/agent/repos/Boltverse-odyssey/engine/webgpu/biome-factory/out/crystal/runs/af79dbb3ceeb/swatch.png"
+}
