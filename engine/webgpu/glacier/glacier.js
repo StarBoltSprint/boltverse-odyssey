@@ -205,18 +205,10 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let psi = b.w;
   let fwd = vec2f(-sin(psi), -cos(psi));
   let right = vec2f(fwd.y, -fwd.x);
-  var paw = array<vec4f, 4>(
-    vec4f(0.07, 0.05, 0.05, 0.035),
-    vec4f(-0.07, 0.05, 0.05, 0.035),
-    vec4f(0.06, -0.04, 0.045, 0.032),
-    vec4f(-0.06, -0.04, 0.045, 0.032)
-  );
   var w: vec3f;
   var kind = 0.0;
-  if (which < 4u) {
-    let p = paw[which];
-    let local = right * p.x + fwd * p.y;
-    w = vec3f(b.x + local.x + right.x * c.x * p.z, b.y + 0.02, b.z + local.y + fwd.y * c.y * p.w);
+  if (which == 0u) {
+    w = vec3f(b.x + right.x * c.x * 0.18, b.y + 0.02, b.z + fwd.y * (c.y * 0.11 - 0.01));
   } else {
     let sun = sunN();
     let away = normalize(vec2f(-sun.x, -sun.z));
@@ -231,7 +223,7 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
   let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
   let along = v.uv.y * 0.5 + 0.5;
-  let paw = (1.0 - smoothstep(0.05, 1.0, r2)) * 0.34;
+  let paw = (1.0 - smoothstep(0.2, 1.0, r2)) * 0.2;
   let shade = (1.0 - smoothstep(0.0, 0.65, r2)) * (1.0 - smoothstep(0.05, 0.9, along)) * 0.18;
   let a = mix(paw, shade, v.k);
   return vec4f(0.04, 0.05, 0.08, a);
@@ -460,7 +452,7 @@ async function main() {
     pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
     pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
     if (!gatePose) {
-      pass.setPipeline(pContact); pass.draw(30);
+      pass.setPipeline(pContact); pass.draw(12);
       pass.setPipeline(pBolt); pass.draw(6);
     }
     pass.end();
