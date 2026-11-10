@@ -1,7 +1,12 @@
-// One block for the crystal candidate light. A night rig swaps this object.
-// Albedo stays the Imagine JPEG. Sheen is dielectric. Crystals are never chrome.
+// Look constants live here. The night numbers come only from night-light.json.
+import { NIGHT } from '../biome-factory/night-rig.js';
+
 export const LIGHT = {
-  sun: [0.48, 0.74, -0.42],
+  sun: NIGHT.moon.direction,
+  moon: NIGHT.moon.rgb,
+  moonIntensity: NIGHT.moon.intensity,
+  ambient: NIGHT.ambient.rgb,
+  flatScale: NIGHT.flatScale,
   f0: 0.045,
   roughness: 0.18,
   fillGain: 26,

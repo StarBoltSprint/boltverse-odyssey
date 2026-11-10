@@ -1,4 +1,5 @@
 // Dedicated albedo slots. The environment key is not a texture.
+import { shadeAt } from '../biome-factory/night-rig.js';
 // Tile metres are the declared period, not a measured fit.
 // The house sky is an equirectangular 2:1. A 16:9 plate is not that map.
 export const CANDIDATE = 'materials-v2-r2';
@@ -46,7 +47,7 @@ export function repeatsAcross(metres, tile) {
 
 export function shadeFactor(ndotl) {
   const n = Math.min(1, Math.max(0, ndotl));
-  return 0.1 + 0.9 * n;
+  return shadeAt(n, 0).luma;
 }
 
 export function skyProjection(w, h, wrapMeanAbs) {

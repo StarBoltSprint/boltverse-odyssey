@@ -18,11 +18,15 @@ Sky is BLOCKED. GenerateImage accepts only aspect ratios 1:1, 4:3, 3:4, 16:9 and
 
 Phone performance, gait, and a visual KEEP are not signed off.
 
-Colour compares only when both sides name the same light and the same exposure. The threshold stays CIE76 10 and L* counts. A night key against a shadowless albedo is UNCERTAIN, not a pass and not a fitted fail. The morning raw dE 19–66 stays a diagnostic of that old comparison. `--same-light crystal-rig` is one 18% grey-card exposure for every material. With a file hash, the target is that file's own unlit albedo, labelled `target = Imagine original albedo (choice)`. A texture with no hash stays UNCERTAIN. The check runs the shared shade and the gamma 2.2 present. It does not fit exposure per material.
+Colour compares only when both sides name the same light and the same exposure. The threshold stays CIE76 10 and L* counts.
+
+Director decision, recorded: the environment key is an artistic reference only. Real-colour Imagine albedo wins. The blocking crystal colour gate renders the crystal scene and samples lit, view-facing patches of each material. It compares those pixels with the albedo the shader sampled times the night-rig irradiance of that patch normal. CIE76 limit 10, lightness included. Run `node engine/webgpu/crystal/test-render-colour.mjs`. A darkened material in the shader must fail that test. The key comparison is `keyAdvisory` on the factory state. It is not a hold and it is not a release blocker. The morning raw dE 19–66 stays a diagnostic of the old key-versus-unlit comparison. `--same-light crystal-rig` remains the grey-card test choice and is not the blocking gate.
+
+Director decision, recorded: the 0.015 sky limit is unchanged, and it is not a difference between two view directions. Direction structure is the nebula. The blocking check renders fixed world directions from many camera yaws, pitches, and positions, so each direction lands at different screen positions, and requires that direction's colour to stay within 0.015 across those renders. A slow 360 turn must keep each tracked direction within 0.015 from one frame to the next. The old elev-12 pair is advisory and does not block. A camera-relative screen-space sky is the negative control and must fail. Run `node engine/webgpu/crystal/test-sky-anchor.mjs`.
 
 ```bash
 node engine/webgpu/biome-factory/test-colour-same-light.mjs
 node engine/webgpu/biome-factory/test-sky-sphere.mjs
 ```
 
-The crystal candidate sky is house code, a full sphere coloured by direction. It is not an Imagine JPEG, and the 2048×1024 contract does not apply to it. Materials stay Imagine. The 16:9 plate stays blocked.
+The crystal candidate sky is house code, a full sphere coloured by direction. The nebula is domain-warped fbm of that unit direction, denser on a tilted band that crosses the chase-camera sky and fades toward the horizon. Stars stay on the same direction grid, with a small spread of size and brightness. It is not an Imagine JPEG, and the 2048×1024 contract does not apply to it. Materials stay Imagine. The 16:9 plate stays blocked.

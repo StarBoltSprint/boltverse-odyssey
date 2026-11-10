@@ -7,7 +7,7 @@
     "provenance": "recorded",
     "scale": "declared_not_measured",
     "quality": "hold",
-    "identity": "pass",
+    "identity": "fail",
     "evidence": "hold",
     "release": "HOLD"
   },
@@ -73,16 +73,16 @@
       "detail": "sky"
     },
     {
+      "code": "missing_animation",
+      "detail": "gen4b 144 frames"
+    },
+    {
       "code": "missing_review",
       "detail": "no visual KEEP"
     },
     {
       "code": "phone_unmeasured",
       "detail": "real-time phone performance was not measured"
-    },
-    {
-      "code": "colour_uncertain",
-      "detail": "no independent known target under a shared light"
     }
   ],
   "hard": [],
@@ -228,13 +228,13 @@
       "scope": "crystal-candidate-only",
       "release": "HOLD",
       "checks": {
-        "seam": 2.78e-17,
-        "poleMax": 0.0004,
-        "southMax": 0.0545,
+        "seam": 5.55e-17,
+        "poleMax": 0,
+        "southMax": 0.0544,
         "cameraDelta": 0,
-        "motionStep": 0.2038,
-        "planetRing": 0.0022,
-        "otherRing": 0.0038,
+        "motionStep": 0.2027,
+        "planetRing": 0.0144,
+        "otherRing": 0.0021,
         "callSite": true,
         "separatePlanet": true
       }
@@ -244,95 +244,194 @@
   "materialsColour": [
     {
       "id": "obsidian-wall",
-      "measuredMedianSrgb": [
-        23,
-        24,
-        27
-      ],
-      "light_id": "imagine-albedo-neutral",
-      "knownTarget": null,
-      "rawLegacyDE76": null,
-      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
-      "verdict": "UNCERTAIN",
-      "compared": false,
-      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "vertical"
     },
     {
       "id": "ground",
-      "measuredMedianSrgb": [
-        74,
-        74,
-        76
-      ],
-      "light_id": "imagine-albedo-neutral",
-      "knownTarget": null,
-      "rawLegacyDE76": null,
-      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
-      "verdict": "UNCERTAIN",
-      "compared": false,
-      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "flat"
     },
     {
       "id": "crystal",
-      "measuredMedianSrgb": [
-        46,
-        197,
-        228
-      ],
-      "light_id": "imagine-albedo-neutral",
-      "knownTarget": null,
-      "rawLegacyDE76": null,
-      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
-      "verdict": "UNCERTAIN",
-      "compared": false,
-      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "vertical"
     },
     {
       "id": "architecture",
-      "measuredMedianSrgb": [
-        43,
-        44,
-        49
-      ],
-      "light_id": "imagine-albedo-neutral",
-      "knownTarget": null,
-      "rawLegacyDE76": null,
-      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
-      "verdict": "UNCERTAIN",
-      "compared": false,
-      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "vertical"
     },
     {
       "id": "violet",
-      "measuredMedianSrgb": [
-        133,
-        104,
-        176
-      ],
-      "light_id": "imagine-albedo-neutral",
-      "knownTarget": null,
-      "rawLegacyDE76": null,
-      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
-      "verdict": "UNCERTAIN",
-      "compared": false,
-      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "vertical"
     },
     {
       "id": "stream",
-      "measuredMedianSrgb": [
-        52,
-        173,
-        178
-      ],
-      "light_id": "imagine-albedo-neutral",
-      "knownTarget": null,
-      "rawLegacyDE76": null,
-      "rawLegacyNote": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
-      "verdict": "UNCERTAIN",
-      "compared": false,
-      "reason": "no independent known target under a shared light; a neutral albedo is not labelled as a night measurement"
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "flat"
     }
   ],
+  "keyAdvisory": {
+    "blocking": false,
+    "role": "artistic-reference",
+    "threshold": 10,
+    "maxDE": 25.06,
+    "rows": [
+      {
+        "id": "obsidian-wall",
+        "name": "obsidian wall",
+        "dE76": 14.18,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          3.55,
+          6.26,
+          -16.62
+        ],
+        "rig": [
+          1.4,
+          1.58,
+          -3.41
+        ]
+      },
+      {
+        "id": "mineral-ground",
+        "name": "mineral ground",
+        "dE76": 8.3,
+        "verdict": "PASS",
+        "threshold": 10,
+        "key": [
+          6.55,
+          7.83,
+          -17.92
+        ],
+        "rig": [
+          9.3,
+          4.12,
+          -11.02
+        ]
+      },
+      {
+        "id": "cyan-facets",
+        "name": "cyan facets",
+        "dE76": 15.01,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          17.7,
+          3.35,
+          -27.01
+        ],
+        "rig": [
+          17.84,
+          10.27,
+          -40.33
+        ]
+      },
+      {
+        "id": "architectural-stone",
+        "name": "architectural stone",
+        "dE76": 10.86,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          5.16,
+          3.55,
+          -17
+        ],
+        "rig": [
+          2.39,
+          2.99,
+          -6.52
+        ]
+      },
+      {
+        "id": "stream-surface",
+        "name": "stream surface",
+        "dE76": 25.06,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          46.66,
+          -7.94,
+          -24.91
+        ],
+        "rig": [
+          23.12,
+          0.64,
+          -25.4
+        ]
+      },
+      {
+        "id": "violet-mineral",
+        "name": "violet mineral",
+        "dE76": 2.23,
+        "verdict": "PASS",
+        "threshold": 10,
+        "key": [
+          16.86,
+          24.47,
+          -33.98
+        ],
+        "rig": [
+          15.86,
+          23.69,
+          -35.8
+        ]
+      }
+    ],
+    "note": "The key is an artistic reference. These dE76 values do not block the factory."
+  },
   "pending": {
     "sky": {
       "status": "BLOCKED",
