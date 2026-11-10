@@ -527,45 +527,54 @@ async function auditReach(webgpu, repo) {
 async function auditGlacier(webgpu) {
   const page = fs.readFileSync(path.join(webgpu, 'glacier/glacier.js'), 'utf8')
     + '\n' + fs.readFileSync(path.join(webgpu, 'glacier/albedo.js'), 'utf8');
-  const texDir = path.join(webgpu, 'glacier/tex');
-  const slots = [
-    { id: 'snow', surfaceClass: 'snow', tileMetres: 26, file: 'glacier-snow-floor.jpg' },
-    { id: 'wall', surfaceClass: 'wall', tileMetres: 34, file: 'glacier-ice-wall.jpg' },
-    { id: 'planet', surfaceClass: 'prop', tileMetres: null, file: 'glacier-planet-surface.jpg' },
-  ];
-  if (!page.includes(', 26.0)') || !page.includes(', 34.0)')) {
-    return {
-      ok: false,
-      label: 'HOLD',
-      release: false,
-      message: 'HOLD texel gate: glacier shader cell size drifted from 26 m snow / 34 m wall',
-      rows: [],
-    };
-  }
+  const { IMAGINE } = await import('../glacier/texel-density.js');
+  const texRoot = path.join(webgpu, 'glacier');
+  const live = IMAGINE.filter((spec) => spec && !spec.equirect && spec.tileMetres > 0 && spec.files && spec.files.length);
+  const slots = live.map((spec) => ({
+    id: spec.id,
+    surfaceClass: spec.surfaceClass,
+    tileMetres: spec.tileMetres,
+    files: spec.files.map((file) => {
+      const buf = fs.readFileSync(path.join(texRoot, file));
+      return {
+        file,
+        sha256: sha256(buf),
+        native: (() => {
+          const size = imageSize(buf);
+          return size ? [size.w, size.h] : null;
+        })(),
+      };
+    }),
+  }));
   const files = {};
   for (const slot of slots) {
-    const p = path.join(texDir, slot.file);
-    if (fs.existsSync(p)) files[slot.file] = fs.readFileSync(p);
+    for (const entry of slot.files) {
+      files[entry.file] = fs.readFileSync(path.join(texRoot, entry.file));
+    }
   }
   let stretchById = new Map();
   try {
     const { buildWorld } = await import('../glacier/world.js');
-    const { MAT } = await import('../glacier/biome.js');
     const world = buildWorld();
-    const snow = imageSize(files['glacier-snow-floor.jpg']);
-    const wall = imageSize(files['glacier-ice-wall.jpg']);
-    const tiles = new Map([
-      [MAT.snow, { id: 'snow', tile: 26 }],
-      [MAT.drift, { id: 'snow', tile: 26 }],
-      [MAT.wall, { id: 'wall', tile: 34 }],
-      [MAT.fall, { id: 'wall', tile: 34 }],
-      [MAT.arch, { id: 'wall', tile: 34 }],
-      [MAT.icicle, { id: 'wall', tile: 34 }],
-      [MAT.mountain, { id: 'wall', tile: 34 }],
-    ]);
-    const sizes = new Map([['snow', snow], ['wall', wall]]);
-    const measured = measurePacked(world.verts, tiles, sizes);
-    stretchById = measured;
+    const tileByMat = new Map();
+    const texByMat = new Map();
+    const idOf = new Map();
+    for (const spec of live) {
+      const buf = files[spec.files[0]];
+      const size = imageSize(buf);
+      for (const mat of spec.worldMats || []) {
+        tileByMat.set(mat, spec.tileMetres);
+        texByMat.set(mat, size);
+        idOf.set(mat, spec.id);
+      }
+    }
+    const byMat = stretchByMaterial(world.verts, tileByMat, texByMat);
+    for (const [mat, p99] of byMat) {
+      const id = idOf.get(mat);
+      if (!id || p99 == null) continue;
+      const prev = stretchById.get(id);
+      stretchById.set(id, prev == null ? p99 : Math.max(prev, p99));
+    }
   } catch {
     stretchById = new Map();
   }

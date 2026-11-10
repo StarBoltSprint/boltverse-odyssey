@@ -64,7 +64,7 @@ struct U {
 @group(0) @binding(3) var snowArr: texture_2d_array<f32>;
 @group(0) @binding(4) var iceArr: texture_2d_array<f32>;
 @group(0) @binding(5) var planetTex: texture_2d<f32>;
-struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32 };
+struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
 struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
@@ -77,7 +77,13 @@ ${IDLE.wgsl}
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
   var o: VO;
   o.p = u.vp * vec4f(a.xyz, 1.0);
-  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w;
+  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = b.xyz;
+  return o;
+}
+@vertex fn vsWorld(@location(0) a: vec4f, @location(1) b: vec4f, @location(4) shade: vec3f) -> VO {
+  var o: VO;
+  o.p = u.vp * vec4f(a.xyz, 1.0);
+  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = shade;
   return o;
 }
 @vertex fn vsInst(@location(0) a: vec4f, @location(1) b: vec4f, @location(2) i0: vec4f, @location(3) i1: vec4f) -> VO {
@@ -91,7 +97,7 @@ ${IDLE.wgsl}
   let nr = normalize(vec3f(c * nL.x + s * nL.z, nL.y, -s * nL.x + c * nL.z));
   var o: VO;
   o.p = u.vp * vec4f(pr, 1.0);
-  o.w = pr; o.n = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w;
+  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w;
   return o;
 }
 @vertex fn vsSky(@builtin(vertex_index) vi: u32) -> SO {
@@ -122,10 +128,11 @@ fn darken15(c: vec3f) -> vec3f {
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   let gx = dpdx(v.w);
   let gy = dpdy(v.w);
-  var n = normalize(v.n);
+  let nUv = normalize(v.n);
+  let n = normalize(v.lit);
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
-  let alb = albedoOf(m, v.w, n, gx, gy);
+  let alb = albedoOf(m, v.w, nUv, gx, gy);
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
@@ -139,6 +146,10 @@ fn darken15(c: vec3f) -> vec3f {
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
+    let shade = 1.0 - smoothstep(0.02, 0.32, ndl);
+    let rim = pow(1.0 - ndv, 1.8) * smoothstep(0.55, 0.18, ndv);
+    col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
+    col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7;
   }
   let aerial = smoothstep(280.0, 6200.0, dist);
   let horizon = skyColour(normalize(v.w - u.cam.xyz));
@@ -167,7 +178,7 @@ fn darken15(c: vec3f) -> vec3f {
   var q = array<vec2f, 6>(vec2f(-0.5, 0), vec2f(0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 1));
   let c = q[vi]; let b = vec3f(u.bolt.x, u.bolt.y, u.bolt.z);
   let toE = normalize(vec2f(u.cam.x - b.x, u.cam.z - b.z)); let rt = vec3f(-toE.y, 0.0, toE.x);
-  let lr = idleCardLy(c); let lx = lr.x; let ly = lr.y;
+  let lr = idleCardLy(c); let lx = lr.x; let ly = lr.y - 0.08;
   let cr = cos(u.bp.x); let sr = -sin(u.bp.x);
   let rx = lx * cr - ly * sr; let ry = lx * sr + ly * cr;
   let w = b + rt * rx + vec3f(0.0, ry, 0.0);
@@ -205,7 +216,7 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   var w: vec3f;
   var kind = 0.0;
   if (which == 0u) {
-    w = vec3f(b.x + right.x * c.x * 0.18, b.y + 0.02, b.z + fwd.y * (c.y * 0.11 - 0.01));
+    w = vec3f(b.x + right.x * c.x * 0.16, b.y + 0.015, b.z + fwd.y * c.y * 0.09);
   } else {
     let sun = sunN();
     let away = normalize(vec2f(-sun.x, -sun.z));
@@ -317,6 +328,7 @@ async function main() {
     return b;
   };
   const vb = mk(world.verts, GPUBufferUsage.VERTEX);
+  const shadeVb = mk(world.shadeNormals, GPUBufferUsage.VERTEX);
   const mkInst = (slot) => ({
     proto: mk(slot.proto, GPUBufferUsage.VERTEX),
     inst: mk(slot.data, GPUBufferUsage.VERTEX),
@@ -374,7 +386,17 @@ async function main() {
     { shaderLocation: 2, offset: 0, format: 'float32x4' },
     { shaderLocation: 3, offset: 16, format: 'float32x4' },
   ] };
-  const pWorld = pipe('vs', 'fs', false, true, 'less');
+  const shadeBuf = { arrayStride: 12, attributes: [
+    { shaderLocation: 4, offset: 0, format: 'float32x3' },
+  ] };
+  const pWorld = dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: 'vsWorld', buffers: [vbuf, shadeBuf] },
+    fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    multisample: { count: SAMPLES },
+    depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
+  });
   const pInst = dev.createRenderPipeline({
     layout,
     vertex: { module: mod, entryPoint: 'vsInst', buffers: [vbuf, instBuf] },
@@ -443,7 +465,7 @@ async function main() {
     pass.setBindGroup(0, bg);
     pass.setPipeline(pSky); pass.draw(3);
     pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
-    pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
+    pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.setVertexBuffer(1, shadeVb); pass.draw(worldVerts);
     pass.setPipeline(pInst);
     pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
     pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);

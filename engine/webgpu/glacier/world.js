@@ -617,28 +617,38 @@ function relaxOffAxis(verts) {
 
 // Up-facing snow can share a normal. Steep faces keep the face normal so the
 // texel gate does not mix projection axes. Walls stay faceted.
-function smoothUpSnow(verts) {
+function shadeNormalsFor(verts) {
+  const nVerts = verts.length / 8;
+  const out = new Float32Array(nVerts * 3);
+  for (let i = 0; i < nVerts; i++) {
+    out[i * 3] = verts[i * 8 + 4];
+    out[i * 3 + 1] = verts[i * 8 + 5];
+    out[i * 3 + 2] = verts[i * 8 + 6];
+  }
   const acc = new Map();
-  const up = (n) => Math.abs(n[1]) >= Math.abs(n[0]) && Math.abs(n[1]) >= Math.abs(n[2]);
-  for (let i = 0; i < verts.length; i += 8) {
-    if (Math.round(verts[i + 3]) !== 0) continue;
-    const n = [verts[i + 4], verts[i + 5], verts[i + 6]];
-    if (!up(n)) continue;
-    const k = weldKey(verts[i], verts[i + 1], verts[i + 2]);
+  const up = (y, x, z) => Math.abs(y) >= Math.abs(x) && Math.abs(y) >= Math.abs(z);
+  for (let i = 0; i < nVerts; i++) {
+    const mat = Math.round(verts[i * 8 + 3]);
+    if (mat !== 0) continue;
+    const x = out[i * 3], y = out[i * 3 + 1], z = out[i * 3 + 2];
+    if (!up(y, x, z)) continue;
+    const k = weldKey(verts[i * 8], verts[i * 8 + 1], verts[i * 8 + 2]);
     const a = acc.get(k) || [0, 0, 0];
-    a[0] += n[0]; a[1] += n[1]; a[2] += n[2];
+    a[0] += x; a[1] += y; a[2] += z;
     acc.set(k, a);
   }
-  for (let i = 0; i < verts.length; i += 8) {
-    if (Math.round(verts[i + 3]) !== 0) continue;
-    const n = [verts[i + 4], verts[i + 5], verts[i + 6]];
-    if (!up(n)) continue;
-    const a = acc.get(weldKey(verts[i], verts[i + 1], verts[i + 2]));
+  for (let i = 0; i < nVerts; i++) {
+    const mat = Math.round(verts[i * 8 + 3]);
+    if (mat !== 0) continue;
+    const x = out[i * 3], y = out[i * 3 + 1], z = out[i * 3 + 2];
+    if (!up(y, x, z)) continue;
+    const a = acc.get(weldKey(verts[i * 8], verts[i * 8 + 1], verts[i * 8 + 2]));
     const l = Math.hypot(a[0], a[1], a[2]) || 1;
-    const s = [a[0] / l, a[1] / l, a[2] / l];
-    if (!up(s)) continue;
-    verts[i + 4] = s[0]; verts[i + 5] = s[1]; verts[i + 6] = s[2];
+    const sx = a[0] / l, sy = a[1] / l, sz = a[2] / l;
+    if (mat === 0 && !up(sy, sx, sz)) continue;
+    out[i * 3] = sx; out[i * 3 + 1] = sy; out[i * 3 + 2] = sz;
   }
+  return out;
 }
 
 // One geometric normal on all three corners. Smoothing across a shared
@@ -727,22 +737,25 @@ export function buildWorld() {
 
   const icicles = [];
   arches.forEach((z0, index) => {
+    if (index > 2) return;
     const frame = archFrame(z0, index);
-    for (let k = 0; k < 18; k++) {
-      const u = 0.1 + (k / 17) * 0.8;
+    const nIce = 7;
+    for (let k = 0; k < nIce; k++) {
+      const u = 0.18 + (k / (nIce - 1)) * 0.64;
       const c = archCenter(z0, u, frame);
-      const len = 2.6 + hash(z0, k) * 4.4;
-      const hang = frame.thick * (0.95 + hash(k, z0 + 1) * 0.12);
+      const len = 1.6 + hash(z0, k) * 2.4;
+      const hang = frame.thick * 0.72;
+      const thick = 1.15 + hash(k, 2) * 0.55;
       pushInst(
         icicles,
-        c.x + (hash(k, 7) - 0.5) * 0.8,
+        c.x,
         c.y - hang,
-        c.z + 1.4,
-        hash(k, z0) * 5,
-        0.5 + hash(k, 2) * 0.35,
+        c.z + 0.6,
+        hash(k, z0) * 0.4,
+        thick,
         len,
-        0.42,
-        (hash(k, 5) - 0.5) * 0.4,
+        thick * 0.85,
+        (hash(k, 5) - 0.5) * 0.15,
       );
     }
   });
@@ -770,7 +783,10 @@ export function buildWorld() {
   const planet = makePlanet();
   const verts = mesh.finish();
   relaxOffAxis(verts);
-  smoothUpSnow(verts);
+  stampFaceNormals(icicleProto);
+  stampFaceNormals(driftProto);
+  stampFaceNormals(chunkProto);
+  const shadeNormals = shadeNormalsFor(verts);
   const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   const worldTris = verts.length / 24;
   const planetTris = planet.length / 24;
@@ -786,6 +802,7 @@ export function buildWorld() {
   budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris;
   return {
     verts,
+    shadeNormals,
     planet,
     instances: {
       icicle: { proto: icicleProto, data: new Float32Array(icicles), count: icicles.length / 8 },
