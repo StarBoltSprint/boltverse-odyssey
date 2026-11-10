@@ -12,7 +12,7 @@ import { measureSky } from './procedural-sky.js';
 import { jpegPixels } from './albedo-stats.mjs';
 import { spawnSync } from 'child_process';
 import { DE76_MAX } from './cie76.mjs';
-import { auditBiome, MIN_PX_PER_M } from './texel-gate.mjs';
+import { auditBiome, MIN_PX_PER_M, MIN_LARGE_VARIANTS, MIN_PROP_VARIANTS } from './texel-gate.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webgpu = path.resolve(here, '..');
@@ -90,6 +90,8 @@ if (!texel.ok) {
     release: false,
     visualKeep: false,
     minPxPerM: MIN_PX_PER_M,
+    minLargeVariants: MIN_LARGE_VARIANTS,
+    minPropVariants: MIN_PROP_VARIANTS,
     reason: texel.message,
     texelGate: texel.rows.map((row) => ({
       id: row.id,

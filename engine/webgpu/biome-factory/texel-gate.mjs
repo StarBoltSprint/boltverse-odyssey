@@ -9,7 +9,8 @@ import { FOV_Y } from '../engine/bricks/follow-cam.js';
 export const MIN_PX_PER_M = 2048;
 export const STRETCH_P99_MAX = 1.3;
 export const MAG_MAX = 1;
-export const MIN_LARGE_VARIANTS = 3;
+export const MIN_LARGE_VARIANTS = 4;
+export const MIN_PROP_VARIANTS = 3;
 export const PHONE_VIEW_H = 1280;
 
 // Follow camera on flat ground. Eye height 1.12 m, target 0.66 m, boom 2.35 + look 2.2.
@@ -22,7 +23,7 @@ export const LARGE_CLASSES = new Set(['ground', 'floor', 'snow', 'ice', 'wall', 
 // A material slot the factory will build:
 // { id, surfaceClass, tileMetres, files: [{ file, sha256, native: [w, h] }] }
 export const SLOT_SCHEMA = {
-  files: 'Imagine variants. Large surfaces need at least 3 distinct files.',
+  files: 'Imagine variants. Large surfaces need at least 4 distinct sha256 files. Small props need at least 3.',
   tileMetres: 'World metres covered by one tile. px/m = native width / tileMetres. Existing configs may spell this tileMeters.',
   surfaceClass: 'ground | floor | snow | ice | wall | cliff | prop',
 };
@@ -100,15 +101,33 @@ export function isLargeClass(surfaceClass) {
   return LARGE_CLASSES.has(surfaceClass);
 }
 
-export function limitLock(config) {
-  if (config && config.minPxPerM != null && Number(config.minPxPerM) < MIN_PX_PER_M) {
+function raisedFloor(given, floor, name, label) {
+  if (given == null || given === '') return { ok: true, value: floor };
+  const n = Number(given);
+  if (!(n >= floor)) {
     return {
       ok: false,
-      message: `minPxPerM ${config.minPxPerM} is below ${MIN_PX_PER_M}. The house texel floor cannot be lowered.`,
+      message: `${name} ${given} is below ${floor}. The ${label} cannot be lowered.`,
     };
   }
-  const min = config && Number(config.minPxPerM) > MIN_PX_PER_M ? Number(config.minPxPerM) : MIN_PX_PER_M;
-  return { ok: true, minPxPerM: min };
+  return { ok: true, value: n };
+}
+
+export function limitLock(config) {
+  const cfg = config || {};
+  const checks = [
+    raisedFloor(cfg.minPxPerM, MIN_PX_PER_M, 'minPxPerM', 'house texel floor'),
+    raisedFloor(cfg.minLargeVariants, MIN_LARGE_VARIANTS, 'minLargeVariants', 'large-surface variant floor'),
+    raisedFloor(cfg.minPropVariants, MIN_PROP_VARIANTS, 'minPropVariants', 'prop variant floor'),
+  ];
+  const blocked = checks.filter((row) => !row.ok);
+  if (blocked.length) return { ok: false, message: blocked.map((row) => row.message).join(' ') };
+  return {
+    ok: true,
+    minPxPerM: checks[0].value,
+    minLargeVariants: checks[1].value,
+    minPropVariants: checks[2].value,
+  };
 }
 
 export function nearestGroundDistance(eyeH = EYE_H, fovY = FOV_Y) {
@@ -279,9 +298,10 @@ export function gateSlot(slot, files, opts = {}) {
   } else if (variants.length) {
     reasons.push('no tileMetres');
   }
-  if (large && unique.length < MIN_LARGE_VARIANTS) {
-    reasons.push(`variants ${unique.length} < ${MIN_LARGE_VARIANTS}`);
-  }
+  const need = large
+    ? (opts.minLargeVariants ?? MIN_LARGE_VARIANTS)
+    : (opts.minPropVariants ?? MIN_PROP_VARIANTS);
+  if (unique.length < need) reasons.push(`variants ${unique.length} < ${need}`);
   let mag = null;
   if (pxPerM) {
     mag = magnification(pxPerM);
@@ -317,6 +337,8 @@ export function gateBiome(config, files, opts = {}) {
       message: lock.message,
       rows: [],
       minPxPerM: MIN_PX_PER_M,
+      minLargeVariants: MIN_LARGE_VARIANTS,
+      minPropVariants: MIN_PROP_VARIANTS,
     };
   }
   const sampler = opts.pageSource != null ? samplerAudit(opts.pageSource) : (opts.sampler || { ok: true });
@@ -337,6 +359,8 @@ export function gateBiome(config, files, opts = {}) {
     }
     return gateSlot(slot, files, {
       minPxPerM: lock.minPxPerM,
+      minLargeVariants: lock.minLargeVariants,
+      minPropVariants: lock.minPropVariants,
       sampler,
       stretchP99: stretchMap.get(slot.id) ?? null,
     });
@@ -352,6 +376,8 @@ export function gateBiome(config, files, opts = {}) {
     message: failed.length ? `HOLD texel gate: ${message}` : message,
     rows,
     minPxPerM: lock.minPxPerM,
+    minLargeVariants: lock.minLargeVariants,
+    minPropVariants: lock.minPropVariants,
     sampler,
   };
 }

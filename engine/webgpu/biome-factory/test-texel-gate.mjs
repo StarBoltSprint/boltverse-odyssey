@@ -1,7 +1,8 @@
 // Negative and positive fixtures for the house texel rule. The floor is 2048.
 import assert from 'node:assert/strict';
 import {
-  MIN_PX_PER_M, STRETCH_P99_MAX, pngHeader, gateBiome, gateSlot, triangleStretch, stretchP99,
+  MIN_PX_PER_M, MIN_LARGE_VARIANTS, MIN_PROP_VARIANTS, STRETCH_P99_MAX,
+  pngHeader, gateBiome, gateSlot, triangleStretch, stretchP99,
 } from './texel-gate.mjs';
 
 const PAGE = `
@@ -25,6 +26,8 @@ let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
 
 if (MIN_PX_PER_M !== 2048) bad('floor moved ' + MIN_PX_PER_M);
+if (MIN_LARGE_VARIANTS !== 4) bad('large variants moved ' + MIN_LARGE_VARIANTS);
+if (MIN_PROP_VARIANTS !== 3) bad('prop variants moved ' + MIN_PROP_VARIANTS);
 
 {
   const files = filesOf([['ground.png', [1024, 1024]]]);
@@ -59,11 +62,12 @@ if (MIN_PX_PER_M !== 2048) bad('floor moved ' + MIN_PX_PER_M);
       id: 'crystal',
       surfaceClass: 'prop',
       tileMetres: 0.5,
-      files: [{ file: 'a.png' }],
+      files: [{ file: 'a.png' }, { file: 'b.png' }, { file: 'c.png' }],
     }],
   }, files, { stretchById: new Map([['crystal', 1]]) });
   if (!result.ok || !result.rows[0].pass) bad('1024 px at 0.5 m should pass: ' + result.message);
   if (Math.round(result.rows[0].pxPerM) !== 2048) bad('0.5 m px/m ' + result.rows[0].pxPerM);
+  if (result.rows[0].variants !== 3) bad('0.5 m variants ' + result.rows[0].variants);
 }
 
 {
@@ -98,13 +102,14 @@ if (MIN_PX_PER_M !== 2048) bad('floor moved ' + MIN_PX_PER_M);
     ['a.png', [2048, 2048]],
     ['b.png', [2048, 2048]],
     ['c.png', [2048, 2048]],
+    ['d.png', [2048, 2048]],
   ]);
   const result = row({
     materials: [{
       id: 'ground',
       surfaceClass: 'ground',
       tileMetres: 0.5,
-      files: [{ file: 'a.png' }, { file: 'b.png' }, { file: 'c.png' }],
+      files: [{ file: 'a.png' }, { file: 'b.png' }, { file: 'c.png' }, { file: 'd.png' }],
     }],
   }, files, { stretchById: new Map([['ground', 2]]) });
   if (result.rows[0].pass) bad('stretched UV passed');
@@ -146,17 +151,115 @@ if (MIN_PX_PER_M !== 2048) bad('floor moved ' + MIN_PX_PER_M);
 }
 
 {
+  const names = ['a.png', 'b.png', 'c.png', 'd.png'];
+  const files = filesOf(names.map((name) => [name, [1024, 1024]]));
+  const three = row({
+    materials: [{
+      id: 'ground',
+      surfaceClass: 'ground',
+      tileMetres: 0.5,
+      files: names.slice(0, 3).map((file) => ({ file })),
+    }],
+  }, files, { stretchById: new Map([['ground', 1]]) });
+  if (three.rows[0].pass) bad('large surface with 3 variants passed');
+  if (three.rows[0].variants !== 3) bad('large 3 count ' + three.rows[0].variants);
+  if (!three.rows[0].reasons.some((r) => r.includes('variants 3 < 4'))) bad('large 3 reason ' + three.rows[0].reasons.join(';'));
+  const four = row({
+    materials: [{
+      id: 'ground',
+      surfaceClass: 'ground',
+      tileMetres: 0.5,
+      files: names.map((file) => ({ file })),
+    }],
+  }, files, { stretchById: new Map([['ground', 1.2]]) });
+  if (!four.ok) bad('large surface with 4 variants failed: ' + four.message);
+}
+
+{
   const files = filesOf([
     ['a.png', [1024, 1024]],
     ['b.png', [1024, 1024]],
     ['c.png', [1024, 1024]],
+  ]);
+  const two = row({
+    materials: [{
+      id: 'crystal',
+      surfaceClass: 'prop',
+      tileMetres: 0.5,
+      files: [{ file: 'a.png' }, { file: 'b.png' }],
+    }],
+  }, files, { stretchById: new Map([['crystal', 1]]) });
+  if (two.rows[0].pass) bad('prop with 2 variants passed');
+  if (!two.rows[0].reasons.some((r) => r.includes('variants 2 < 3'))) bad('prop 2 reason ' + two.rows[0].reasons.join(';'));
+  const three = row({
+    materials: [{
+      id: 'crystal',
+      surfaceClass: 'prop',
+      tileMetres: 0.5,
+      files: [{ file: 'a.png' }, { file: 'b.png' }, { file: 'c.png' }],
+    }],
+  }, files, { stretchById: new Map([['crystal', 1]]) });
+  if (!three.ok) bad('prop with 3 variants failed: ' + three.message);
+}
+
+{
+  const one = pngHeader(1024, 1024);
+  const files = { 'a.png': one, 'b.png': one, 'c.png': one, 'd.png': one };
+  const result = row({
+    materials: [{
+      id: 'ground',
+      surfaceClass: 'ground',
+      tileMetres: 0.5,
+      files: ['a.png', 'b.png', 'c.png', 'd.png'].map((file) => ({ file })),
+    }],
+  }, files, { stretchById: new Map([['ground', 1]]) });
+  if (result.rows[0].pass) bad('duplicate-file set passed');
+  if (result.rows[0].variants !== 1) bad('duplicate count ' + result.rows[0].variants);
+  if (!result.rows[0].reasons.some((r) => r.includes('variants 1 < 4'))) bad('duplicate reason ' + result.rows[0].reasons.join(';'));
+}
+
+{
+  const names = ['a.png', 'b.png', 'c.png', 'd.png'];
+  const files = filesOf(names.map((name) => [name, [1024, 1024]]));
+  const largeCut = row({
+    minLargeVariants: 3,
+    materials: [{
+      id: 'ground',
+      surfaceClass: 'ground',
+      tileMetres: 0.5,
+      files: names.map((file) => ({ file })),
+    }],
+  }, files, { stretchById: new Map([['ground', 1]]) });
+  if (largeCut.ok) bad('lowered large-variant floor was accepted');
+  if (!largeCut.message.includes('cannot be lowered')) bad('large override ' + largeCut.message);
+  if (largeCut.rows.length !== 0) bad('large override still scored slots');
+  const propCut = row({
+    minPropVariants: 2,
+    materials: [{
+      id: 'crystal',
+      surfaceClass: 'prop',
+      tileMetres: 0.5,
+      files: names.slice(0, 3).map((file) => ({ file })),
+    }],
+  }, files, { stretchById: new Map([['crystal', 1]]) });
+  if (propCut.ok) bad('lowered prop-variant floor was accepted');
+  if (!propCut.message.includes('cannot be lowered')) bad('prop override ' + propCut.message);
+  if (propCut.rows.length !== 0) bad('prop override still scored slots');
+}
+
+{
+  const files = filesOf([
+    ['a.png', [1024, 1024]],
+    ['b.png', [1024, 1024]],
+    ['c.png', [1024, 1024]],
+    ['d.png', [1024, 1024]],
   ]);
   const result = row({
     materials: [{
       id: 'ground',
       surfaceClass: 'ground',
       tileMetres: 0.5,
-      files: [{ file: 'a.png' }, { file: 'b.png' }, { file: 'c.png' }],
+      files: [{ file: 'a.png' }, { file: 'b.png' }, { file: 'c.png' }, { file: 'd.png' }],
     }],
   }, files, { stretchById: new Map([['ground', 1.2]]) });
   if (!result.ok) bad('positive ground failed: ' + result.message);
