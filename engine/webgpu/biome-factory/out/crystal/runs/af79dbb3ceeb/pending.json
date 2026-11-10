@@ -1,0 +1,31 @@
+{
+  "sky": {
+    "status": "BLOCKED",
+    "interface": "GenerateImage",
+    "supportedAspects": [
+      "1:1",
+      "4:3",
+      "3:4",
+      "16:9",
+      "9:16"
+    ],
+    "missingParameters": [
+      "width",
+      "height",
+      "resolution",
+      "equirectangular"
+    ],
+    "cannotRequest": "a native 2:1 image at 2048x1024 or larger",
+    "doNot": "Do not resize, stretch, or crop the 1280x720 plate into a 2:1 map. It is not a 360.",
+    "houseNow": "The meadow sky shader samples an equirectangular 2:1 with uv (atan2(x,-z)/2pi+0.5, 0.5-asin(y)/pi). GenerateImage cannot request that projection.",
+    "alternativesNotGenerated": [
+      "Cubemap: six faces, each a supported 1:1 image. No face was generated.",
+      "Eight rectilinear views: 60 degree horizontal field, 45 degree yaw step, 25 percent overlap, horizon at half the frame. No view was generated."
+    ],
+    "file": "sky-panorama.jpg",
+    "resolution": [
+      1280,
+      720
+    ]
+  }
+}

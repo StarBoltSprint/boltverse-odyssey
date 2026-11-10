@@ -1,0 +1,27 @@
+{
+  "name": "DAWN",
+  "biome": "glacier-abyss",
+  "ambient": {
+    "rgb": [0.14, 0.16, 0.22]
+  },
+  "sun": {
+    "rgb": [0.85, 0.58, 0.42],
+    "intensity": 1.25,
+    "direction": [0.72, 0.28, -0.63]
+  },
+  "flatScale": 1.45,
+  "sky": {
+    "zenith": [0.16, 0.22, 0.46],
+    "horizon": [0.62, 0.34, 0.28],
+    "nebulaViolet": [0.42, 0.16, 0.22],
+    "nebulaCyan": [0.48, 0.30, 0.12],
+    "star": [0.10, 0.10, 0.11],
+    "nebulaScale": 3.4,
+    "starGrid": 42,
+    "nebulaFloor": 0.42,
+    "nebulaHf": 0.5,
+    "nebulaGain": 0.62,
+    "nebulaShift": [0.4, -1.1, 0.8],
+    "nebulaAxis": [1.0, 0.18, 0.05]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "note": "A simple ship. part_type is matched to an AI family. This file does not build a ship.",
+  "parts": [
+    {
+      "name": "hull",
+      "part_type": "hull/body"
+    },
+    {
+      "name": "port-wing",
+      "part_type": "wing"
+    },
+    {
+      "name": "main-engine",
+      "part_type": "engine"
+    },
+    {
+      "name": "mast-antenna",
+      "part_type": "antenna"
+    },
+    {
+      "name": "water-barrel",
+      "part_type": "barrel",
+      "input": {
+        "note": "caller would pass a 176x160 crop on the weight machine"
+      }
+    },
+    {
+      "name": "cabin-door",
+      "part_type": "door"
+    },
+    {
+      "name": "bow-plinth",
+      "part_type": "plinth"
+    }
+  ]
+}

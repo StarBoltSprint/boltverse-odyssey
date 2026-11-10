@@ -1,0 +1,175 @@
+{
+  "biome": "reach",
+  "stages": {
+    "config": "pass",
+    "refs": "pass",
+    "materials": "pass",
+    "provenance": "recorded",
+    "scale": "pass",
+    "quality": "hold",
+    "identity": "fail",
+    "evidence": "hold",
+    "release": "HOLD"
+  },
+  "hold": [
+    {
+      "code": "sky_unusable",
+      "detail": "No 2:1 equirect is in the library for this basin. The page uses the house physical atmosphere. The plate is not resized."
+    },
+    {
+      "code": "sky_blocked",
+      "detail": "GenerateImage cannot request a native 2:1, and this step does not cook one."
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "floor"
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "west-mesa"
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "east-mesa"
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "spire"
+    },
+    {
+      "code": "missing_animation",
+      "detail": "gen4b 144 frames"
+    },
+    {
+      "code": "missing_capture",
+      "detail": "no 720x1280 20s evidence for this material set"
+    },
+    {
+      "code": "missing_review",
+      "detail": "no visual KEEP"
+    },
+    {
+      "code": "phone_unmeasured",
+      "detail": "real-time phone performance was not measured"
+    }
+  ],
+  "hard": [],
+  "release": false,
+  "label": "HOLD",
+  "provenanceLimit": "A manifest hash does not prove authorship. Embedded C2PA softwareAgent and certificate names are self-identification only. The signature and trust chain were not verified. That is not a cryptographic certificate, and release is not blocked on a crypto backend.",
+  "openDefects": [
+    "phone FPS was not measured",
+    "no owner visual KEEP",
+    "idle breath frames are not on this page; the live atlas card is",
+    "equirect sky was not cooked"
+  ],
+  "materials": [
+    {
+      "id": "floor",
+      "role": "basin floor",
+      "tileMeters": 1.45,
+      "sha256": "adfc25668ff8a499999ba9e7c4f571a0fe84f0011c5bd1977fdc9057b8ed48f3",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": null,
+        "certificateIdentity": null,
+        "signatureVerified": false,
+        "label": "no Grok Imagine self-identification in file bytes"
+      }
+    },
+    {
+      "id": "west-mesa",
+      "role": "west mesa stone",
+      "tileMeters": 1.45,
+      "sha256": "2f42633ba5f137f17501e1c7bc0db9d12371280b6f1b79214df7c88780c9c136",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": null,
+        "certificateIdentity": null,
+        "signatureVerified": false,
+        "label": "no Grok Imagine self-identification in file bytes"
+      }
+    },
+    {
+      "id": "east-mesa",
+      "role": "east mesa stone",
+      "tileMeters": 1.45,
+      "sha256": "b7f6cfb9eb84a72c18c9194e980f68f77796fd420fab5e42c8391512d4ec4da0",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": null,
+        "certificateIdentity": null,
+        "signatureVerified": false,
+        "label": "no Grok Imagine self-identification in file bytes"
+      }
+    },
+    {
+      "id": "spire",
+      "role": "spire stone",
+      "tileMeters": 1.45,
+      "sha256": "1aa8063fa28ab9b41cdd6ee15c37af2fc6a38e16f62fc67452543c584a5f6e27",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": null,
+        "certificateIdentity": null,
+        "signatureVerified": false,
+        "label": "no Grok Imagine self-identification in file bytes"
+      }
+    }
+  ],
+  "identityNote": "gen4b tail crop and paw plant are not claimed fixed",
+  "keep": false,
+  "premise": {
+    "holds": false,
+    "because": "swatch not run"
+  },
+  "sky": "BLOCKED",
+  "pending": {
+    "sky": {
+      "status": "BLOCKED",
+      "interface": "GenerateImage",
+      "supportedAspects": [
+        "1:1",
+        "4:3",
+        "3:4",
+        "16:9",
+        "9:16"
+      ],
+      "missingParameters": [
+        "width",
+        "height",
+        "resolution",
+        "equirectangular"
+      ],
+      "cannotRequest": "a native 2:1 image at 2048x1024 or larger",
+      "doNot": "Do not resize, stretch, or crop a plate into a 2:1 map. It is not a 360.",
+      "houseNow": "A physical atmosphere is house code. It is not an Imagine JPEG, and it is not a resized plate.",
+      "alternativesNotGenerated": [
+        "Cubemap: six faces, each a supported 1:1 image. No face was generated for this step.",
+        "Eight rectilinear views: 60 degree horizontal field, 45 degree yaw step, 25 percent overlap. No view was generated."
+      ],
+      "file": null,
+      "resolution": null
+    }
+  },
+  "runId": "4aa32e3ef8ce",
+  "swatch": null,
+  "signoff": {
+    "visualKeep": false,
+    "phoneMeasured": false,
+    "gait": "not signed off",
+    "sky": "BLOCKED"
+  }
+}

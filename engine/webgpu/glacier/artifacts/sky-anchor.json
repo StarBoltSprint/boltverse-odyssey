@@ -1,0 +1,12 @@
+{
+  "samples": 12,
+  "perDirection": [
+    0,
+    0,
+    0
+  ],
+  "worst": 0,
+  "limit": 0.015,
+  "negativeControl": 0.04635,
+  "blocking": true
+}

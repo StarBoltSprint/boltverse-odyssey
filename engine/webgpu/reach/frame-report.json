@@ -1,0 +1,16 @@
+{
+  "webgpu": true,
+  "webgpuPresent": false,
+  "phoneFps": null,
+  "medianMs": null,
+  "capture": "/opt/cursor/artifacts/obsidian-reach.mp4",
+  "captureBytes": 5155944,
+  "captureKind": "cpu raster of the same clipmap, structures, stone tiles, and Bolt atlas",
+  "movedM": 38.34,
+  "frames": 72,
+  "size": [
+    720,
+    1280
+  ],
+  "note": "Headless Chrome created a WebGPU device with swiftshader and then destroyed it on the first submit, including a one-triangle page. No GPU frame time and no phone FPS were measured. The mp4 is the CPU raster of this candidate, 12 fps, Bolt galloping."
+}

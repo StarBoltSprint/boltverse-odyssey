@@ -1,0 +1,30 @@
+{
+  "limit": 0.015,
+  "blocking": "world-direction across cameras, and frame to frame on a 360",
+  "directions": 8,
+  "cameras": 32,
+  "minSamples": 12,
+  "counts": [
+    12,
+    12,
+    16,
+    16,
+    16,
+    16,
+    18,
+    18
+  ],
+  "minScreenSpread": 707,
+  "anchorMax": 0.00023,
+  "cpuMatchMax": 0.00539,
+  "turnFrames": 36,
+  "tracked": 6,
+  "temporalMax": 0,
+  "pops": 0,
+  "yawPairAdvisory": 0.00389,
+  "screenSpace": {
+    "max": 0.04881,
+    "spread": 486,
+    "failedGate": true
+  }
+}

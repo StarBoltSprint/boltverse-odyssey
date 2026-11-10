@@ -1,0 +1,57 @@
+{
+  "name": "NIGHT",
+  "biome": "crystal-canyon",
+  "ambient": {
+    "rgb": [
+      0.026,
+      0.014,
+      0.138
+    ]
+  },
+  "moon": {
+    "rgb": [
+      0.76,
+      1.08,
+      1.55
+    ],
+    "intensity": 1,
+    "direction": [
+      0.587638,
+      0.173648,
+      -0.790271
+    ]
+  },
+  "flatScale": 0.4,
+  "sky": {
+    "zenith": [
+      0.00135,
+      0.00135,
+      0.0218
+    ],
+    "horizon": [
+      0.00768,
+      0.0072,
+      0.0912
+    ],
+    "nebulaViolet": [
+      0.11,
+      0.035,
+      0.16
+    ],
+    "nebulaCyan": [
+      0.02,
+      0.09,
+      0.15
+    ],
+    "star": [
+      0.75,
+      0.82,
+      0.95
+    ],
+    "nebulaScale": 4.6,
+    "starGrid": 42,
+    "nebulaFloor": 0.510484,
+    "nebulaHf": 0.5,
+    "nebulaGain": 1.55
+  }
+}

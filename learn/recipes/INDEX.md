@@ -109,6 +109,12 @@ The mask after that pick is not a single slab. Failure: `learn/failures.md` 2026
 
 `python3 tools/assetcheck/check.py` kind `cutout` with a declared `onScreen` size and `key` (`alpha`, `black`, or `green`). Cook at or above the on-screen pixels. Compositor `scale` stays ≤ 1 ([`biome/docs/56-cutout-native-scale.md`](../../biome/docs/56-cutout-native-scale.md)). Bolt motion stays `lock/bolt-gallop-cycle.mp4`. An `assetcheck` WARN on a `lock/` file is not a recook.
 
+## terrain-engine
+
+| Recipe | Commit | QC |
+| --- | --- | --- |
+| [reach-clipmap-seam.md](reach-clipmap-seam.md) — camera-centred clipmap, odd rim averaged (no Imagine prompt) | this step | seam 0.0014 mm; radius 16384 m; mag 0.714; spire 65.8 px at 12 km |
+
 ## tool
 
 | Recipe | Commit | QC |

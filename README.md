@@ -18,6 +18,30 @@ If you fork this repo, or cook with your own Grok Build session, and a repo tool
 
 Maintainers review accepted issues and turn them into tool PRs. Nothing auto-merges. Law: [`biome/docs/66-tool-feedback-loop.md`](biome/docs/66-tool-feedback-loop.md). The form applies the label `tool-feedback` (created separately).
 
+## Bolt Engine (house WebGPU)
+
+The in-repo WebGPU engine lives in [`engine/webgpu/`](engine/webgpu/README.md). It is not the citadel DOM player ([ENGINE.md](ENGINE.md)) and it is not the hung Sprint lane. Full notes: [`docs/ENGINE.md`](docs/ENGINE.md).
+
+Default pages are the ones already on `main`:
+
+- `engine/webgpu/m448aaa2.html` — meadow
+- `engine/webgpu/m445lp.html` — luminous path
+- `engine/webgpu/m447g.html` and `m447v.html` — Bolt gait checks
+
+Biome candidates are separate URLs. They do not replace those files. TAA and SSGI stay off on the crystal canyon page unless the URL sets `fx=taa`, `fx=ssgi`, or `fx=both`.
+
+Open a local server from the repo root (`python3 -m http.server 8000`), then:
+
+| Page | URL |
+|---|---|
+| Crystal canyon | `/engine/webgpu/crystal/crystal.html?candidate=materials-v2-r2` |
+| Crystal with TAA and SSGI | `/engine/webgpu/crystal/crystal.html?candidate=materials-v2-r2&fx=both` |
+| Obsidian Reach | `/engine/webgpu/reach/reach.html` |
+| Glacier abyss | `/engine/webgpu/glacier/glacier.html?candidate=glacier-abyss-dawn` |
+| Paw stance lock | `/engine/webgpu/candidates/foot-lock/index.html` |
+
+No phone frame rate is claimed. The numbers that were measured are the CPU gates in [`docs/ENGINE.md`](docs/ENGINE.md).
+
 Grok / keepers: [GROK.md](GROK.md) then recipe below. Humans: stop here.
 
 ---

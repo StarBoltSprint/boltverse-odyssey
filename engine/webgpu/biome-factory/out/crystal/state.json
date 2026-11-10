@@ -1,0 +1,474 @@
+{
+  "biome": "crystal-canyon",
+  "stages": {
+    "config": "pass",
+    "refs": "pass",
+    "materials": "pass",
+    "provenance": "recorded",
+    "scale": "declared_not_measured",
+    "quality": "hold",
+    "identity": "fail",
+    "evidence": "hold",
+    "release": "HOLD"
+  },
+  "hold": [
+    {
+      "code": "sky_unusable",
+      "detail": "16:9 plate, not equirectangular 2:1. Side-by-side edges are purple against cyan. Column mean abs 7.68 hides that hue break. Not installed."
+    },
+    {
+      "code": "sky_blocked",
+      "detail": "GenerateImage aspect_ratio is only 1:1, 4:3, 3:4, 16:9, 9:16. No width, height, or equirectangular parameter. A native 2:1 at 2048x1024 or larger cannot be requested. The 1280x720 plate is not resized."
+    },
+    {
+      "code": "scale_unproven",
+      "detail": "obsidian-wall declared tile is not a measured fit"
+    },
+    {
+      "code": "quality_hold",
+      "detail": "obsidian-wall: Parent inspection: large ridges gone. Subtle tonal repetition remains. Quality HOLD. Seamless not certified."
+    },
+    {
+      "code": "scale_unproven",
+      "detail": "ground declared tile is not a measured fit"
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "ground"
+    },
+    {
+      "code": "scale_unproven",
+      "detail": "crystal declared tile is not a measured fit"
+    },
+    {
+      "code": "quality_hold",
+      "detail": "crystal: Parent inspection: large rainbow shards gone. Subtle tonal repetition remains. Quality HOLD. One file shared by both crystal ids."
+    },
+    {
+      "code": "scale_unproven",
+      "detail": "architecture declared tile is not a measured fit"
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "architecture"
+    },
+    {
+      "code": "scale_unproven",
+      "detail": "violet declared tile is not a measured fit"
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "violet"
+    },
+    {
+      "code": "scale_unproven",
+      "detail": "stream declared tile is not a measured fit"
+    },
+    {
+      "code": "visual_not_passed",
+      "detail": "stream"
+    },
+    {
+      "code": "missing_asset",
+      "detail": "sky"
+    },
+    {
+      "code": "missing_animation",
+      "detail": "gen4b 144 frames"
+    },
+    {
+      "code": "missing_review",
+      "detail": "no visual KEEP"
+    },
+    {
+      "code": "phone_unmeasured",
+      "detail": "real-time phone performance was not measured"
+    }
+  ],
+  "hard": [],
+  "release": false,
+  "label": "HOLD",
+  "provenanceLimit": "A manifest hash does not prove authorship. Embedded C2PA softwareAgent and certificate names are self-identification only. The signature and trust chain were not verified. That is not a cryptographic certificate, and release is not blocked on a crypto backend.",
+  "openDefects": [
+    "gen4b tail crop and paw plant are not claimed fixed",
+    "idle/run crossfade is 200ms between two different pictures",
+    "crystal kinematic slip at 7 m/s is 0; meadow stride stays 1.95; paw pixels are not locked to the ground",
+    "obsidian wall albedo stays near L* 8; sky bounce lifts a side face from L* 5.53 to 7.71 and does not replace the texture",
+    "sky plate rejected: not equirect 2:1",
+    "phone performance was not measured"
+  ],
+  "materials": [
+    {
+      "id": "obsidian-wall",
+      "role": "albedo",
+      "tileMeters": 2,
+      "sha256": "7f787fd4703fe3e96936a2909a584061380109d6b222e6b77460f599ff494b6d",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": "Grok Imagine",
+        "certificateIdentity": "xAI Grok Imagine",
+        "signatureVerified": false,
+        "label": "self-identified Grok Imagine via embedded metadata"
+      }
+    },
+    {
+      "id": "ground",
+      "role": "albedo",
+      "tileMeters": 3,
+      "sha256": "d6eabbc707c13bd9b5c3270371297b80a8646221c8f8b40516cfdf95643b3630",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": "Grok Imagine",
+        "certificateIdentity": "xAI Grok Imagine",
+        "signatureVerified": false,
+        "label": "self-identified Grok Imagine via embedded metadata"
+      }
+    },
+    {
+      "id": "crystal",
+      "role": "albedo",
+      "tileMeters": 0.5,
+      "sha256": "572f1a99722a1b518669d723ae7dd94c3cc045d38e518875c324991f87e8363d",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": "Grok Imagine",
+        "certificateIdentity": "xAI Grok Imagine",
+        "signatureVerified": false,
+        "label": "self-identified Grok Imagine via embedded metadata"
+      }
+    },
+    {
+      "id": "architecture",
+      "role": "albedo",
+      "tileMeters": 2,
+      "sha256": "8c42ed205e9f06478f630be0af39d966d479b3ba908cdf0f1a60af4f4a6be9c4",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": "Grok Imagine",
+        "certificateIdentity": "xAI Grok Imagine",
+        "signatureVerified": false,
+        "label": "self-identified Grok Imagine via embedded metadata"
+      }
+    },
+    {
+      "id": "violet",
+      "role": "albedo",
+      "tileMeters": 0.5,
+      "sha256": "7791f436407a5a3eda0163a1355c5782799cc09add48870d08afebbf218a4a2c",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": "Grok Imagine",
+        "certificateIdentity": "xAI Grok Imagine",
+        "signatureVerified": false,
+        "label": "self-identified Grok Imagine via embedded metadata"
+      }
+    },
+    {
+      "id": "stream",
+      "role": "albedo",
+      "tileMeters": 2,
+      "sha256": "ec69a22d6defb836b38ada9412c86e477cd4263e157385cc77d7ec936654c590",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "c2pa": {
+        "softwareAgent": "Grok Imagine",
+        "certificateIdentity": "xAI Grok Imagine",
+        "signatureVerified": false,
+        "label": "self-identified Grok Imagine via embedded metadata"
+      }
+    },
+    {
+      "id": "sky",
+      "role": "albedo",
+      "tileMeters": null,
+      "status": "missing"
+    }
+  ],
+  "identityNote": "gen4b tail crop and paw plant are not claimed fixed",
+  "colour": {
+    "verdict": "UNCERTAIN",
+    "priorRaw": {
+      "method": "texture median Lab versus key-region median Lab, no shared light",
+      "source": "biome-guards README 2026-11-08: crystal v2 materials dE76 19-66 against threshold 10",
+      "use": "diagnostic only; not a colour pass and not a colour fail of the albedo"
+    },
+    "threshold": 10
+  },
+  "keep": false,
+  "premise": {
+    "holds": false,
+    "because": "swatch not run"
+  },
+  "sky": {
+    "imaginePlate": {
+      "status": "BLOCKED",
+      "equirect": false,
+      "wrapPass": false,
+      "release": "HOLD"
+    },
+    "procedural": {
+      "status": "CANDIDATE",
+      "scope": "crystal-candidate-only",
+      "release": "HOLD",
+      "checks": {
+        "seam": 5.55e-17,
+        "poleMax": 0,
+        "southMax": 0.0544,
+        "cameraDelta": 0,
+        "motionStep": 0.2027,
+        "planetRing": 0.0144,
+        "otherRing": 0.0021,
+        "callSite": true,
+        "separatePlanet": true
+      }
+    },
+    "release": "HOLD"
+  },
+  "materialsColour": [
+    {
+      "id": "obsidian-wall",
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "vertical"
+    },
+    {
+      "id": "ground",
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "flat"
+    },
+    {
+      "id": "crystal",
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "vertical"
+    },
+    {
+      "id": "architecture",
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "vertical"
+    },
+    {
+      "id": "violet",
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "vertical"
+    },
+    {
+      "id": "stream",
+      "verdict": "PASS",
+      "compared": true,
+      "dE76": 0,
+      "threshold": 10,
+      "includesLightness": true,
+      "light_id": "crystal-night-rig",
+      "exposure": 1,
+      "blocking": true,
+      "reference": "Imagine albedo under the declared night rig",
+      "kind": "flat"
+    }
+  ],
+  "keyAdvisory": {
+    "blocking": false,
+    "role": "artistic-reference",
+    "threshold": 10,
+    "maxDE": 25.06,
+    "rows": [
+      {
+        "id": "obsidian-wall",
+        "name": "obsidian wall",
+        "dE76": 14.18,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          3.55,
+          6.26,
+          -16.62
+        ],
+        "rig": [
+          1.4,
+          1.58,
+          -3.41
+        ]
+      },
+      {
+        "id": "mineral-ground",
+        "name": "mineral ground",
+        "dE76": 8.3,
+        "verdict": "PASS",
+        "threshold": 10,
+        "key": [
+          6.55,
+          7.83,
+          -17.92
+        ],
+        "rig": [
+          9.3,
+          4.12,
+          -11.02
+        ]
+      },
+      {
+        "id": "cyan-facets",
+        "name": "cyan facets",
+        "dE76": 15.01,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          17.7,
+          3.35,
+          -27.01
+        ],
+        "rig": [
+          17.84,
+          10.27,
+          -40.33
+        ]
+      },
+      {
+        "id": "architectural-stone",
+        "name": "architectural stone",
+        "dE76": 10.86,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          5.16,
+          3.55,
+          -17
+        ],
+        "rig": [
+          2.39,
+          2.99,
+          -6.52
+        ]
+      },
+      {
+        "id": "stream-surface",
+        "name": "stream surface",
+        "dE76": 25.06,
+        "verdict": "BLOCK",
+        "threshold": 10,
+        "key": [
+          46.66,
+          -7.94,
+          -24.91
+        ],
+        "rig": [
+          23.12,
+          0.64,
+          -25.4
+        ]
+      },
+      {
+        "id": "violet-mineral",
+        "name": "violet mineral",
+        "dE76": 2.23,
+        "verdict": "PASS",
+        "threshold": 10,
+        "key": [
+          16.86,
+          24.47,
+          -33.98
+        ],
+        "rig": [
+          15.86,
+          23.69,
+          -35.8
+        ]
+      }
+    ],
+    "note": "The key is an artistic reference. These dE76 values do not block the factory."
+  },
+  "pending": {
+    "sky": {
+      "status": "BLOCKED",
+      "interface": "GenerateImage",
+      "supportedAspects": [
+        "1:1",
+        "4:3",
+        "3:4",
+        "16:9",
+        "9:16"
+      ],
+      "missingParameters": [
+        "width",
+        "height",
+        "resolution",
+        "equirectangular"
+      ],
+      "cannotRequest": "a native 2:1 image at 2048x1024 or larger",
+      "doNot": "Do not resize, stretch, or crop the 1280x720 plate into a 2:1 map. It is not a 360.",
+      "houseNow": "The meadow sky shader samples an equirectangular 2:1 with uv (atan2(x,-z)/2pi+0.5, 0.5-asin(y)/pi). GenerateImage cannot request that projection.",
+      "alternativesNotGenerated": [
+        "Cubemap: six faces, each a supported 1:1 image. No face was generated.",
+        "Eight rectilinear views: 60 degree horizontal field, 45 degree yaw step, 25 percent overlap, horizon at half the frame. No view was generated."
+      ],
+      "file": "sky-panorama.jpg",
+      "resolution": [
+        1280,
+        720
+      ]
+    }
+  },
+  "runId": "af79dbb3ceeb",
+  "swatch": null,
+  "signoff": {
+    "visualKeep": false,
+    "phoneMeasured": false,
+    "gait": "crystal stride matches the 534-frame cycle, so slip at 7 m/s is 0; meadow stride stays 1.95; paw pixels are not locked, and the 200 ms crossfade is still two pictures",
+    "sky": "not a release; make.mjs records the measured sky object"
+  }
+}

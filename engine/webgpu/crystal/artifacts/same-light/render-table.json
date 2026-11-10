@@ -1,0 +1,139 @@
+{
+  "clean": [
+    {
+      "id": "ground",
+      "patches": 1,
+      "tried": 3,
+      "pixels": 676,
+      "dE76": 0,
+      "verdict": "PASS",
+      "lab": [
+        20.14,
+        5.94,
+        -15.86
+      ],
+      "predLab": [
+        20.14,
+        5.94,
+        -15.86
+      ],
+      "threshold": 10
+    },
+    {
+      "id": "violet",
+      "patches": 3,
+      "tried": 3,
+      "pixels": 2028,
+      "dE76": 4.24,
+      "verdict": "PASS",
+      "lab": [
+        53.34,
+        29.25,
+        -55.66
+      ],
+      "predLab": [
+        52.05,
+        32.99,
+        -57.19
+      ],
+      "threshold": 10
+    },
+    {
+      "id": "cyan",
+      "patches": 3,
+      "tried": 3,
+      "pixels": 2028,
+      "dE76": 2.79,
+      "verdict": "PASS",
+      "lab": [
+        77.52,
+        -23.88,
+        -34.79
+      ],
+      "predLab": [
+        76.4,
+        -22.01,
+        -36.53
+      ],
+      "threshold": 10
+    },
+    {
+      "id": "stone",
+      "patches": 3,
+      "tried": 3,
+      "pixels": 2028,
+      "dE76": 7.49,
+      "verdict": "PASS",
+      "lab": [
+        25.81,
+        0.55,
+        -15.98
+      ],
+      "predLab": [
+        20.65,
+        0.92,
+        -10.56
+      ],
+      "threshold": 10
+    },
+    {
+      "id": "stream",
+      "patches": 6,
+      "tried": 6,
+      "pixels": 4056,
+      "dE76": 0.41,
+      "verdict": "PASS",
+      "lab": [
+        27.08,
+        -2.25,
+        -25.01
+      ],
+      "predLab": [
+        27.47,
+        -2.38,
+        -25.01
+      ],
+      "threshold": 10
+    },
+    {
+      "id": "wall",
+      "patches": 3,
+      "tried": 3,
+      "pixels": 2028,
+      "dE76": 4.47,
+      "verdict": "PASS",
+      "lab": [
+        13.01,
+        2.96,
+        -11.92
+      ],
+      "predLab": [
+        12.71,
+        0.7,
+        -8.07
+      ],
+      "threshold": 10
+    }
+  ],
+  "negativeControl": {
+    "id": "cyan",
+    "patches": 2,
+    "tried": 2,
+    "pixels": 1352,
+    "dE76": 18.46,
+    "verdict": "BLOCK",
+    "lab": [
+      63.79,
+      -10.81,
+      -42.13
+    ],
+    "predLab": [
+      76.63,
+      -22.66,
+      -36.17
+    ],
+    "threshold": 10
+  },
+  "threshold": 10,
+  "blocking": true
+}
