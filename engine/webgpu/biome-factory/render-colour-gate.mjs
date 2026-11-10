@@ -17,12 +17,12 @@ function medianLab(pixels) {
 }
 function round2(n) { return Math.round(n * 100) / 100; }
 
-export function predictRgb(alb, ndl, ny) {
-  const irr = shadeAt(ndl, ny).rgb;
+export function predictRgb(alb, ndl, ny, shadeFn = shadeAt) {
+  const irr = shadeFn(ndl, ny).rgb;
   return [0, 1, 2].map((i) => present22(lin22(alb[i]) * irr[i]));
 }
 
-export function scoreWindow(shot, expectMat) {
+export function scoreWindow(shot, expectMat, shadeFn = shadeAt) {
   const colour = [];
   const pred = [];
   const n = Math.min(shot.colour.length, shot.mask.length, shot.albedo.length);
@@ -36,7 +36,7 @@ export function scoreWindow(shot, expectMat) {
     if ((ny > 0.7 ? ndl < 0.1 : ndl < 0.4)) continue;
     const alb = shot.albedo[i];
     colour.push([shot.colour[i][0], shot.colour[i][1], shot.colour[i][2]]);
-    pred.push(predictRgb([alb[0], alb[1], alb[2]], ndl, ny));
+    pred.push(predictRgb([alb[0], alb[1], alb[2]], ndl, ny, shadeFn));
   }
   if (colour.length < 8) return { ok: false, pixels: colour.length, verdict: 'UNCERTAIN', dE76: null, threshold: DE76_MAX };
   const lab = medianLab(colour).map(round2);

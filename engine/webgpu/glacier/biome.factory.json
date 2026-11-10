@@ -1,0 +1,44 @@
+{
+  "id": "glacier-abyss",
+  "engine": "house-webgpu",
+  "revision": "glacier-abyss-dawn",
+  "candidate": "glacier-abyss-dawn",
+  "live": false,
+  "visualKeep": false,
+  "release": false,
+  "albedo": {
+    "source": "house-procedural",
+    "note": "No Imagine JPEG was generated for this candidate. Albedo is authored linear ice, snow, and cold rock in glacier/albedo.js. It is not recoloured to pass CIE76. The blocking gate compares the shader albedo times the dawn rig with the SwiftShader pixel."
+  },
+  "light": {
+    "rig": "DAWN",
+    "file": "glacier/dawn-light.json",
+    "note": "One rig for every material. Same record shape as a night-light.json. Ambient, sun, and sky are set once."
+  },
+  "proceduralSky": {
+    "scope": "glacier-candidate-only",
+    "source": "house-procedural",
+    "jpegContract": false,
+    "anchor": "world-direction",
+    "limit": 0.015,
+    "note": "Colour is a function of world direction. The same direction stays within 0.015 across cameras and screen positions. A screen-space sky is the negative control and must fail."
+  },
+  "bolt": {
+    "atlas": "assets/meadow/bolt439_atlas.png",
+    "cardH": 1.15,
+    "cardW": "1.15 * 224 / 652",
+    "follow": "engine/bricks/follow-cam.js",
+    "note": "Usual live bolt439 card, centred, meadow follow distances. Not a new dog."
+  },
+  "budget": {
+    "trisMax": 200000,
+    "drawsMax": 12
+  },
+  "gates": {
+    "cie76": 10,
+    "includesLightness": true,
+    "sky": 0.015,
+    "pureBlack": 0.0003,
+    "gridPeak": 1.8
+  }
+}

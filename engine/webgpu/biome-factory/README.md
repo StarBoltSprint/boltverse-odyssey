@@ -31,4 +31,6 @@ node engine/webgpu/biome-factory/test-sky-sphere.mjs
 
 `--biome reach` loads `engine/webgpu/reach/biome.factory.json` through the same command and stays HOLD. It does not use the crystal night rig. Open the page at `engine/webgpu/reach/reach.html`.
 
+`--biome glacier` runs the glacier CPU gates and writes HOLD. The dawn sky lives in `engine/webgpu/glacier/dawn-sky.js`. The crystal night sky stays in `procedural-sky.js`. Open `engine/webgpu/glacier/glacier.html`.
+
 The crystal candidate sky is house code, a full sphere coloured by direction. The nebula is domain-warped fbm of that unit direction, denser on a tilted band that crosses the chase-camera sky and fades toward the horizon. Stars stay on the same direction grid, with a small spread of size and brightness. It is not an Imagine JPEG, and the 2048×1024 contract does not apply to it. Materials stay Imagine. The 16:9 plate stays blocked.
