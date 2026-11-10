@@ -7,7 +7,7 @@ import { lightWgsl, norm3, sunOf } from '../biome-factory/light-rig.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET } from './biome.js';
-import { buildWorld, chaseInput, integrate, spawn, terrH, pathX } from './world.js';
+import { buildWorld, chaseInput, integrate, spawn, pathX } from './world.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
@@ -178,7 +178,7 @@ fn darken15(c: vec3f) -> vec3f {
   var q = array<vec2f, 6>(vec2f(-0.5, 0), vec2f(0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 1));
   let c = q[vi]; let b = vec3f(u.bolt.x, u.bolt.y, u.bolt.z);
   let toE = normalize(vec2f(u.cam.x - b.x, u.cam.z - b.z)); let rt = vec3f(-toE.y, 0.0, toE.x);
-  let lr = idleCardLy(c); let lx = lr.x; let ly = lr.y - 0.08;
+  let lr = idleCardLy(c); let lx = lr.x; let ly = lr.y - 0.098;
   let cr = cos(u.bp.x); let sr = -sin(u.bp.x);
   let rx = lx * cr - ly * sr; let ry = lx * sr + ly * cr;
   let w = b + rt * rx + vec3f(0.0, ry, 0.0);
@@ -415,11 +415,12 @@ async function main() {
   const bpr = Math.ceil(W * 4 / 256) * 256;
   const rb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
   const U = new Float32Array(64);
+  let lastEye = [0, 0, 0];
   const worldVerts = world.verts.length / 8;
 
   function fillU(t) {
-    const bp = [live.x, terrH(live.x, live.z), live.z];
-    let { eye, tgt } = followEye(bp, live.cam, terrH, 0);
+    const bp = [live.x, world.heightAt(live.x, live.z), live.z];
+    let { eye, tgt } = followEye(bp, live.cam, world.heightAt, 0);
     if (SHOT === 'establish') {
       const est = establishEye();
       eye = est.eye;
@@ -434,6 +435,7 @@ async function main() {
     const vp = mul(proj, view);
     U.set(vp, 0);
     U.set(invertMat4(vp), 16);
+    lastEye = [eye[0], eye[1], eye[2]];
     U.set([eye[0], eye[1], eye[2], t], 32);
     U.set([bp[0], bp[1], bp[2], live.psi], 36);
     const ff = (live.phase % 1) * 32;
@@ -574,13 +576,14 @@ async function main() {
     renderBoltMask();
     const maskSrc = await readback();
     const mask = await blobOf(maskSrc, 'image/png');
-    const bp = [live.x, terrH(live.x, live.z), live.z];
+    const bp = [live.x, world.heightAt(live.x, live.z), live.z];
     const pix = projectPixel(bp);
     return {
       png,
       mask,
       info: {
-        x: live.x, z: live.z, psi: live.psi, v: live.v, y: bp[1],
+        x: live.x, z: live.z, psi: live.psi, cam: live.cam, phase: live.phase,
+        v: live.v, y: bp[1], eye: lastEye,
         boltPx: pix, W, H,
         tris: world.budget.totalTris, draws: DRAWS.length,
         gpuErr: frame.gpuErr,

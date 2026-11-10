@@ -812,6 +812,50 @@ export function buildWorld() {
     budget,
     extentZ: [GLACIER.z1, GLACIER.z0],
     columns: columnsN,
+    heightAt: snowHeightAt(verts),
+  };
+}
+
+// Screen contact uses the triangle that is actually drawn, not the smooth
+// floor function. A chord across a crest sits below that function, and a
+// card planted on the function then floats above the snow.
+function snowHeightAt(verts) {
+  const buckets = new Map();
+  for (let t = 0; t + 24 <= verts.length; t += 24) {
+    if (Math.round(verts[t + 3]) !== 0) continue;
+    const z0 = Math.min(verts[t + 2], verts[t + 10], verts[t + 18]);
+    const z1 = Math.max(verts[t + 2], verts[t + 10], verts[t + 18]);
+    for (let z = Math.floor(z0); z <= Math.floor(z1); z++) {
+      let list = buckets.get(z);
+      if (!list) { list = []; buckets.set(z, list); }
+      list.push(t);
+    }
+  }
+  return function heightAt(x, z) {
+    const list = buckets.get(Math.floor(z));
+    if (!list) return terrH(x, z);
+    let y = null;
+    for (let i = 0; i < list.length; i++) {
+      const t = list[i];
+      const x1 = verts[t];
+      const y1 = verts[t + 1];
+      const z1 = verts[t + 2];
+      const x2 = verts[t + 8];
+      const y2 = verts[t + 9];
+      const z2 = verts[t + 10];
+      const x3 = verts[t + 16];
+      const y3 = verts[t + 17];
+      const z3 = verts[t + 18];
+      const den = (z2 - z3) * (x1 - x3) + (x3 - x2) * (z1 - z3);
+      if (Math.abs(den) < 1e-8) continue;
+      const a = ((z2 - z3) * (x - x3) + (x3 - x2) * (z - z3)) / den;
+      const b = ((z3 - z1) * (x - x3) + (x1 - x3) * (z - z3)) / den;
+      const c = 1 - a - b;
+      if (a < -1e-3 || b < -1e-3 || c < -1e-3) continue;
+      const hy = a * y1 + b * y2 + c * y3;
+      if (y === null || hy > y) y = hy;
+    }
+    return y === null ? terrH(x, z) : y;
   };
 }
 
