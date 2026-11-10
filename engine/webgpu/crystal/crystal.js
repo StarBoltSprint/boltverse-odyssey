@@ -121,10 +121,10 @@ fn terrHs(p: vec2f) -> f32 {
   let d = lateral - 3.55;
   let trench = exp(-(d * d) / 1.15) * 0.62;
   let grain = 0.045 * sin(p.x * 1.3 + p.y * 0.7) + 0.03 * sin(-p.x * 0.45 + p.y * 0.9);
-  let roll = 0.32 * sin(p.x * 0.07 + p.y * 0.045) + 0.18 * sin(p.y * 0.11 - p.x * 0.05);
+  let roll = 0.4 * sin(p.x * 0.07 + p.y * 0.045) + 0.22 * sin(p.y * 0.11 - p.x * 0.05);
   let st = clamp((ad - 2.4) / 2.8, 0.0, 1.0);
   let shelfT = st * st * (3.0 - 2.0 * st);
-  let shelf = round(lateral / 7.5) * 0.18 * shelfT;
+  let shelf = round(lateral / 7.5) * 0.22 * shelfT;
   return lip - trench + grain + roll + shelf;
 }
 fn groundN(p: vec2f) -> vec3f {
@@ -195,6 +195,19 @@ fn darken15(c: vec3f) -> vec3f {
   let groundCrack = 1.0 - smoothstep(0.0, 0.035, crackLine);
   gnd = mix(gnd, gnd * vec3f(0.42, 0.48, 0.6), gloss);
   gnd = gnd * (1.0 - groundCrack * 0.55);
+  let plate = v.w.xz * 0.18;
+  let pf = fract(plate);
+  let pedge = min(min(pf.x, 1.0 - pf.x), min(pf.y, 1.0 - pf.y));
+  let lip = 1.0 - smoothstep(0.0, 0.09, pedge);
+  gnd = mix(gnd, gnd * 1.45 + vec3f(0.015, 0.016, 0.02), lip);
+  let streamU = v.w.x - pathXg(v.w.z) - 3.55;
+  let wet = smoothstep(3.4, 1.15, abs(streamU));
+  let streak = smoothstep(0.62, 0.88, skyNoise(vec3f(v.w.x * 0.35, v.w.z * 0.9, 4.0)));
+  gnd = mix(gnd, gnd * vec3f(0.5, 0.58, 0.72), wet * streak);
+  var pool = 0.0;
+  ${world.pools.reduce((s, v, i) => i % 2 ? s : s + `pool = max(pool, smoothstep(3.6, 0.5, length(v.w.xz - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
+  pool = pool * pool * (0.55 + 0.45 * skyNoise(v.w * 0.7));
+  gnd = gnd + vec3f(0.01, 0.045, 0.06) * pool;
   let wallFine = triMix(
     textureSample(wallTex, samp, v.w.zy * scW).rgb,
     textureSample(wallTex, samp, v.w.xz * scW).rgb,
@@ -237,7 +250,7 @@ fn darken15(c: vec3f) -> vec3f {
     }
     return present(sky);
   }
-  var alb = mix(wall, wallFine, 0.72);
+  var alb = wall;
   if (m < 0.5) {
     n = groundN(v.w.xz);
     alb = gnd;
@@ -248,6 +261,20 @@ fn darken15(c: vec3f) -> vec3f {
     let t = u.cam.w;
     n = waterN(v.w, t);
     alb = waterAlb;
+  }
+  if (m > 5.5 && m < 6.5) {
+    let mid = triMix(
+      textureSampleLevel(wallTex, samp, v.w.zy * scW, 2.0).rgb,
+      textureSampleLevel(wallTex, samp, v.w.xz * scW, 2.0).rgb,
+      textureSampleLevel(wallTex, samp, v.w.xy * scW, 2.0).rgb, n);
+    let crev = smoothstep(0.22, 0.02, skyNoise(v.w * 0.85));
+    alb = mix(wall, mid, 0.82) * (1.0 - crev * 0.3);
+    let e = 0.4;
+    let h0 = skyNoise(v.w * 1.05);
+    let hx = skyNoise((v.w + vec3f(e, 0.0, 0.0)) * 1.05);
+    let hy = skyNoise((v.w + vec3f(0.0, e, 0.0)) * 1.05);
+    let hz = skyNoise((v.w + vec3f(0.0, 0.0, e)) * 1.05);
+    n = normalize(n + vec3f(h0 - hx, h0 - hy, h0 - hz) * 0.7);
   }
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);

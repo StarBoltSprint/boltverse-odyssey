@@ -6,8 +6,8 @@ const norm = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] 
 
 export function createMesh() {
   const f = [];
-  function tri(a, b, c, ua, ub, uc, mat) {
-    const n = norm(cross(sub(b, a), sub(c, a)));
+  function tri(a, b, c, ua, ub, uc, mat, forcedN) {
+    const n = forcedN || norm(cross(sub(b, a), sub(c, a)));
     const vs = [[a, ua], [b, ub], [c, uc]];
     for (const [p, u] of vs) f.push(p[0], p[1], p[2], mat, n[0], n[1], n[2], u[0]);
   }

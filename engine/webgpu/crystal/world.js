@@ -21,9 +21,9 @@ export function terrH(x, z) {
   const lip = smooth(2.6, 8.5, Math.abs(lateral)) * 0.55;
   const trench = Math.exp(-((lateral - CRYSTAL.streamLat) ** 2) / 1.15) * 0.62;
   const grain = 0.045 * Math.sin(x * 1.3 + z * 0.7) + 0.03 * Math.sin(x * 0.45 - z * 0.9);
-  const roll = 0.32 * Math.sin(x * 0.07 + z * 0.045) + 0.18 * Math.sin(z * 0.11 - x * 0.05);
+  const roll = 0.4 * Math.sin(x * 0.07 + z * 0.045) + 0.22 * Math.sin(z * 0.11 - x * 0.05);
   const shelfT = smooth(2.4, 5.2, Math.abs(lateral));
-  const shelf = Math.round(lateral / 7.5) * 0.18 * shelfT;
+  const shelf = Math.round(lateral / 7.5) * 0.22 * shelfT;
   return lip - trench + grain + roll + shelf;
 }
 
@@ -203,18 +203,50 @@ function addCanyonSide(mesh, circles, crystals, side) {
     }
     return { pts, back, z };
   });
-  const quad = (A, B, C, D) => {
-    mesh.tri(A, B, C, [0, 0], [1, 0], [1, 1], MAT.wall);
-    mesh.tri(A, C, D, [0, 0], [1, 1], [0, 1], MAT.wall);
+  const nrm = (A, B, C) => {
+    const ux = B[0] - A[0], uy = B[1] - A[1], uz = B[2] - A[2];
+    const vx = C[0] - A[0], vy = C[1] - A[1], vz = C[2] - A[2];
+    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const l = Math.hypot(nx, ny, nz) || 1;
+    return [nx / l, ny / l, nz / l];
+  };
+  const quad = (A, B, C, D, chips) => {
+    const n = nrm(A, B, C);
+    const N = chips ? 3 : 1;
+    const g = [];
+    for (let j = 0; j <= N; j++) {
+      for (let i = 0; i <= N; i++) {
+        const u = i / N, v = j / N;
+        const p = [
+          (1 - u) * (1 - v) * A[0] + u * (1 - v) * B[0] + u * v * C[0] + (1 - u) * v * D[0],
+          (1 - u) * (1 - v) * A[1] + u * (1 - v) * B[1] + u * v * C[1] + (1 - u) * v * D[1],
+          (1 - u) * (1 - v) * A[2] + u * (1 - v) * B[2] + u * v * C[2] + (1 - u) * v * D[2],
+        ];
+        if (chips) {
+          const k = (hash(Math.round(p[0] * 5) + i, Math.round(p[1] * 3) + j * 7) - 0.42) * 0.28;
+          p[0] += n[0] * k; p[1] += n[1] * k; p[2] += n[2] * k;
+        }
+        g.push(p);
+      }
+    }
+    const w = N + 1;
+    for (let j = 0; j < N; j++) {
+      for (let i = 0; i < N; i++) {
+        const a = g[j * w + i], b = g[j * w + i + 1], c = g[(j + 1) * w + i + 1], d = g[(j + 1) * w + i];
+        mesh.tri(a, b, c, [0, 0], [1, 0], [1, 1], MAT.wall, n);
+        mesh.tri(a, c, d, [0, 0], [1, 1], [0, 1], MAT.wall, n);
+      }
+    }
   };
   for (let i = 0; i < cols.length - 1; i++) {
     const A = cols[i];
     const B = cols[i + 1];
+    const chips = A.z > -180;
     for (let s = 0; s < strata; s++) {
-      quad(A.pts[s], B.pts[s], B.pts[s + 1], A.pts[s + 1]);
-      quad(B.back[s], A.back[s], A.back[s + 1], B.back[s + 1]);
+      quad(A.pts[s], B.pts[s], B.pts[s + 1], A.pts[s + 1], chips);
+      quad(B.back[s], A.back[s], A.back[s + 1], B.back[s + 1], false);
     }
-    quad(A.pts[strata], B.pts[strata], B.back[strata], A.back[strata]);
+    quad(A.pts[strata], B.pts[strata], B.back[strata], A.back[strata], false);
     if (i % 5 === 0 && A.z > -900) {
       const foot = A.pts[1];
       circles.push({ x: foot[0], z: foot[2], r: 1.15 });
@@ -324,9 +356,49 @@ export function buildWorld() {
     const s = 0.45 + hash(i, 2) * 0.9;
     pushInst(shards, x, terrH(x, z), z, hash(i, 1) * 6, s, s * (0.7 + hash(i, 8)), s, (hash(i, 3) - 0.5) * 1.1);
   }
+  const pools = [];
+  for (let i = 0; i < 12; i++) {
+    const z = 8 - i * 6.5;
+    const side = i % 2 === 0 ? -1 : 1;
+    const lat = side * (6.8 + hash(i, 31) * 2.2);
+    const h = 3.4 + hash(i, 32) * 3.2;
+    const x = pathX(z) + lat;
+    const sc = h / 12;
+    pushInst(crystals, x, terrH(x, z), z, hash(i, 33) * 5, sc, sc, sc, side * 0.25);
+    if (pools.length < 16) pools.push(x, z);
+  }
+  const giants = [[-11, -46, 22], [12, -74, 25], [-10.5, -104, 20]];
+  for (let i = 0; i < 8; i++) {
+    const z = -8 - i * 18;
+    const side = i % 2 === 0 ? -1 : 1;
+    const x = pathX(z) + side * (5.5 + hash(i, 51));
+    const y = terrH(x, z);
+    const ring = [];
+    for (let k = 0; k < 6; k++) {
+      const a = (k / 6) * Math.PI * 2;
+      const r = 0.7 + hash(i, k) * 0.6;
+      ring.push([x + Math.cos(a) * r, y + 0.15, z + Math.sin(a) * r * 0.8]);
+    }
+    const top = [x, y + 0.8 + hash(i, 52) * 0.5, z];
+    for (let k = 0; k < 6; k++) {
+      mesh.tri(ring[k], ring[(k + 1) % 6], top, [0, 0], [1, 0], [0.5, 1], MAT.stone);
+    }
+  }
+  for (const [lat, z, h] of giants) {
+    const x = pathX(z) + lat;
+    const sc = h / 12;
+    pushInst(crystals, x, terrH(x, z), z, 0.4, sc, sc, sc, Math.sign(lat) * 0.2);
+    circles.push({ x, z, r: 2.1 });
+  }
+  for (let i = 0; i < 40; i++) {
+    const z = 12 - i * 4.5;
+    const side = i % 2 === 0 ? 1 : -1;
+    const lat = side * (2.2 + hash(i, 41) * 2.4);
+    const x = pathX(z) + lat;
+    const s = 0.22 + hash(i, 42) * 0.45;
+    pushInst(rubble, x, terrH(x, z), z, hash(i, 43) * 6, s, s * 0.7, s * 0.85);
+  }
 
-  addArch(mesh, circles, -96, 7.2, 4.4, 6);
-  addArch(mesh, circles, -140, 8.0, 4.8, 6);
   const sky = createMesh();
   sky.skyDome(640, MAT.sky);
   const road = circles.filter(c => Math.abs(c.x - pathX(c.z)) - c.r > 1.2);
@@ -340,6 +412,7 @@ export function buildWorld() {
     sky: sky.finish(),
     circles: road,
     tris: groundVerts.length / 24,
+    pools,
     extentZ: [WORLD_Z0, WORLD_Z1],
     instances: {
       crystal: { proto: crystalProto, data: new Float32Array(crystals), count: crystals.length / 8 },
