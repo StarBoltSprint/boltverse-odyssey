@@ -626,7 +626,7 @@ function shadeNormalsFor(verts) {
     out[i * 3 + 2] = verts[i * 8 + 6];
   }
   const acc = new Map();
-  const up = (y, x, z) => Math.abs(y) >= Math.abs(x) && Math.abs(y) >= Math.abs(z);
+  const up = (y, x, z) => y > 0.45 && y >= Math.abs(x) && y >= Math.abs(z);
   for (let i = 0; i < nVerts; i++) {
     const mat = Math.round(verts[i * 8 + 3]);
     if (mat !== 0) continue;

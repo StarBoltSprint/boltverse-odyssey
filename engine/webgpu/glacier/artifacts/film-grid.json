@@ -4,19 +4,14 @@
   "mask": "bolt-alpha",
   "dilatePx": 8,
   "maskFrames": 300,
-  "min": 0.928,
-  "max": 1.956,
-  "mean": 1.05,
-  "over": 1,
-  "overFrames": [
-    {
-      "i": 110,
-      "p": 1.956
-    }
-  ],
+  "min": 0.836,
+  "max": 1.54,
+  "mean": 1.028,
+  "over": 0,
+  "overFrames": [],
   "controls": {
     "worldGrid": 12.348,
-    "besideGrid": 2.048,
+    "besideGrid": 2.043,
     "besidePainted": 47880
   },
   "blackFail": 0,

@@ -42,14 +42,14 @@ fn addPick(w: vec4f, h: f32, m: f32) -> vec4f {
 }
 // Fine grain stays on the 0.5 m tile. Which of the four stills leads changes
 // over about 22 m, so a cell edge is not a band across the frame.
-fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f) -> vec3f {
-  let s0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb;
-  let s1 = textureSampleGrad(arr, samp, uv, 1, du, dv).rgb;
-  let s2 = textureSampleGrad(arr, samp, uv, 2, du, dv).rgb;
-  let s3 = textureSampleGrad(arr, samp, uv, 3, du, dv).rgb;
+fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f, gain: vec4f) -> vec3f {
+  let s0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb * gain.x;
+  let s1 = textureSampleGrad(arr, samp, uv, 1, du, dv).rgb * gain.y;
+  let s2 = textureSampleGrad(arr, samp, uv, 2, du, dv).rgb * gain.z;
+  let s3 = textureSampleGrad(arr, samp, uv, 3, du, dv).rgb * gain.w;
   return s0 * w.x + s1 * w.y + s2 * w.z + s3 * w.w;
 }
-fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
+fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f) -> vec3f {
   let n = normalize(nrm);
   let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(n.y) < 0.9);
   let tng = normalize(cross(helper, n));
@@ -70,14 +70,15 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let w = wSoft / (wSoft.x + wSoft.y + wSoft.z);
   let id1 = i + select(vec2f(0.0, 1.0), vec2f(1.0, 0.0), lower);
   let id2 = i + vec2f(1.0, 1.0);
-  let c0 = blend4(arr, uv + vec2f(hash21(i), hash21(i + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(i + vec2f(8.0, 1.0)), 1.0));
-  let c1 = blend4(arr, uv + vec2f(hash21(id1), hash21(id1 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id1 + vec2f(8.0, 1.0)), 1.0));
-  let c2 = blend4(arr, uv + vec2f(hash21(id2), hash21(id2 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id2 + vec2f(8.0, 1.0)), 1.0));
+  let c0 = blend4(arr, uv + vec2f(hash21(i), hash21(i + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(i + vec2f(8.0, 1.0)), 1.0), gain);
+  let c1 = blend4(arr, uv + vec2f(hash21(id1), hash21(id1 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id1 + vec2f(8.0, 1.0)), 1.0), gain);
+  let c2 = blend4(arr, uv + vec2f(hash21(id2), hash21(id2 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id2 + vec2f(8.0, 1.0)), 1.0), gain);
   return c0 * w.x + c1 * w.y + c2 * w.z;
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
-    let snow = sampleArr(snowArr, p, nrm, px, py);
+    let snowGain = vec4f(0.825, 1.189, 0.983, 1.0);
+    let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
     let crev = smoothstep(1.1, -1.6, p.y - 0.3);
     let tone = skyNoise(vec3f(p.x * 0.011, 3.1, p.z * 0.0055));
     let tone2 = skyNoise(vec3f(p.x * 0.041, 1.4, p.z * 0.022));
@@ -87,14 +88,16 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     return mix(g, g * ${v3(C.crevasse)} * 1.35, crev);
   }
   if (m < 3.5) {
-    let ice = sampleArr(iceArr, p, nrm, px, py);
+    let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
+    let snowGain = vec4f(1.0, 1.0, 1.0, 1.0);
+    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain);
     if (m < 1.5) {
-      let snow = sampleArr(snowArr, p, nrm, px, py);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
       let lip = smoothstep(0.45, 0.8, nrm.y);
       return mix(ice, snow, lip * 0.85);
     }
     if (m < 2.5) {
-      let snow = sampleArr(snowArr, p, nrm, px, py);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
       let cap = smoothstep(0.28, 0.62, nrm.y);
       let under = smoothstep(0.05, -0.55, nrm.y);
       var arch = mix(ice, ice * vec3f(0.46, 0.58, 0.84), under);
@@ -102,8 +105,10 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     }
     return ice * vec3f(0.92, 0.96, 1.0);
   }
-  let snow = sampleArr(snowArr, p, nrm, px, py);
-  let ice = sampleArr(iceArr, p, nrm, px, py);
+  let snowGain = vec4f(0.825, 1.189, 0.983, 1.0);
+  let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
+  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
+  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain);
   if (m < 4.5) {
     let chunk = skyNoise(p * 0.17);
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
