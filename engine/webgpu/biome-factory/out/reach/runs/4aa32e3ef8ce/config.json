@@ -1,0 +1,88 @@
+{
+  "id": "reach",
+  "revision": 1,
+  "name": "Obsidian Reach",
+  "sun": [
+    0.42,
+    0.62,
+    0.28
+  ],
+  "materials": [
+    {
+      "id": "floor",
+      "role": "basin floor",
+      "file": "m0.png",
+      "source": "packs/zone-a/src/ground/m0.png",
+      "tileMeters": 1.45,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "sha256": "adfc25668ff8a499999ba9e7c4f571a0fe84f0011c5bd1977fdc9057b8ed48f3",
+      "scaleMeasured": true,
+      "visualPass": false,
+      "note": "Zone A ground still. clearing.json tile_m 1.45. Not a reference crop."
+    },
+    {
+      "id": "west-mesa",
+      "role": "west mesa stone",
+      "file": "m1.png",
+      "source": "packs/zone-a/src/ground/m1.png",
+      "tileMeters": 1.45,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "sha256": "2f42633ba5f137f17501e1c7bc0db9d12371280b6f1b79214df7c88780c9c136",
+      "scaleMeasured": true,
+      "visualPass": false
+    },
+    {
+      "id": "east-mesa",
+      "role": "east mesa stone",
+      "file": "m2.png",
+      "source": "packs/zone-a/src/ground/m2.png",
+      "tileMeters": 1.45,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "sha256": "b7f6cfb9eb84a72c18c9194e980f68f77796fd420fab5e42c8391512d4ec4da0",
+      "scaleMeasured": true,
+      "visualPass": false
+    },
+    {
+      "id": "spire",
+      "role": "spire stone",
+      "file": "m3.png",
+      "source": "packs/zone-a/src/ground/m3.png",
+      "tileMeters": 1.45,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "sha256": "1aa8063fa28ab9b41cdd6ee15c37af2fc6a38e16f62fc67452543c584a5f6e27",
+      "scaleMeasured": true,
+      "visualPass": false
+    }
+  ],
+  "refs": [],
+  "sky": {
+    "runtimeTexture": false,
+    "wrapPass": false,
+    "status": "BLOCKED",
+    "reason": "No 2:1 equirect is in the library for this basin. The page uses the house physical atmosphere. The plate is not resized.",
+    "blocker": "GenerateImage cannot request a native 2:1, and this step does not cook one."
+  },
+  "evidence": {
+    "capture": false,
+    "visualVerdict": null,
+    "phoneMeasured": false
+  },
+  "openDefects": [
+    "phone FPS was not measured",
+    "no owner visual KEEP",
+    "idle breath frames are not on this page; the live atlas card is",
+    "equirect sky was not cooked"
+  ]
+}

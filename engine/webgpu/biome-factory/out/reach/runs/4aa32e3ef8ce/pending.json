@@ -1,0 +1,28 @@
+{
+  "sky": {
+    "status": "BLOCKED",
+    "interface": "GenerateImage",
+    "supportedAspects": [
+      "1:1",
+      "4:3",
+      "3:4",
+      "16:9",
+      "9:16"
+    ],
+    "missingParameters": [
+      "width",
+      "height",
+      "resolution",
+      "equirectangular"
+    ],
+    "cannotRequest": "a native 2:1 image at 2048x1024 or larger",
+    "doNot": "Do not resize, stretch, or crop a plate into a 2:1 map. It is not a 360.",
+    "houseNow": "A physical atmosphere is house code. It is not an Imagine JPEG, and it is not a resized plate.",
+    "alternativesNotGenerated": [
+      "Cubemap: six faces, each a supported 1:1 image. No face was generated for this step.",
+      "Eight rectilinear views: 60 degree horizontal field, 45 degree yaw step, 25 percent overlap. No view was generated."
+    ],
+    "file": null,
+    "resolution": null
+  }
+}
