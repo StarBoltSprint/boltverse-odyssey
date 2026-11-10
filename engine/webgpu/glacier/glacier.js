@@ -126,7 +126,7 @@ fn darken15(c: vec3f) -> vec3f {
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
   if (m < 0.5) {
-    n = normalize(mix(n, vec3f(0.0, 1.0, 0.0), smoothstep(110.0, 260.0, dist) * 0.8));
+    n = normalize(mix(n, vec3f(0.0, 1.0, 0.0), smoothstep(16.0, 46.0, dist) * 0.92));
   }
   let alb = albedoOf(m, v.w, n, gx, gy);
   let view = normalize(u.cam.xyz - v.w);
@@ -149,7 +149,7 @@ fn darken15(c: vec3f) -> vec3f {
   if (m > 6.5 && m < 7.5) {
     let rim = pow(1.0 - ndv, 1.6) * smoothstep(0.0, 0.35, ndl);
     let head = max(col.r, max(col.g, col.b));
-    col = col + vec3f(0.62, 0.28, 0.18) * rim * clamp(1.15 - head, 0.0, 1.0) * (1.0 - aerial * 0.35);
+    col = col + vec3f(0.9, 0.36, 0.22) * rim * clamp(1.15 - head, 0.0, 1.0) * (1.0 - aerial * 0.25);
   }
   if (u.misc.w > 0.5 && abs(m - (u.misc.w - 1.0)) < 0.25) { col = darken15(col); }
   return present(col);
@@ -206,31 +206,34 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let fwd = vec2f(-sin(psi), -cos(psi));
   let right = vec2f(fwd.y, -fwd.x);
   var paw = array<vec4f, 4>(
-    vec4f(0.11, 0.34, 0.10, 0.08),
-    vec4f(-0.11, 0.34, 0.10, 0.08),
-    vec4f(0.12, -0.24, 0.11, 0.08),
-    vec4f(-0.12, -0.24, 0.11, 0.08)
+    vec4f(0.07, 0.05, 0.05, 0.035),
+    vec4f(-0.07, 0.05, 0.05, 0.035),
+    vec4f(0.06, -0.04, 0.045, 0.032),
+    vec4f(-0.06, -0.04, 0.045, 0.032)
   );
-  var local = vec2f(0.0);
-  var sc = vec2f(0.55, 0.32);
-  var kind = 1.0;
+  var w: vec3f;
+  var kind = 0.0;
   if (which < 4u) {
     let p = paw[which];
-    local = right * p.x + fwd * p.y;
-    sc = p.zw;
-    kind = 0.0;
+    let local = right * p.x + fwd * p.y;
+    w = vec3f(b.x + local.x + right.x * c.x * p.z, b.y + 0.02, b.z + local.y + fwd.y * c.y * p.w);
   } else {
     let sun = sunN();
-    local = -sun.xz * 0.42;
+    let away = normalize(vec2f(-sun.x, -sun.z));
+    let across = vec2f(-away.y, away.x);
+    let along = c.y * 0.5 + 0.5;
+    let p = away * (along * 0.95) + across * (c.x * 0.28);
+    w = vec3f(b.x + p.x, b.y + 0.02, b.z + p.y);
+    kind = 1.0;
   }
-  let w = vec3f(b.x + local.x + right.x * c.x * sc.x, b.y + 0.03, b.z + local.y + fwd.y * c.y * sc.y);
   var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; return o;
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
   let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
-  let paw = (1.0 - smoothstep(0.1, 1.0, r2)) * 0.5;
-  let soft = (1.0 - smoothstep(0.0, 1.0, r2)) * 0.26;
-  let a = mix(paw, soft, v.k);
+  let along = v.uv.y * 0.5 + 0.5;
+  let paw = (1.0 - smoothstep(0.05, 1.0, r2)) * 0.34;
+  let shade = (1.0 - smoothstep(0.0, 0.65, r2)) * (1.0 - smoothstep(0.05, 0.9, along)) * 0.18;
+  let a = mix(paw, shade, v.k);
   return vec4f(0.04, 0.05, 0.08, a);
 }
 `;
@@ -412,14 +415,18 @@ async function main() {
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 60);
   }
 
+  function beginPass(enc, clear) {
+    return enc.beginRenderPass({
+      colorAttachments: [{ view: msaa.createView(), resolveTarget: off.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear }],
+      depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
+    });
+  }
+
   function renderFixed(t) {
     fillU(t);
     dev.queue.writeBuffer(ub, 0, U);
     const enc = dev.createCommandEncoder();
-    const pass = enc.beginRenderPass({
-      colorAttachments: [{ view: msaa.createView(), resolveTarget: off.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: [0, 0, 0, 1] }],
-      depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
-    });
+    const pass = beginPass(enc, [0, 0, 0, 1]);
     pass.setBindGroup(0, bg);
     pass.setPipeline(pSky); pass.draw(3);
     pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
@@ -488,15 +495,29 @@ async function main() {
     }
     return out;
   }
-  async function readFrame() {
-    dev.pushErrorScope('validation');
-    renderFixed(simClock);
-    const gpuErr = await dev.popErrorScope();
+  async function readback() {
     await dev.queue.onSubmittedWorkDone();
     await rb.mapAsync(GPUMapMode.READ);
     const src = new Uint8Array(rb.getMappedRange().slice(0));
     rb.unmap();
+    return src;
+  }
+  async function readFrame() {
+    dev.pushErrorScope('validation');
+    renderFixed(simClock);
+    const gpuErr = await dev.popErrorScope();
+    const src = await readback();
     return { src, gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
+  }
+  function renderBoltMask() {
+    const enc = dev.createCommandEncoder();
+    const pass = beginPass(enc, [0, 0, 0, 1]);
+    pass.setBindGroup(0, bg);
+    pass.setPipeline(pBolt);
+    pass.draw(6);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
+    dev.queue.submit([enc.finish()]);
   }
   async function blobOf(src, type, quality) {
     const img = new ImageData(W, H);
@@ -514,11 +535,15 @@ async function main() {
     const dt = 1 / 60;
     while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
     const frame = await readFrame();
-    const jpg = await blobOf(frame.src, 'image/jpeg', 0.92);
+    const png = await blobOf(frame.src, 'image/png');
+    renderBoltMask();
+    const maskSrc = await readback();
+    const mask = await blobOf(maskSrc, 'image/png');
     const bp = [live.x, terrH(live.x, live.z), live.z];
     const pix = projectPixel(bp);
     return {
-      jpg,
+      png,
+      mask,
       info: {
         x: live.x, z: live.z, psi: live.psi, v: live.v, y: bp[1],
         boltPx: pix, W, H,

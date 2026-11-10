@@ -52,12 +52,24 @@ export function floorH(x, z) {
   // Wind runs down the rift. Ridges are long in z and short across, and they
   // stay off the narrow slot under Bolt so the card is not cut.
   const slot = Math.min(1, Math.max(0, (Math.abs(lat) - 0.75) / 1.4));
-  const n = fbm2(lat * 0.72, z * 0.09);
-  const n2 = fbm2(lat * 1.6 + 3.3, z * 0.19);
-  const ridge = Math.pow(Math.max(0, (n - 0.46) / 0.54), 1.7);
-  const sast = (ridge * 1.05 + (n2 - 0.5) * 0.28) * slot;
+  // Long down-rift, a few metres across, so the mid-field mesh still shows them.
+  const wind = fbm2(lat * 0.18, z * 0.026);
+  const wind2 = fbm2(lat * 0.42 + 2.2, z * 0.055);
+  const ridge = Math.pow(Math.max(0, (wind - 0.4) / 0.6), 1.35);
+  const sast = (ridge * 1.2 + (wind2 - 0.5) * 0.4) * slot;
   const broad = 0.42 * Math.sin(z * 0.009) + 0.3 * Math.sin(z * (Math.PI * 2 / 12.6) + lat * 0.04);
-  return broad + sast - crev;
+  return broad + sast - crev - footDent(x, z, lat);
+}
+
+function footDent(x, z, lat) {
+  if (Math.abs(lat) < 0.4 || Math.abs(lat) > 1.7 || z > 8 || z < -55) return 0;
+  const cell = Math.floor(z * 1.15 + (lat > 0 ? 3 : 0));
+  if (hash(cell, 9.2) < 0.7) return 0;
+  const zc = (cell + 0.3 + hash(cell, 2.4) * 0.45) / 1.15;
+  const xc = pathX(zc) + (hash(cell, 4.1) - 0.5) * 1.5;
+  const dx = x - xc;
+  const dz = z - zc;
+  return Math.exp(-(dx * dx / 0.07 + dz * dz / 0.12)) * 0.1;
 }
 
 export function terrH(x, z) { return floorH(x, z); }
@@ -323,7 +335,10 @@ function addPlateau(mesh, side) {
       const u = i / nx;
       const reach = -7 + u * (980 + Math.min(4400, Math.max(0, -z) * 0.45));
       const x = rim[0] + side * reach;
-      const y = (i === 0 ? rim[1] : plateauH(x, z)) + 0.3;
+      let y = (i === 0 ? rim[1] : plateauH(x, z)) + 0.3;
+      const crackN = fbm2(x * 0.0015, z * 0.00105);
+      const crack = Math.exp(-((crackN - 0.57) ** 2) / 0.0014);
+      y -= crack * 16;
       row.push([x, y, z]);
     }
     grid.push(row);
@@ -591,6 +606,9 @@ export function buildWorld() {
   addFarFloor(mesh);
 
   const ranges = [
+    { side: -1, z: -1050, reach: 420, len: 480, h: 70, w: 120 },
+    { side: -1, z: -1750, reach: 820, len: 640, h: 120, w: 160 },
+    { side: -1, z: -2500, reach: 1400, len: 560, h: 95, w: 150 },
     { side: -1, z: -1600, reach: 700, len: 900, h: 180, w: 220 },
     { side: -1, z: -3400, reach: 1400, len: 1500, h: 320, w: 340 },
     { side: -1, z: -6200, reach: 2100, len: 2200, h: 460, w: 480 },
@@ -607,11 +625,22 @@ export function buildWorld() {
   const icicles = [];
   arches.forEach((z0, index) => {
     const frame = archFrame(z0, index);
-    for (let k = 0; k < 12; k++) {
-      const u = 0.16 + (k / 11) * 0.68;
+    for (let k = 0; k < 18; k++) {
+      const u = 0.1 + (k / 17) * 0.8;
       const c = archCenter(z0, u, frame);
-      const len = 1.4 + hash(z0, k) * 3.4;
-      pushInst(icicles, c.x, c.y - frame.thick * 0.78, c.z, hash(k, z0) * 5, 0.42 + hash(k, 2) * 0.28, len, 0.36, (hash(k, 5) - 0.5) * 0.35);
+      const len = 2.6 + hash(z0, k) * 4.4;
+      const hang = frame.thick * (0.95 + hash(k, z0 + 1) * 0.12);
+      pushInst(
+        icicles,
+        c.x + (hash(k, 7) - 0.5) * 0.8,
+        c.y - hang,
+        c.z + 1.4,
+        hash(k, z0) * 5,
+        0.5 + hash(k, 2) * 0.35,
+        len,
+        0.42,
+        (hash(k, 5) - 0.5) * 0.4,
+      );
     }
   });
 

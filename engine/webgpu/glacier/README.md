@@ -24,4 +24,6 @@ Gates, unchanged:
 
 Phone budget from `test-cpu.mjs` is the committed mesh, not a lowered cap.
 
+Imagine tiles: `test-texel-density.mjs`. Ground, snow, and ice need 2048 native px per metre. A 1024 px still covers at most 0.5 m. UV stretch stays at or under 1.3. A 1024 px image declared at 1 m must fail. The limit is not lowered, and a short tile is not faked with an upscale or with procedural pixels.
+
 Run 3 filters the Imagine photographs with a mip chain, anisotropic sampling, derivative LOD, hex tiling, and a two-scale blend. Wall scale is larger than the snow scale. The walls are strata with ledges, fracture columns, and meltwater grooves. The arches are thick faceted bridges with icicles underneath. The far land is a glacier plateau meeting the wall rims, with ridgelines sat on that surface. `test-film-grid.mjs` scores every chase frame. On the run 3 film, 151 of 300 frames are over the grid limit 1.8 (min 1.163, mean 1.971, max 6.090). The limit was not lowered. The live Bolt card sits in that measurement band; the dog was not smeared and no screen vignette was added to move the score.

@@ -2,6 +2,7 @@
 // Photographs are sampled in real colour. The shader multiplies by the dawn rig.
 // Nothing here is fitted to a render.
 import { shadeAt, norm3 } from '../biome-factory/light-rig.js';
+import { IMAGINE } from './texel-density.js';
 
 export const ICE = {
   snow: [0.78, 0.80, 0.84],
@@ -27,6 +28,12 @@ function v3(a) { return `vec3f(${a[0]}, ${a[1]}, ${a[2]})`; }
 
 export function albedoWgsl() {
   const C = ICE;
+  const snow = IMAGINE.find((m) => m.id === 'snow');
+  const ice = IMAGINE.find((m) => m.id === 'ice');
+  const snowBroad = snow.scales[0].repeatsPerM;
+  const snowFine = snow.scales[1].repeatsPerM;
+  const iceBroad = ice.scales[0].repeatsPerM;
+  const iceFine = ice.scales[1].repeatsPerM;
   return `
 fn hash22(p: vec2f) -> vec2f {
   let q = vec2f(dot(p, vec2f(127.1, 311.7)), dot(p, vec2f(269.5, 183.3)));
@@ -42,7 +49,7 @@ fn hexSample(tex: texture_2d<f32>, uv: vec2f, du: vec2f, dv: vec2f, repeats: f32
   let w0 = select(1.0 - f.y, 1.0 - f.x, lower);
   let w1 = select(f.y - f.x, f.x - f.y, lower);
   let wRaw = vec3f(w0, w1, select(f.x, f.y, lower));
-  let wSoft = sqrt(max(wRaw, vec3f(0.0)));
+  let wSoft = sqrt(sqrt(max(wRaw, vec3f(0.0))));
   let w = wSoft / (wSoft.x + wSoft.y + wSoft.z + 1e-4);
   let uvS = uv * repeats;
   let duS = du * repeats * bias;
@@ -53,10 +60,10 @@ fn hexSample(tex: texture_2d<f32>, uv: vec2f, du: vec2f, dv: vec2f, repeats: f32
   return c0 * w.x + c1 * w.y + c2 * w.z;
 }
 fn twoScale(tex: texture_2d<f32>, uv: vec2f, du: vec2f, dv: vec2f, broadSc: f32, fineSc: f32, cellM: f32, dist: f32) -> vec3f {
-  let far = smoothstep(22.0, 140.0, dist);
-  let broad = hexSample(tex, uv, du, dv, broadSc, cellM * 2.6, 1.0);
-  let fine = hexSample(tex, uv, du, dv, fineSc, cellM, mix(1.05, 3.2, far));
-  return mix(broad, fine, mix(0.7, 0.08, far));
+  let far = smoothstep(6.0, 22.0, dist);
+  let broad = hexSample(tex, uv, du, dv, broadSc, cellM * 2.6, 1.15);
+  let fine = hexSample(tex, uv, du, dv, fineSc, cellM, mix(1.2, 4.5, far));
+  return mix(broad, fine, mix(0.45, 0.0, far));
 }
 fn sampleTex(tex: texture_2d<f32>, p: vec3f, nrm: vec3f, gx: vec3f, gy: vec3f, broadSc: f32, fineSc: f32, cellM: f32) -> vec3f {
   let ax = abs(nrm.x);
@@ -75,16 +82,20 @@ fn sampleTex(tex: texture_2d<f32>, p: vec3f, nrm: vec3f, gx: vec3f, gy: vec3f, b
   return twoScale(tex, uv, du, dv, broadSc, fineSc, cellM, length(p - u.cam.xyz));
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, gx: vec3f, gy: vec3f) -> vec3f {
-  let snow = sampleTex(snowTex, p, nrm, gx, gy, 0.02, 0.16, 26.0);
-  let ice = sampleTex(wallTex, p, nrm, gx, gy, 0.014, 0.06, 34.0);
+  let snow = sampleTex(snowTex, p, nrm, gx, gy, ${snowBroad}, ${snowFine}, 64.0);
+  let ice = sampleTex(wallTex, p, nrm, gx, gy, ${iceBroad}, ${iceFine}, 34.0);
   if (m < 0.5) {
     let crev = smoothstep(1.1, -1.6, p.y - 0.3);
     let grit = skyNoise(p * 0.31);
     var g = snow * (0.9 + 0.16 * grit);
     let icePatch = skyNoise(vec3f(p.x * 0.07, 1.6, p.z * 0.011));
     g = mix(g, g * vec3f(0.58, 0.72, 0.98), smoothstep(0.64, 0.86, icePatch) * 0.75);
-    let spark = step(0.997, skyNoise(p * 11.0));
-    g = g + ${v3([0.08, 0.11, 0.14])} * spark;
+    let drift = skyNoise(vec3f(p.x * 0.035, 4.2, p.z * 0.006));
+    g = g * (0.78 + 0.36 * drift);
+    let bearing = atan2(p.x - u.cam.x, p.z - u.cam.z);
+    g = g * (0.66 + 0.68 * sin(bearing * 1.15 + 0.4));
+    let spark = step(0.994, skyNoise(p * 11.0));
+    g = g + ${v3([0.07, 0.1, 0.13])} * spark;
     return mix(g, g * ${v3(C.crevasse)} * 1.35, crev);
   }
   if (m < 1.5) {
