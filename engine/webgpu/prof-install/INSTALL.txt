@@ -1,0 +1,34 @@
+Meadow pass profile — add files only. Version meadow-prof-1106.
+
+This measures frame stages. It does not fix stutter and it does not change the picture.
+It does not replace the normal page, the diagnostic, or the pace page.
+
+Root on the box: /workspace/biome-futur/webgpu-ground
+
+From this directory:
+  sh install.sh /workspace/biome-futur/webgpu-ground
+
+The script only reads these eight paths, and stops if any hash differs:
+  m448aaa3.html
+  m448aaa3.js
+  m448aaa3-diag.html
+  m448aaa3-diag.js
+  engine/bricks/frame-diag.js
+  m448aaa3-pace.html
+  m448aaa3-pace.js
+  engine/bricks/sim-pace.js
+
+Then it adds only:
+  m448aaa3-prof.html
+  m448aaa3-prof.js
+  engine/bricks/pass-timer.js
+If one of those already exists with a different hash, it writes nothing.
+
+Open: /m448aaa3-prof.html?diag=1
+The hud reads v448aaa3-prof. Copy writes the pass-profile JSON on the phone. Nothing is sent off the device.
+
+GPU times appear only when the adapter offers timestamp-query. Otherwise the export says timestampQuery false and still records rAF wall, cpuPrep and cpuEncode. Those three clocks are not added together.
+
+Rollback:
+  sh uninstall.sh /workspace/biome-futur/webgpu-ground
+That deletes only the three profile paths, and only if the hash still matches.

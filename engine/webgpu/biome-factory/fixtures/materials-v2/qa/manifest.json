@@ -1,0 +1,90 @@
+{
+  "generator": "cursor.GenerateImage",
+  "reference_inputs": [],
+  "original_bytes_preserved": true,
+  "provenance": "C2PA observations only, not signature/trust-chain verified.",
+  "physical_scale_policy": "Surface periods are intended design parameters, NOT measurements. Sky has no physical tile scale.",
+  "outputs": [
+    {
+      "file": "stream-surface.jpg",
+      "source_path": "/cursor/stores/user/grok-bot/agents/8f3c3da7-07a3-4f42-9f98-70ae0ef07993/assets/ec69a22d6defb836b38ada9412c86e477cd4263e157385cc77d7ec936654c590.jpg",
+      "sha256": "ec69a22d6defb836b38ada9412c86e477cd4263e157385cc77d7ec936654c590",
+      "bytes": 183429,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "generation_request": {
+        "aspect_ratio": "1:1",
+        "physical_period_metres": [
+          2,
+          2
+        ],
+        "description": "Create a genuinely new dedicated Grok Imagine video-game WATER SURFACE BASE COLOR texture. Entire square is turquoise stream water intrinsic colour, medium rich clean turquoise with restrained fine cyan and teal variation, uniform subtle short organic ripple traces distributed evenly at centimetre scale across a 2 metre square patch. Perfectly overhead orthographic flat surface, neutral uniform shadowless illumination. Low contrast fine variation only; no bright white streaks, no specular glints, no reflections, no caustic lighting, no baked shadows, no foam, no waves rendered in perspective, no directional brightness gradient. No river banks, shoreline, rocks, objects, ground, scenery, horizon, lettering or borders. Real-time house shader supplies motion, reflection, transparency and lighting; image is only intrinsic colour, NOT a rendered river scene. Aim for naturally continuous tile edges and no identifiable repeated motifs. No reference image or concept-image pixels."
+      },
+      "colour_space": "sRGB",
+      "c2pa": {
+        "softwareAgent_Grok_Imagine": true,
+        "claim_generator_Grok_Imagine": true,
+        "certificate_identity_xAI_Grok_Imagine": true,
+        "self_signed_ephemeral": true,
+        "signature_verified": false
+      },
+      "visual_inspection": "Uniform turquoise intrinsic colour, fine low-contrast ripple traces; no banks/objects/bright specular. 2x2 preview unobtrusive at this scale, slight broad tonal bands remain. Not certified seamless; house shader must provide actual water motion and reflectance."
+    },
+    {
+      "file": "violet-mineral.jpg",
+      "source_path": "/cursor/stores/user/grok-bot/agents/8f3c3da7-07a3-4f42-9f98-70ae0ef07993/assets/7791f436407a5a3eda0163a1355c5782799cc09add48870d08afebbf218a4a2c.jpg",
+      "sha256": "7791f436407a5a3eda0163a1355c5782799cc09add48870d08afebbf218a4a2c",
+      "bytes": 453390,
+      "resolution": [
+        1024,
+        1024
+      ],
+      "generation_request": {
+        "aspect_ratio": "1:1",
+        "physical_period_metres": [
+          0.5,
+          0.5
+        ],
+        "description": "Create a genuinely new dedicated Grok Imagine video-game CRYSTAL SURFACE BASE COLOR texture. Entire square filled by one continuous flat amethyst violet mineral surface, rich medium violet with restrained subtle lavender and blue-violet intrinsic colour variation. A 0.5 metre square patch ON a large crystal face, actual shape supplied separately as real 3D geometry. Very fine evenly distributed mineral grain and delicate microscopic growth striations, low contrast irregular variation, no isolated large colour patches. Uniform neutral shadowless illumination, orthographic straight-on flat scan. No crystal objects, no gemstone pile, no rainbow shard mosaic, no rendered polygon facets, no perspective, no relief shading, no dark cracks, no shadows, no specular highlights, no white veins, no bloom, no glow, no lighting gradients. No scenery, lettering, borders, chrome or metal. Aim for naturally continuous tile edges without distinctive repeat motifs. No reference image or concept-image pixels."
+      },
+      "colour_space": "sRGB",
+      "c2pa": {
+        "softwareAgent_Grok_Imagine": true,
+        "claim_generator_Grok_Imagine": true,
+        "certificate_identity_xAI_Grok_Imagine": true,
+        "self_signed_ephemeral": true,
+        "signature_verified": false
+      },
+      "visual_inspection": "Uniform lavender/amethyst violet with fine grain; no shard pile or rendered facet geometry. Paler and less jewel-rich than prompt, subtle mottling and faint repeat variation remain. Not certified seamless; evaluate on real crystal geometry."
+    },
+    {
+      "file": "sky-panorama.jpg",
+      "source_path": "/cursor/stores/user/grok-bot/agents/8f3c3da7-07a3-4f42-9f98-70ae0ef07993/assets/251915b437176db8e40b13b01d8a988f750a5c64ba19e3fbfc7aa909bae741c0.jpg",
+      "sha256": "251915b437176db8e40b13b01d8a988f750a5c64ba19e3fbfc7aa909bae741c0",
+      "bytes": 161826,
+      "resolution": [
+        1280,
+        720
+      ],
+      "generation_request": {
+        "aspect_ratio": "16:9",
+        "physical_period_metres": null,
+        "description": "Create a genuinely new dedicated Grok Imagine SKY-ONLY panoramic environment image for a premium real-time cyan-violet cosmic canyon world. Wide full-frame celestial atmosphere, nuanced deep indigo and midnight blue with extraordinarily delicate sweeping translucent violet and cyan interstellar haze, sparse tiny varied dim stars, beautiful spacious restrained cinematic colour. Sky only everywhere: no ground, no landscape, no mountains, no visible horizon line, no structures, no objects, no suns, no moons and absolutely NO PLANET; planet is a separate real 3D sphere. No text, lettering, frame or vignette. Compose as a continuous horizontal panoramic celestial field suitable for environment-background mapping, keeping left and right edge sky colour and nebulosity closely matched, avoiding distinctive bright features crossing either edge. Quiet top and bottom regions, no perspective vanishing point, no lens flare. Do not draw a sphere, a scene, or a canyon. Native wide image without crops or stretching; no reference image inputs or concept-image pixels. This is an environment sky backdrop, not a surface material."
+      },
+      "colour_space": "sRGB",
+      "c2pa": {
+        "softwareAgent_Grok_Imagine": true,
+        "claim_generator_Grok_Imagine": true,
+        "certificate_identity_xAI_Grok_Imagine": true,
+        "self_signed_ephemeral": true,
+        "signature_verified": false
+      },
+      "visual_inspection": "Sky-only indigo/cyan/violet atmosphere and stars, no ground/structures/planet. Attractive background but requested edge continuity FAILED: right purple nebula and left cyan nebula visibly discontinuous at horizontal wrap. Native 1280x720 16:9, not 2:1 equirectangular or verified 360-degree projection. Do not treat as seamless spherical environment.",
+      "mapping_limitations": "GenerateImage supports 16:9 but no 2:1 panorama, cubemap or explicit equirectangular projection parameter. This output is a wide sky plate only. No stretch, crop, remap or edge blending applied to original. Full spherical use would distort poles and show horizontal seam; requires a separately approved mapping solution or future proper panorama asset."
+    }
+  ],
+  "status": "Two surface additions are integration candidates. Sky is a non-wrapping wide background candidate only; full 360 sky remains unfulfilled. Exactly three outputs generated; no retries.",
+  "inspection_method": "Viewed original tool outputs, 2x2 downscaled surface repeats, and native-scale right-edge then left-edge sky seam preview. Previews are QA-only derived images, never source albedo or sky."
+}

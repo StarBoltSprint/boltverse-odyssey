@@ -1,0 +1,17 @@
+Native capture, no upscale. Sprite bolt439_atlas. Follow camera unchanged (2.35 m, 62°).
+
+Uncaptioned master (kept): /tmp/raw720.mp4
+  720x1280, 24/1 fps, 1080 frames, 45.000 s, h264 yuv420p, 168415406 bytes
+  full decode: ffmpeg -v error -i raw720.mp4 -f null -  (ok)
+  also the three 15.000 s segments seg0.mp4 seg1.mp4 seg2.mp4 (360 frames each)
+
+Captioned draft: /tmp/bolt-meadow-epic-vertical.mp4
+  720x1280, 24/1, 1080 frames, 45.000 s, 158MB-class, PlayRes 720x1280, FontSize 26, bottom Alignment 2, MarginV 92
+  full decode ok
+Review proxy: bolt-meadow-epic-vertical_proxy.mp4
+  same 720x1280 24/1 1080 frames 45.000 s, 12MB, crf 36, full decode ok
+
+Route gate: node engine/webgpu/check/meadow-route/gate.mjs
+  min house 14.34 m, min wheel 17.06 m, mill-ahead cone 3.34 s, deep water outside fords 0 s, peak yaw 25.8 deg/s
+
+Ribbon gate (cut20 premise false): node engine/webgpu/check/lp445/ribbon-gate.mjs
