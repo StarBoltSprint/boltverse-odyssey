@@ -31,10 +31,10 @@ const BED_Y = WATER_Y - 0.22;
 
 // Coarse triangles chord across the trench and roof the water. Any corner a
 // 1.05 m edge can join to a point inside the stream is held on a bed under the sheet.
-export function groundMeshY(x, z) {
+export function groundMeshY(x, z, step = GROUND_STEP) {
   const u = x - pathX(z) - CRYSTAL.streamLat;
   const h = terrH(x, z);
-  if (Math.abs(u) < STREAM_HALF + GROUND_STEP * 2) return Math.min(h, BED_Y);
+  if (Math.abs(u) < STREAM_HALF + step * 2) return Math.min(h, BED_Y);
   return h;
 }
 
@@ -168,14 +168,53 @@ function addArch(mesh, circles, z0, span, foot, depth) {
   }
 }
 
+const WORLD_Z0 = -1120;
+const WORLD_Z1 = 40;
+
+function pushInst(list, x, y, z, yaw, sx, sy, sz) {
+  list.push(x, y, z, yaw, sx, sy, sz, 0);
+}
+
+function makeWallProto() {
+  const m = createMesh();
+  m.boxBevel(0, 6.2, 0, 5.4, 12.4, 3.4, 0.04, MAT.wall, 0.16);
+  m.boxBevel(0.25, 14.6, 0.15, 3.8, 5.6, 2.5, -0.06, MAT.wall, 0.12);
+  m.boxBevel(-0.15, 18.4, -0.05, 2.3, 3.2, 1.7, 0.1, MAT.wall, 0.08);
+  return m.finish();
+}
+
+function makeCrystalProto() {
+  const m = createMesh();
+  addCluster(m, 0, 0, 0, 1.6, 12, 0.3, MAT.cyan, 7);
+  return m.finish();
+}
+
+function makeRubbleProto() {
+  const m = createMesh();
+  m.boxBevel(0, 0.35, 0, 1.4, 0.7, 1.1, 0.2, MAT.wall, 0.08);
+  m.boxBevel(0.8, 0.22, 0.4, 0.7, 0.45, 0.6, -0.4, MAT.stone, 0.05);
+  m.hexPrism(0.2, 0, 0.6, 0.18, 0.9, 0.5, 0.3, MAT.cyan, 3);
+  m.hexPrism(-0.55, 0, -0.2, 0.12, 0.55, 1.1, -0.2, MAT.violet, 9);
+  return m.finish();
+}
+
 export function buildWorld() {
   const mesh = createMesh();
   const circles = [];
-  const x0 = -42, x1 = 42, z0 = -168, z1 = 28, step = GROUND_STEP;
+  const x0 = -46, x1 = 46, z0 = -260, z1 = WORLD_Z1, step = GROUND_STEP;
   for (let z = z0; z < z1; z += step) {
     for (let x = x0; x < x1; x += step) {
       const corners = [[x, z], [x + step, z], [x + step, z + step], [x, z + step]];
       const p = corners.map(([px, pz]) => [px, groundMeshY(px, pz), pz]);
+      mesh.tri(p[0], p[2], p[1], [0, 0], [1, 1], [1, 0], MAT.mineral);
+      mesh.tri(p[0], p[3], p[2], [0, 0], [0, 1], [1, 1], MAT.mineral);
+    }
+  }
+  const farStep = 5.5;
+  for (let z = WORLD_Z0; z < z0; z += farStep) {
+    for (let x = -80; x < 80; x += farStep) {
+      const corners = [[x, z], [x + farStep, z], [x + farStep, z + farStep], [x, z + farStep]];
+      const p = corners.map(([px, pz]) => [px, groundMeshY(px, pz, farStep), pz]);
       mesh.tri(p[0], p[2], p[1], [0, 0], [1, 1], [1, 0], MAT.mineral);
       mesh.tri(p[0], p[3], p[2], [0, 0], [0, 1], [1, 1], MAT.mineral);
     }
@@ -199,100 +238,70 @@ export function buildWorld() {
     if (Math.round(z) % 3 === 0) circles.push({ x: pathX(z) + CRYSTAL.streamLat, z, r: 1.02 });
   }
 
-  for (let i = 0; i < 46; i++) {
-    const z = 8 - i * 3.7;
+  const walls = [];
+  for (let i = 0; i < 78; i++) {
+    const z = 24 - i * 14.5;
     for (const side of [-1, 1]) {
-      for (let row = 0; row < 3; row++) {
-        const lat = side * (7.4 + row * 3.5 + hash(i, row + side * 4) * 1.2);
-        const x = pathX(z) + lat;
-        if (z > -90 && Math.abs(lat) < 16) continue;
-        const sy = 2.8 + row * 4.4 + hash(i, row + 8) * (row === 2 ? 14 : 6.5);
-        const sx = 2.1 + hash(i + 2, row) * 2.2;
-        const sz = 1.8 + hash(row + 4, i) * 1.9;
-        const yaw = (hash(i, row + 11) - 0.5) * 0.7;
-        const y0 = terrH(x, z);
-        const top = stackBlock(mesh, x, y0, z, sx, sy, sz, yaw, MAT.wall);
-        circles.push({ x, z, r: Math.min(sx, sz) * 0.38 });
-        if (row === 0 && hash(i, side + 20) > 0.28) {
-          const ch = 1.4 + hash(i, side + 2) * 3.2;
-          const cr = 0.34 + hash(i, side) * 0.36;
-          addCluster(mesh, x, top, z, cr, ch, yaw, side < 0 ? MAT.violet : MAT.cyan, i * 17 + row + side * 9);
-        }
-      }
+      const lat = side * (7.5 + hash(i, side + 4) * 11);
+      const h = 15 + hash(i, side + 11) * 25;
+      const x = pathX(z) + lat;
+      const yaw = (hash(i, side + 2) - 0.5) * 0.35;
+      pushInst(walls, x, terrH(x, z), z, yaw, 0.85 + hash(i, side) * 0.45, h / 20, 0.75 + hash(i, side + 6) * 0.4);
+      circles.push({ x, z, r: 2.15 * (0.85 + hash(i, side) * 0.2) });
     }
   }
-
-  for (let i = 0; i < 64; i++) {
-    const z = 4 - i * 2.5;
+  const crystals = [];
+  for (let i = 0; i < 52; i++) {
+    const z = 12 - i * 21;
     const side = i % 2 === 0 ? -1 : 1;
-    const lat = side < 0 ? -(3.9 + hash(i, 1) * 1.8) : (5.5 + hash(i, 2) * 1.6);
+    const giant = i % 3 === 0;
+    const lat = side * (6.2 + hash(i, 5) * (giant ? 6 : 9));
+    const h = giant ? 8 + hash(i, 8) * 17 : 3.5 + hash(i, 8) * 4;
+    const s = h / 12;
     const x = pathX(z) + lat;
-    if (z > -90 && Math.abs(lat) < 14) continue;
-    const ch = 1.3 + hash(i, 3) * (side < 0 ? 4.8 : 4.2);
-    const cr = 0.26 + hash(i, 4) * 0.48;
-    addCluster(mesh, x, terrH(x, z), z, cr, ch, hash(i, 5) * 3, side < 0 ? MAT.violet : MAT.cyan, 400 + i);
-    circles.push({ x, z, r: cr * 1.35 });
+    pushInst(crystals, x, terrH(x, z), z, hash(i, 3) * 3, s, s, s);
+    if (giant) circles.push({ x, z, r: Math.min(2.2, s * 1.4) });
+    if (!giant && hash(i, 9) > 0.45) {
+      const s2 = s * 0.55;
+      pushInst(crystals, x + side * 2.4, terrH(x, z), z + 2.4, 1.2, s2, s2, s2);
+    }
+  }
+  const rubble = [];
+  for (let i = 0; i < 90; i++) {
+    const z = 8 - i * 12;
+    const side = i % 2 === 0 ? -1 : 1;
+    const lat = side * (2.4 + hash(i, 4) * 2.2);
+    const x = pathX(z) + lat;
+    pushInst(rubble, x, terrH(x, z), z, hash(i, 1) * 6, 0.6 + hash(i, 2), 0.5 + hash(i, 7) * 0.8, 0.6 + hash(i, 3));
   }
 
-  // Close enough to read in the 20 s route, far enough that resume does not swallow the gate.
-  {
-    const z = -62;
-    const x = pathX(z) + 2.6;
-    const y = terrH(x, z);
-    const top = stackBlock(mesh, x, y, z, 2.2, 4.4, 1.6, 0.1, MAT.wall);
-    addCluster(mesh, x, top, z, 0.42, 1.5, 0.4, MAT.cyan, 62);
-    circles.push({ x, z, r: 0.9 });
-  }
-  {
-    const z = -70;
-    const x = pathX(z) - 2.5;
-    addCluster(mesh, x, terrH(x, z), z, 0.55, 3.2, 0.4, MAT.cyan, 70);
-    circles.push({ x, z, r: 0.85 });
-  }
   addArch(mesh, circles, -96, 7.2, 4.4, 6);
   addArch(mesh, circles, -140, 8.0, 4.8, 6);
-
-  // Close to the path so the first seconds show objects sliding past, not an empty plane.
-  const near = [
-    [-5.6, -6, 3.6, 1.15, MAT.cyan],
-    [5.8, -16, 4.4, 1.3, MAT.violet],
-    [-5.3, -27, 3.8, 1.2, MAT.cyan],
-    [6.2, -39, 5.1, 1.45, MAT.violet],
-    [-5.9, -52, 4.2, 1.25, MAT.cyan],
-  ];
-  for (const [lat, z, h, w, gem] of near) {
-    const x = pathX(z) + lat;
-    const y0 = terrH(x, z);
-    const top = stackBlock(mesh, x, y0, z, w, h, w * 0.92, 0.15, MAT.wall);
-    if (z !== -6) addCluster(mesh, x, top, z, 0.48, h * 0.42, 0.4, gem, 800 + z);
-    circles.push({ x, z, r: w * 0.42 });
-  }
-  {
-    const z = -11;
-    const x = pathX(z) - 4.4;
-    addCluster(mesh, x, terrH(x, z), z, 0.78, 2.7, 0.35, MAT.cyan, 11);
-    circles.push({ x, z, r: 1.05 });
-  }
-
-  const spires = [[-18, -84, 16], [12, -92, 28], [-24, -104, 22], [22, -118, 36], [-8, -128, 19], [16, -136, 31], [-20, -148, 26], [8, -158, 40]];
-  for (let i = 0; i < spires.length; i++) {
-    const [lat, z, h] = spires[i];
-    const x = pathX(z) + lat;
-    const y0 = terrH(x, z);
-    const w = 1.35 + (i % 4) * 0.55;
-    const top = stackBlock(mesh, x, y0, z, w, h, w * (0.75 + (i % 3) * 0.12), i * 0.17, MAT.stone);
-    addCluster(mesh, x, top, z, 0.55 + (i % 3) * 0.12, h * 0.16, i * 0.4, i % 2 ? MAT.cyan : MAT.violet, 900 + i);
-    circles.push({ x, z, r: w * 0.5 });
-  }
-
   const sky = createMesh();
   sky.skyDome(640, MAT.sky);
   const road = circles.filter(c => Math.abs(c.x - pathX(c.z)) - c.r > 1.2);
+  const wallProto = makeWallProto();
+  const crystalProto = makeCrystalProto();
+  const rubbleProto = makeRubbleProto();
+  const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   return {
     verts: mesh.finish(),
     sky: sky.finish(),
     circles: road,
     tris: mesh.count / 3,
+    extentZ: [WORLD_Z0, WORLD_Z1],
+    instances: {
+      wall: { proto: wallProto, data: new Float32Array(walls), count: walls.length / 8 },
+      crystal: { proto: crystalProto, data: new Float32Array(crystals), count: crystals.length / 8 },
+      rubble: { proto: rubbleProto, data: new Float32Array(rubble), count: rubble.length / 8 },
+    },
+    budget: {
+      uniqueTris: mesh.count / 3,
+      wallTris: instTris(wallProto, walls),
+      crystalTris: instTris(crystalProto, crystals),
+      rubbleTris: instTris(rubbleProto, rubble),
+      draws: 9,
+    },
   };
 }
 

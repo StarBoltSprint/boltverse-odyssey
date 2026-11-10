@@ -96,6 +96,16 @@ struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: 
   o.p = u.vp * vec4f(p, 1.0);
   o.w = p; o.n = n; o.uv = vec2f(b.w, 0.0); o.mat = a.w; return o;
 }
+@vertex fn vsInst(@location(0) a: vec4f, @location(1) b: vec4f, @location(2) i0: vec4f, @location(3) i1: vec4f) -> VO {
+  let sc = i1.xyz;
+  let p0 = vec3f(a.x * sc.x, a.y * sc.y, a.z * sc.z);
+  let c = cos(i0.w); let s = sin(i0.w);
+  let pr = vec3f(c * p0.x + s * p0.z, p0.y, -s * p0.x + c * p0.z) + i0.xyz;
+  let nr = normalize(vec3f(c * b.x + s * b.z, b.y, -s * b.x + c * b.z));
+  var o: VO;
+  o.p = u.vp * vec4f(pr, 1.0);
+  o.w = pr; o.n = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w; return o;
+}
 ${shadeFns()}
 ${skyWgsl()}
 ${lightWgsl()}
@@ -171,6 +181,15 @@ fn darken15(c: vec3f) -> vec3f {
   let gOff = textureSample(groundTex, samp, v.w.xz * scG + vec2f(0.37, 0.53)).rgb;
   let gN = skyNoise(vec3f(v.w.x * 0.17, v.w.z * 0.17, 3.0));
   gnd = mix(gnd, gOff, smoothstep(0.46, 0.54, gN));
+  let glossN = skyNoise(vec3f(v.w.x * 0.045, v.w.z * 0.045, 1.7));
+  let gloss = smoothstep(0.78, 0.93, glossN);
+  let crackLine = abs(sin(v.w.x * 0.48 + sin(v.w.z * 0.27) * 2.2));
+  let groundCrack = 1.0 - smoothstep(0.0, 0.035, crackLine);
+  let sparkCell = floor(v.w.xz * 2.2);
+  let shard = step(0.994, fract(sin(dot(sparkCell, vec2f(19.1, 47.7))) * 43758.5));
+  gnd = mix(gnd, gnd * vec3f(0.42, 0.48, 0.6), gloss);
+  gnd = gnd * (1.0 - groundCrack * 0.55);
+  gnd = mix(gnd, vec3f(0.04, 0.42, 0.52), shard);
   let wallFine = triMix(
     textureSample(wallTex, samp, v.w.zy * scW).rgb,
     textureSample(wallTex, samp, v.w.xz * scW).rgb,
@@ -254,6 +273,13 @@ fn darken15(c: vec3f) -> vec3f {
   let glint = rare * step(0.04, grain) * smoothstep(0.02, 0.08, ridge) * step(0.2, ndl) * alb * 0.15;
   let blockLit = alb * irr * tint + glint;
   col = mix(col, blockLit, block);
+  let moonN = sunN();
+  let sil = smoothstep(0.42, 0.06, ndv);
+  let moonFace = clamp(dot(n, moonN), 0.0, 1.0);
+  let rockY = max(dot(alb, vec3f(0.2126, 0.7152, 0.0722)), 0.025);
+  let rockHue = alb / rockY;
+  let rimMoon = rockHue * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * sil * moonFace * 0.055;
+  col = col + rimMoon * block;
   let far = smoothstep(55.0, 130.0, dist);
   let rim = pow(1.0 - ndv, 2.4);
   let rimK = min(0.1, rim * (0.08 + 0.2 * far));
@@ -489,6 +515,15 @@ async function main() {
   };
   const vb = mk(world.verts, GPUBufferUsage.VERTEX);
   const sb = mk(world.sky, GPUBufferUsage.VERTEX);
+  const mkInst = (slot) => ({
+    proto: mk(slot.proto, GPUBufferUsage.VERTEX),
+    inst: mk(slot.data, GPUBufferUsage.VERTEX),
+    verts: slot.proto.length / 8,
+    count: slot.count,
+  });
+  const wallI = mkInst(world.instances.wall);
+  const crystalI = mkInst(world.instances.crystal);
+  const rubbleI = mkInst(world.instances.rubble);
   const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(8, ad.limits.maxSamplerAnisotropy || 1);
   const samp = await noteErr('sampler', async () => dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'repeat', maxAnisotropy: aniso }));
@@ -523,6 +558,11 @@ async function main() {
   ] }));
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const mod = dev.createShaderModule({ code: WGSL });
+  if (mod.getCompilationInfo) {
+    const early = await mod.getCompilationInfo();
+    const msgs = early.messages.filter(m => m.type === 'error').map(m => m.message);
+    if (msgs.length) throw new Error(msgs.join('\n'));
+  }
   const vbuf = { arrayStride: 32, attributes: [
     { shaderLocation: 0, offset: 0, format: 'float32x4' },
     { shaderLocation: 1, offset: 16, format: 'float32x4' },
@@ -535,7 +575,19 @@ async function main() {
     multisample: { count: SAMPLES, alphaToCoverageEnabled: vs === 'vsBolt' },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: depthWrite, depthCompare: 'less' },
   });
+  const instBuf = { arrayStride: 32, stepMode: 'instance', attributes: [
+    { shaderLocation: 2, offset: 0, format: 'float32x4' },
+    { shaderLocation: 3, offset: 16, format: 'float32x4' },
+  ] };
   const pWorld = pipe('vs', 'fs', false, true);
+  const pInst = dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: 'vsInst', buffers: [vbuf, instBuf] },
+    fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    multisample: { count: SAMPLES },
+    depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
+  });
   const pSky = pipe('vs', 'fs', false, false);
   const pBolt = pipe('vsBolt', 'fsBolt', false, true);
   const pContact = pipe('vsContact', 'fsContact', true, false);
@@ -567,7 +619,11 @@ async function main() {
   const bpr = Math.ceil(W * 4 / 256) * 256;
   const rb = CAP ? dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ }) : null;
   const infoErr = [];
-  dev.addEventListener?.('uncapturederror', e => { infoErr.push(String(e.error || e)); window.__crystalErr = infoErr.join(' | '); });
+  dev.addEventListener?.('uncapturederror', e => {
+    const msg = (e.error && e.error.message) || String(e.error || e);
+    infoErr.push(msg);
+    window.__crystalErr = infoErr.join(' | ');
+  });
 
   const crops = new Float32Array(7 * 4);
   const U = new Float32Array(128);
@@ -626,6 +682,10 @@ async function main() {
     pass.setPipeline(pSky); pass.setVertexBuffer(0, sb); pass.draw(skyVerts);
     pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
+    pass.setPipeline(pInst);
+    pass.setVertexBuffer(0, wallI.proto); pass.setVertexBuffer(1, wallI.inst); pass.draw(wallI.verts, wallI.count);
+    pass.setVertexBuffer(0, crystalI.proto); pass.setVertexBuffer(1, crystalI.inst); pass.draw(crystalI.verts, crystalI.count);
+    pass.setVertexBuffer(0, rubbleI.proto); pass.setVertexBuffer(1, rubbleI.inst); pass.draw(rubbleI.verts, rubbleI.count);
     pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     if (!SHOT && !gatePose) {
       pass.setPipeline(pContact); pass.draw(6);
@@ -638,6 +698,9 @@ async function main() {
 
   window.__crystalInfo = {
     biome: CRYSTAL.id, W, H, msaa: SAMPLES, dprCap: 2, tris: worldVerts / 3, skyVerts,
+    draws: world.budget.draws, instancedTris: world.budget.wallTris + world.budget.crystalTris + world.budget.rubbleTris,
+    instances: { wall: wallI.count, crystal: crystalI.count, rubble: rubbleI.count },
+    extentZ: world.extentZ,
     candidate: gate.candidate, release: gate.release, missing: gate.missing, tiles: TILE_M,
     referenceTexture: false, bolt: 'bolt439_atlas', breath: BREATH_BUILD,
     compile: compileNotes,
