@@ -3,7 +3,7 @@
 export const LIGHT = {
   sun: [0.48, 0.74, -0.42],
   f0: 0.045,
-  roughness: 0.25,
+  roughness: 0.18,
   fillGain: 26,
   fillMin: 0.22,
   fillMax: 1.2,

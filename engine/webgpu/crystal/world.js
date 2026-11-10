@@ -105,6 +105,22 @@ function addCluster(mesh, x, y, z, radius, height, yaw, mat, seed) {
       rr, hh, ang + hash(seed, i + 7), tilt, mat, seed * 13 + i,
     );
   }
+  glowDisc(mesh, x, y + 0.03, z, radius * 0.95, mat === MAT.violet ? MAT.glowV : MAT.glowC);
+}
+
+function glowDisc(mesh, x, y, z, r, mat) {
+  const N = 20;
+  const c = [x, y, z];
+  for (let i = 0; i < N; i++) {
+    const a0 = (i / N) * Math.PI * 2;
+    const a1 = ((i + 1) / N) * Math.PI * 2;
+    mesh.tri(
+      c,
+      [x + Math.cos(a1) * r, y, z + Math.sin(a1) * r],
+      [x + Math.cos(a0) * r, y, z + Math.sin(a0) * r],
+      [0, 0], [1, 0], [1, 0], mat,
+    );
+  }
 }
 
 function stackBlock(mesh, x, yBase, z, sx, sy, sz, yaw, mat) {
@@ -119,9 +135,11 @@ function stackBlock(mesh, x, yBase, z, sx, sy, sz, yaw, mat) {
     const leanX = (hash(seed, t + 8) - 0.5) * Math.min(wx, wz) * 0.16;
     const leanZ = (hash(seed, t + 14) - 0.5) * Math.min(wx, wz) * 0.16;
     mesh.chipBlock(x, y, z, wx, th, wz, yaw + (hash(seed, t + 5) - 0.5) * 0.18, leanX, leanZ, mat, seed + t * 19);
-    y += th * 0.92;
-    wx *= 0.7 + hash(seed, t + 20) * 0.08;
-    wz *= 0.7 + hash(seed, t + 24) * 0.08;
+    mesh.box(x, y + th * 0.5, z, wx * 0.7, th * 0.98, wz * 0.7, yaw, mat);
+    if (t + 1 < tiers) mesh.box(x, y + th * 0.9, z, wx * 0.76, 0.5, wz * 0.76, yaw, mat);
+    y += th * 0.72;
+    wx *= 0.86 + hash(seed, t + 20) * 0.06;
+    wz *= 0.86 + hash(seed, t + 24) * 0.06;
   }
   return y;
 }

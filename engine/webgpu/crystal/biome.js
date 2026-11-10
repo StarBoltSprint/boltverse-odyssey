@@ -35,7 +35,7 @@ export const CROPS = [
   { id: 'planet', x: 430, y: 30, w: 270, h: 280 },
 ];
 
-export const MAT = { mineral: 0, violet: 1, cyan: 2, stone: 3, stream: 4, sky: 5, wall: 6 };
+export const MAT = { mineral: 0, violet: 1, cyan: 2, stone: 3, stream: 4, sky: 5, wall: 6, glowC: 7, glowV: 8 };
 
 export function cropUV(c, key = KEY) {
   return [c.x / key.w, c.y / key.h, c.w / key.w, c.h / key.h];

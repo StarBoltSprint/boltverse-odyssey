@@ -220,10 +220,11 @@ export function createMesh() {
       const inn = [-x / il, -z / il];
       const yC = 0.22 + hsh(id * 3 + 50) * 0.56;
       const r = 0.12 + hsh(id * 3 + 70) * 0.2;
-      const depth = Math.min(0.32, cap, 0.12 + hsh(id * 3 + 90) * 0.18);
+      const depth = Math.min(0.22, cap * 0.55, 0.1 + hsh(id * 3 + 90) * 0.12);
       const dy = (yNorm - yC) * sy;
       let extra = Math.abs(dy) < r ? depth * Math.sqrt(Math.max(0, 1 - (dy / r) ** 2)) : 0;
-      extra = Math.min(extra, Math.hypot(x, z) * 0.42);
+      const end = Math.min(1, yNorm / 0.16) * Math.min(1, (1 - yNorm) / 0.16);
+      extra = Math.min(extra, Math.hypot(x, z) * 0.42) * Math.max(0, end);
       return [x + inn[0] * extra, z + inn[1] * extra];
     };
     const rings = [];
