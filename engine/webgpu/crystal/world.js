@@ -296,6 +296,37 @@ function makeRubbleProto() {
   return m.finish();
 }
 
+function spike(m, x, z, h, r, mat) {
+  const tip = [x, h, z];
+  for (let i = 0; i < 4; i++) {
+    const a0 = (i / 4) * Math.PI * 2;
+    const a1 = ((i + 1) / 4) * Math.PI * 2;
+    m.tri(
+      [x + Math.cos(a0) * r, 0, z + Math.sin(a0) * r],
+      [x + Math.cos(a1) * r, 0, z + Math.sin(a1) * r],
+      tip, [0, 0], [1, 0], [0.5, 1], mat,
+    );
+  }
+}
+
+function makeSproutProto() {
+  const m = createMesh();
+  spike(m, 0, 0, 0.22, 0.04, MAT.cyan);
+  spike(m, 0.07, 0.03, 0.11, 0.025, MAT.cyan);
+  spike(m, -0.05, 0.05, 0.07, 0.018, MAT.cyan);
+  return m.finish();
+}
+
+function makeCoverProto() {
+  const m = createMesh();
+  const y = 0.035;
+  m.tri([-0.62, y, -0.38], [0.48, y, -0.3], [0.36, y, 0.4], [0, 0], [1, 0], [1, 1], MAT.stone);
+  m.tri([-0.62, y, -0.38], [0.36, y, 0.4], [-0.44, y, 0.34], [0, 0], [1, 1], [0, 1], MAT.stone);
+  m.tri([-0.62, y, -0.38], [-0.44, y, 0.34], [-0.44, y + 0.09, 0.34], [0, 0], [1, 0], [1, 1], MAT.stone);
+  m.tri([-0.62, y, -0.38], [-0.44, y + 0.09, 0.34], [-0.62, y + 0.09, -0.38], [0, 0], [1, 1], [0, 1], MAT.stone);
+  return m.finish();
+}
+
 function makeShardProto() {
   const m = createMesh();
   m.hexPrism(0, 0, 0, 0.11, 0.72, 0.3, 0.45, MAT.cyan, 2);
@@ -429,6 +460,56 @@ export function buildWorld() {
     pushInst(rubble, x, terrH(x, z), z, hash(i, 43) * 6, s, s * 0.7, s * 0.85);
   }
 
+  const cover = [];
+  for (let i = 0; i < 180; i++) {
+    const z = 28 - i * 1.5;
+    for (const side of [-1, 1]) {
+      if (hash(i, side + 12) < 0.12) continue;
+      const lat = side * (1.9 + hash(i, side + 18) * 3.6);
+      if (Math.abs(lat - CRYSTAL.streamLat) < 1.3) continue;
+      const x = pathX(z) + lat;
+      const s = 0.9 + hash(i, side + 4) * 0.8;
+      pushInst(cover, x, terrH(x, z), z, hash(i, side) * 6, s, 1.4, s * 0.85);
+    }
+  }
+  for (let i = 0; i < 48; i++) {
+    const z = -250 - i * 16;
+    const side = i % 2 === 0 ? -1 : 1;
+    const lat = side * (3 + hash(i, 19) * 6);
+    const x = pathX(z) + lat;
+    const s = 0.8 + hash(i, 21);
+    pushInst(cover, x, terrH(x, z), z, hash(i, 22) * 4, s, 0.6, s);
+  }
+  const sprouts = [];
+  for (let i = 0; i < 340; i++) {
+    const z = 22 - i * 0.75;
+    const side = i % 2 === 0 ? -1 : 1;
+    const lat = side * (1.15 + hash(i, 27) * 2.8);
+    if (Math.abs(lat - CRYSTAL.streamLat) < 1.15) continue;
+    const x = pathX(z) + lat;
+    const s = 0.12 + hash(i, 28) * 1.15;
+    pushInst(sprouts, x, terrH(x, z), z, hash(i, 29) * 6, s, s * (0.7 + hash(i, 30)), s, (hash(i, 31) - 0.5) * 0.4);
+  }
+  for (let i = 0; i < 70; i++) {
+    const z = 18 - i * 8;
+    const side = i % 2 === 0 ? 1 : -1;
+    const lat = side * (2.4 + hash(i, 33) * 4);
+    const x = pathX(z) + lat;
+    const s = 0.05 + hash(i, 34) * 0.06;
+    pushInst(sprouts, x, terrH(x, z), z, hash(i, 35) * 5, s, s, s);
+  }
+  for (let i = 0; i < 26; i++) {
+    const z = 14 - i * 7;
+    const x = pathX(z) + CRYSTAL.streamLat + (hash(i, 44) - 0.5) * 1.1;
+    const y = WATER_Y + 0.012;
+    const s = 0.28 + hash(i, 45) * 0.45;
+    const a = [x - s, y, z - s * 0.55];
+    const b = [x + s * 0.8, y, z - s * 0.3];
+    const c = [x + s * 0.4, y, z + s * 0.7];
+    const d = [x - s * 0.5, y, z + s * 0.35];
+    mesh.tri(a, b, c, [0, 0], [1, 0], [1, 1], MAT.stream);
+    mesh.tri(a, c, d, [0, 0], [1, 1], [0, 1], MAT.stream);
+  }
   const sky = createMesh();
   sky.skyDome(640, MAT.sky);
   const road = circles.filter(c => Math.abs(c.x - pathX(c.z)) - c.r > 1.2);
@@ -436,6 +517,8 @@ export function buildWorld() {
   const crystalProto = makeCrystalProto();
   const rubbleProto = makeRubbleProto();
   const shardProto = makeShardProto();
+  const coverProto = makeCoverProto();
+  const sproutProto = makeSproutProto();
   const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   return {
     verts: groundVerts,
@@ -448,13 +531,17 @@ export function buildWorld() {
       crystal: { proto: crystalProto, data: new Float32Array(crystals), count: crystals.length / 8 },
       rubble: { proto: rubbleProto, data: new Float32Array(rubble), count: rubble.length / 8 },
       shard: { proto: shardProto, data: new Float32Array(shards), count: shards.length / 8 },
+      cover: { proto: coverProto, data: new Float32Array(cover), count: cover.length / 8 },
+      sprout: { proto: sproutProto, data: new Float32Array(sprouts), count: sprouts.length / 8 },
     },
     budget: {
-      uniqueTris: mesh.count / 3,
+      uniqueTris: groundVerts.length / 24,
       crystalTris: instTris(crystalProto, crystals),
       rubbleTris: instTris(rubbleProto, rubble),
       shardTris: instTris(shardProto, shards),
-      draws: 9,
+      coverTris: instTris(coverProto, cover),
+      sproutTris: instTris(sproutProto, sprouts),
+      draws: 11,
     },
   };
 }

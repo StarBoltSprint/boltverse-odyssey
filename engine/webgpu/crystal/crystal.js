@@ -340,7 +340,11 @@ fn darken15(c: vec3f) -> vec3f {
   let shade = 1.0 - smoothstep(0.12, 0.46, ndl);
   let grad = mix(1.0, 0.2, tipH);
   let coreCol = mix(alb, vec3f(alb.r * 0.3, max(alb.g, alb.b * 0.7), max(alb.b, alb.g)), 0.4);
-  let coreStreak = 0.62 + 0.38 * smoothstep(0.35, 0.82, abs(sin(tipH * 16.0 + v.w.x * 1.7)));
+  let inst = fract(sin(dot(floor(v.w.xz * 0.07), vec2f(19.1, 47.7))) * 43758.5);
+  let bands = 1.0 + floor(inst * 2.0);
+  let wob = sin(v.w.y * (0.45 + inst * 1.8) + inst * 11.0) * 0.22;
+  let wave = abs(sin(tipH * bands * 3.14159 + wob + v.w.x * inst * 0.8));
+  let coreStreak = mix(0.86, 1.0, smoothstep(0.78, 0.96, wave) * step(0.62, inst));
   let core = min(coreCol * grad * coreStreak * (0.04 + shade * 0.42), vec3f(0.2));
   let refr = normalize(mix(view, n, 0.22));
   let through = skyColour(refr);
@@ -415,16 +419,39 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), mixed.a);
 }
 ${breathMixWgsl()}
-struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
+struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) kind: f32 };
 @vertex fn vsContact(@builtin(vertex_index) vi: u32) -> CO {
   var q = array<vec2f, 6>(vec2f(-1, -1), vec2f(1, -1), vec2f(1, 1), vec2f(-1, -1), vec2f(1, 1), vec2f(-1, 1));
-  let c = q[vi]; let b = u.bolt;
-  let w = vec3f(b.x + c.x * 0.52, b.y + 0.02, b.z + c.y * 0.36);
-  var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; return o;
+  let quad = vi / 6u;
+  let c = q[vi % 6u];
+  let b = u.bolt.xyz;
+  let psi = u.bolt.w;
+  let fwd = vec3f(-sin(psi), 0.0, -cos(psi));
+  let right = vec3f(fwd.z, 0.0, -fwd.x);
+  var o: CO;
+  if (quad == 0u) {
+    let sun = u.sun.xyz;
+    let horiz = max(length(vec2f(sun.x, sun.z)), 0.001);
+    let sh = vec3f(-sun.x / horiz, 0.0, -sun.z / horiz);
+    let side = vec3f(-sh.z, 0.0, sh.x);
+    let center = b + sh * 0.95;
+    let w = center + side * c.x * 0.16 + sh * c.y * 1.15 + vec3f(0.0, 0.016, 0.0);
+    o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.kind = 0.0;
+  } else {
+    let i = quad - 1u;
+    let sx = select(-0.13, 0.13, (i & 1u) == 1u);
+    let fz = select(-0.04, -0.16, i < 2u);
+    let center = b + right * sx + fwd * fz;
+    let w = center + right * c.x * 0.075 + fwd * c.y * 0.09 + vec3f(0.0, 0.02, 0.0);
+    o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.kind = 1.0;
+  }
+  return o;
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
-  let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
-  let a = (1.0 - smoothstep(0.08, 1.0, r2)) * 0.7;
+  let r = length(v.uv);
+  if (r > 1.0) { discard; }
+  let fall = 1.0 - smoothstep(0.0, 1.0, r);
+  let a = fall * fall * select(0.26, 0.52, v.kind > 0.5);
   return vec4f(0.0, 0.0, 0.0, a);
 }
 `;
@@ -590,6 +617,8 @@ async function main() {
   const crystalI = mkInst(world.instances.crystal);
   const rubbleI = mkInst(world.instances.rubble);
   const shardI = mkInst(world.instances.shard);
+  const coverI = mkInst(world.instances.cover);
+  const sproutI = mkInst(world.instances.sprout);
   const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(8, ad.limits.maxSamplerAnisotropy || 1);
   const samp = await noteErr('sampler', async () => dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'repeat', maxAnisotropy: aniso }));
@@ -752,9 +781,11 @@ async function main() {
     pass.setVertexBuffer(0, crystalI.proto); pass.setVertexBuffer(1, crystalI.inst); pass.draw(crystalI.verts, crystalI.count);
     pass.setVertexBuffer(0, rubbleI.proto); pass.setVertexBuffer(1, rubbleI.inst); pass.draw(rubbleI.verts, rubbleI.count);
     pass.setVertexBuffer(0, shardI.proto); pass.setVertexBuffer(1, shardI.inst); pass.draw(shardI.verts, shardI.count);
+    pass.setVertexBuffer(0, coverI.proto); pass.setVertexBuffer(1, coverI.inst); pass.draw(coverI.verts, coverI.count);
+    pass.setVertexBuffer(0, sproutI.proto); pass.setVertexBuffer(1, sproutI.inst); pass.draw(sproutI.verts, sproutI.count);
     pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     if (!SHOT && !gatePose) {
-      pass.setPipeline(pContact); pass.draw(6);
+      pass.setPipeline(pContact); pass.draw(30);
       pass.setPipeline(pBolt); pass.draw(6);
     }
     pass.end();
@@ -764,7 +795,7 @@ async function main() {
 
   window.__crystalInfo = {
     biome: CRYSTAL.id, W, H, msaa: SAMPLES, dprCap: 2, tris: worldVerts / 3, skyVerts,
-    draws: world.budget.draws, instancedTris: world.budget.crystalTris + world.budget.rubbleTris + world.budget.shardTris,
+    draws: world.budget.draws, instancedTris: world.budget.crystalTris + world.budget.rubbleTris + world.budget.shardTris + world.budget.coverTris + world.budget.sproutTris,
     instances: { crystal: crystalI.count, rubble: rubbleI.count, shard: shardI.count },
     extentZ: world.extentZ,
     candidate: gate.candidate, release: gate.release, missing: gate.missing, tiles: TILE_M,

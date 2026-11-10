@@ -199,6 +199,39 @@ const world = buildWorld();
 const wx = pathX(-40) - 9;
 const eye = [pathX(-24), 6, -24];
 const tgt = [wx, 12, -40];
+function cropOf(im, x0, y0, w, h) {
+  const raw = Buffer.alloc(w * h * 3);
+  for (let y = 0; y < h; y++) im.raw.copy(raw, y * w * 3, ((y0 + y) * im.w + x0) * 3, ((y0 + y) * im.w + x0 + w) * 3);
+  return { raw, w, h };
+}
+function gridOn(im) {
+  const boxed = { raw: im.raw, w: im.w, h: Math.max(im.h, 4) };
+  const y0 = 0;
+  const y1 = im.h;
+  const sig = new Float64Array(im.w);
+  let rows = 0;
+  for (let y = y0; y < y1; y += 2) {
+    rows++;
+    for (let x = 0; x < im.w; x++) {
+      const i = (y * im.w + x) * 3;
+      sig[x] += im.raw[i] * 0.3 + im.raw[i + 1] * 0.59 + im.raw[i + 2] * 0.11;
+    }
+  }
+  for (let x = 0; x < im.w; x++) sig[x] /= rows || 1;
+  const fake = { raw: Buffer.alloc(im.w * 8 * 3), w: im.w, h: 8 };
+  for (let y = 0; y < 8; y++) sig.forEach((v, x) => {
+    const i = (y * im.w + x) * 3;
+    const g = Math.max(0, Math.min(255, v));
+    fake.raw[i] = fake.raw[i + 1] = fake.raw[i + 2] = g;
+  });
+  return gridPeak(fake);
+}
+const crystalBox = cropOf(im, 400, 300, 280, 480);
+const crystalGrid = gridOn(crystalBox);
+const crystalStripes = gridOn(paintGrid(crystalBox));
+if (crystalGrid > GRID_PEAK) bad('crystal crop periodic ' + crystalGrid.toFixed(2));
+if (!(crystalStripes > GRID_PEAK)) bad('crystal stripe injection did not fail ' + crystalStripes.toFixed(2));
+
 const cleanHoles = rasterHoles(world, eye, tgt, false);
 const injected = rasterHoles(world, eye, tgt, true);
 if (cleanHoles > 0) bad('far depth inside a wall hull ' + cleanHoles);
@@ -211,6 +244,8 @@ console.log('PASS night-defects', JSON.stringify({
   gridPeak: +grid.toFixed(2),
   gridControl: +gridded.toFixed(2),
   wallHoles: cleanHoles,
+  crystalGrid: +crystalGrid.toFixed(2),
+  crystalStripe: +crystalStripes.toFixed(2),
   holeControl: injected,
   blackLimit: BLACK_LIMIT,
   gridLimit: GRID_PEAK,
