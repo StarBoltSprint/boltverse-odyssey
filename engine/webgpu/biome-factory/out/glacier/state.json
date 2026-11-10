@@ -1,0 +1,37 @@
+{
+  "label": "HOLD",
+  "release": false,
+  "visualKeep": false,
+  "live": false,
+  "reason": "Measured gates are separate. A visual KEEP is not claimed.",
+  "de76": 10,
+  "budget": {
+    "tris": 183088,
+    "worldTris": 181760,
+    "icicleTris": 320,
+    "driftTris": 1008,
+    "draws": 6,
+    "drawNames": [
+      "sky",
+      "world",
+      "icicle",
+      "drift",
+      "contact",
+      "bolt"
+    ],
+    "spanM": 4640,
+    "wallM": [
+      73.4,
+      187.5
+    ],
+    "wallGapM": 31.25,
+    "groundRmsM": 0.239,
+    "cardH": 1.15,
+    "skyMax": 0.628,
+    "de76": 10
+  },
+  "holes": {
+    "wallHoles": 0,
+    "holeControl": 1
+  }
+}
