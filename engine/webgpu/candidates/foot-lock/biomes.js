@@ -1,0 +1,51 @@
+// Per-biome foot-contact config for the isolated candidate.
+// The meadow numbers match the live card (m448aaa2): 7 m/s, 1.95 cycles/s,
+// 1.15 m card, 9.5 cm sink, the same follow camera. Fog stays off.
+// Canyon retunes the stride clock only. It still uses the meadow atlas,
+// because this repo has no canyon gallop sheet. It is not the live canyon.
+
+export const MEADOW_FEET = {
+  id: "meadow",
+  fog: 0,
+  speed: 7.0,
+  strideHz: 1.95,
+  accel: 9.0,
+  brake: 5.5,
+  vIdle: 0.08,
+  sink: 0.095,
+  cardH: 1.15,
+  cardPxW: 224,
+  cardPxH: 652,
+  cardFootPx: 6,
+  idleFrame: 21,
+  lock: true,
+  camBack: 2.35,
+  camHeight: 1.12,
+  camAhead: 2.2,
+  camLookH: 0.66,
+  camLat: -0.012,
+  camTau: 0.11,
+};
+
+export const CANYON_FEET = {
+  id: "canyon",
+  fog: 0,
+  speed: 8.6,
+  strideHz: 2.25,
+  accel: 11.0,
+  brake: 7.0,
+  vIdle: 0.08,
+  sink: 0.04,
+  cardH: 1.15,
+  cardPxW: 224,
+  cardPxH: 652,
+  cardFootPx: 6,
+  idleFrame: 21,
+  lock: true,
+  camBack: 2.35,
+  camHeight: 1.12,
+  camAhead: 2.2,
+  camLookH: 0.66,
+  camLat: -0.012,
+  camTau: 0.11,
+};
