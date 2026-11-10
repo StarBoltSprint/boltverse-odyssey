@@ -5,7 +5,7 @@ import { shadeAt } from '../biome-factory/night-rig.js';
 export const CANDIDATE = 'materials-v2-r2';
 export const TILE_M = { ground: 3, wall: 2, crystal: 0.5, architecture: 2, violet: 0.5, stream: 2 };
 export const ALBEDO = {
-  ground: 'mineral-ground.jpg',
+  ground: 'basalt-ground.jpg',
   wall: 'obsidian-wall.jpg',
   crystal: 'cyan-facets.jpg',
   architecture: 'architectural-stone.jpg',

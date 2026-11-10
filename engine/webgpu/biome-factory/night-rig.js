@@ -10,10 +10,10 @@ export function luma(rgb) {
 }
 
 // Linear irradiance. ny = 1 is a flat sun-facing surface. ny = 0 is a vertical face.
-export function shadeAt(ndl, ny = 0) {
+export function shadeAt(ndl, ny = 0, flatScale = NIGHT.flatScale) {
   const n = Math.min(1, Math.max(0, ndl));
   const up = Math.min(1, Math.max(0, ny));
-  const face = 1 + (NIGHT.flatScale - 1) * up * up;
+  const face = 1 + (flatScale - 1) * up * up;
   const rgb = NIGHT.ambient.rgb.map((a, i) => a + NIGHT.moon.rgb[i] * NIGHT.moon.intensity * n * face);
   return { rgb, luma: luma(rgb) };
 }

@@ -178,6 +178,26 @@ fn darken15(c: vec3f) -> vec3f {
   let y2 = pow((L2 + 16.0) / 116.0, 3.0);
   return c * (y2 / y);
 }
+fn gHash(p: vec2f) -> vec2f {
+  let n = sin(vec2f(dot(p, vec2f(127.1, 311.7)), dot(p, vec2f(269.5, 183.3)))) * 43758.5453;
+  return fract(n);
+}
+fn gSamp(uv: vec2f) -> vec3f {
+  let cell = floor(uv);
+  let f = fract(uv);
+  let h = gHash(cell);
+  let rot = h.x * 6.2831853;
+  let q = f - vec2f(0.5);
+  let rq = vec2f(q.x * cos(rot) - q.y * sin(rot), q.x * sin(rot) + q.y * cos(rot));
+  let a = fract(h * 0.71 + rq + vec2f(0.5));
+  let h2 = gHash(cell + vec2f(1.7, 3.1));
+  let b = fract(h2 * 0.63 + rq * 0.96 + vec2f(0.5));
+  let k = smoothstep(0.3, 0.7, f.x * 0.65 + f.y * 0.35 + h.y * 0.12);
+  return mix(textureSample(groundTex, samp, a).rgb, textureSample(groundTex, samp, b).rgb, k);
+}
+fn gH(uv: vec2f) -> f32 {
+  return dot(gSamp(uv), vec3f(0.3, 0.5, 0.2));
+}
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   var n = normalize(v.n);
   let scG = ${SC.ground};
@@ -186,32 +206,14 @@ fn darken15(c: vec3f) -> vec3f {
   let scA = ${SC.architecture};
   let scV = ${SC.violet};
   let scS = ${SC.stream};
-  var gnd = textureSample(groundTex, samp, v.w.xz * scG).rgb;
-  let gOff = textureSample(groundTex, samp, v.w.xz * scG + vec2f(0.37, 0.53)).rgb;
-  let gBroad = textureSample(groundTex, samp, v.w.xz * scG * 0.22).rgb;
-  let gN = skyNoise(vec3f(v.w.x * 0.17, v.w.z * 0.17, 3.0));
-  gnd = mix(gnd, gOff, smoothstep(0.46, 0.54, gN));
-  gnd = mix(gnd, gBroad, 0.42);
-  let broadN = skyNoise(vec3f(v.w.x * 0.11, v.w.z * 0.09, 2.2));
-  let glossFlow = smoothstep(0.58, 0.78, broadN);
-  let ash = smoothstep(0.46, 0.22, broadN);
-  gnd = mix(gnd, gnd * vec3f(0.28, 0.3, 0.4), glossFlow);
-  gnd = mix(gnd, gnd * vec3f(1.55, 1.42, 1.15), ash);
-  let crackLine = abs(sin(v.w.x * 0.22 + sin(v.w.z * 0.13) * 2.0));
-  let groundCrack = 1.0 - smoothstep(0.0, 0.06, crackLine);
-  gnd = gnd * (1.0 - groundCrack * 0.62);
-  let plate = v.w.xz * 0.055;
-  let pf = fract(plate);
-  let pedge = min(min(pf.x, 1.0 - pf.x), min(pf.y, 1.0 - pf.y));
-  let lip = 1.0 - smoothstep(0.0, 0.22, pedge);
-  gnd = mix(gnd, gnd * 2.6 + vec3f(0.045, 0.048, 0.055), lip);
-  let pathLat = v.w.x - pathXg(v.w.z);
-  let worn = smoothstep(1.7, 0.15, abs(pathLat));
-  gnd = mix(gnd, gnd * vec3f(1.12, 1.08, 1.02), worn * 0.4);
-  let streamU = v.w.x - pathXg(v.w.z) - 3.55;
-  let wet = smoothstep(3.4, 1.15, abs(streamU));
-  let streak = smoothstep(0.62, 0.88, skyNoise(vec3f(v.w.x * 0.35, v.w.z * 0.9, 4.0)));
-  gnd = mix(gnd, gnd * vec3f(0.5, 0.58, 0.72), wet * streak);
+  let gUv = v.w.xz * scG;
+  let gFine = gSamp(gUv);
+  let gWide = gSamp(gUv * 0.28);
+  var gnd = mix(gWide, gFine, 0.64);
+  let gE = 0.07;
+  let gH0 = gH(gUv);
+  let gHx = gH(gUv + vec2f(gE, 0.0));
+  let gHz = gH(gUv + vec2f(0.0, gE));
   var glow = 0.0;
   ${world.pools.reduce((s, _v, i) => i % 3 ? s : s + `glow = max(glow, smoothstep(${world.pools[i + 2].toFixed(2)}, ${(world.pools[i + 2] * 0.22).toFixed(2)}, length(v.w.xz - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
   glow = glow * glow * (0.6 + 0.4 * skyNoise(v.w * 0.55));
@@ -259,7 +261,9 @@ fn darken15(c: vec3f) -> vec3f {
   }
   var alb = wall;
   if (m < 0.5) {
-    n = groundN(v.w.xz);
+    let geo = groundN(v.w.xz);
+    let micro = normalize(vec3f((gH0 - gHx) * 22.0, 1.0, (gH0 - gHz) * 22.0));
+    n = normalize(geo * 0.65 + micro);
     alb = gnd;
   } else if (m < 1.5) { alb = vio; }
   else if (m < 2.5) { alb = cry; }
@@ -304,7 +308,10 @@ fn darken15(c: vec3f) -> vec3f {
   var col = shadeAlb(alb, n, view, ${SHADE.waterSpec} * water);
   let block = select(0.0, 1.0, (m > 5.5 && m < 6.5) || (m > 2.5 && m < 3.5));
   let dist = length(v.w - u.cam.xyz);
-  let irr = nightIrr(n);
+  var irr = nightIrr(n);
+  if (m < 0.5) {
+    irr = vec3f(${LIGHT.ambient[0]}, ${LIGHT.ambient[1]}, ${LIGHT.ambient[2]}) + vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * ${LIGHT.moonIntensity} * ndl;
+  }
   let facetN = normalize(n);
   let side = vec3f(facetN.z, 0.2, -facetN.x);
   let slice = normalize(mix(side, vec3f(0.0, 0.55, 0.0), ${LIGHT.roughness}));
@@ -380,7 +387,6 @@ fn darken15(c: vec3f) -> vec3f {
   let sheen = glossPatch * pow(1.0 - ndv, 2.2);
   col = col + alb * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * sheen * 0.2 * select(0.0, 1.0, m < 0.5);
   col = col + vec3f(0.014, 0.06, 0.082) * glow * (1.0 - crystal) * (1.0 - water);
-  col = col + vec3f(0.01, 0.045, 0.06) * groundCrack * select(0.0, 1.0, m < 0.5);
   if (breakId > 0.5 && abs(m - (breakId - 1.0)) < 0.25) { col = darken15(col); }
   return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }

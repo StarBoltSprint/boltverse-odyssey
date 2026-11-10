@@ -151,8 +151,8 @@ function addArch(mesh, circles, z0, span, foot, depth) {
   const base = terrH(c, z0);
   const pw = 1.8;
   const pierH = foot + 1.2;
-  mesh.boxBevel(c - span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.stone, 0.14);
-  mesh.boxBevel(c + span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.stone, 0.14);
+  mesh.boxBevel(c - span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.wall, 0.14);
+  mesh.boxBevel(c + span / 2, base + pierH / 2, z0, pw, pierH, depth, 0, MAT.wall, 0.14);
   circles.push({ x: c - span / 2, z: z0, r: pw * 0.46 });
   circles.push({ x: c + span / 2, z: z0, r: pw * 0.46 });
   const n = 9;
@@ -162,12 +162,12 @@ function addArch(mesh, circles, z0, span, foot, depth) {
     const x = c + Math.cos(ang) * rad;
     const y = base + foot * 0.15 + Math.sin(ang) * rad * 0.92;
     const overlap = 1.15;
-    mesh.boxBevel(x, y, z0, 1.55 * overlap, 1.45, depth, 0, MAT.stone, 0.1);
+    mesh.boxBevel(x, y, z0, 1.55 * overlap, 1.45, depth, 0, MAT.wall, 0.1);
   }
   for (const s of [-1, 1]) {
     const x = c + s * (span / 2 + 1.6);
     const yy = terrH(x, z0);
-    mesh.boxBevel(x, yy + pierH * 0.7, z0, 1.3, pierH * 1.35, depth * 0.8, s * 0.1, MAT.stone, 0.12);
+    mesh.boxBevel(x, yy + pierH * 0.7, z0, 1.3, pierH * 1.35, depth * 0.8, s * 0.1, MAT.wall, 0.12);
     circles.push({ x, z: z0, r: 0.75 });
   }
 }
@@ -314,13 +314,13 @@ function makeCoverProto() {
   const y1 = 0.022;
   const x0 = -0.5, x1 = 0.42, z0 = -0.28, z1 = 0.3;
   const top = (y) => {
-    m.tri([x0, y, z0], [x1, y, z0], [x1, y, z1], [0, 0], [1, 0], [1, 1], MAT.stone);
-    m.tri([x0, y, z0], [x1, y, z1], [x0, y, z1], [0, 0], [1, 1], [0, 1], MAT.stone);
+    m.tri([x0, y, z0], [x1, y, z0], [x1, y, z1], [0, 0], [1, 0], [1, 1], MAT.wall);
+    m.tri([x0, y, z0], [x1, y, z1], [x0, y, z1], [0, 0], [1, 1], [0, 1], MAT.wall);
   };
   top(y1);
   const side = (a, b, c, d) => {
-    m.tri(a, b, c, [0, 0], [1, 0], [1, 1], MAT.stone);
-    m.tri(a, c, d, [0, 0], [1, 1], [0, 1], MAT.stone);
+    m.tri(a, b, c, [0, 0], [1, 0], [1, 1], MAT.wall);
+    m.tri(a, c, d, [0, 0], [1, 1], [0, 1], MAT.wall);
   };
   side([x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]);
   side([x1, y0, z1], [x0, y0, z1], [x0, y1, z1], [x1, y1, z1]);
@@ -331,8 +331,7 @@ function makeCoverProto() {
 
 function makeShardProto() {
   const m = createMesh();
-  m.hexPrism(0, 0, 0, 0.11, 0.72, 0.3, 0.45, MAT.cyan, 2);
-  m.hexPrism(0.16, 0, 0.04, 0.07, 0.42, 1.2, -0.6, MAT.cyan, 6);
+  m.hexPrism(0, 0, 0, 0.09, 0.55, 0.4, 0.35, MAT.cyan, 2);
   return m.finish();
 }
 
