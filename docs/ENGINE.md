@@ -1,5 +1,22 @@
 # Bolt Engine (house WebGPU)
 
+## Texture rule
+
+Every Imagine texture is used at its own full size. The factory does not enlarge it and does not stretch it onto the mesh.
+
+The density floor is **2048 native pixels per metre**. That number is `MIN_PX_PER_M` in `engine/webgpu/biome-factory/texel-gate.mjs`. A biome config cannot set a lower number. With a 1024 px image, one tile can cover at most half a metre. A 1024 px image declared at 1 m is 1024 px/m and the build is refused. The same image at 0.5 m is 2048 px/m and clears the density check.
+
+Ground, floor, snow, ice, walls, and cliffs need at least three different Imagine variants, blended so the eye does not see one stamp repeating. A crystal or other small prop keeps the metres written for it, and still needs 2048 px/m. Each variant carries its sha256 and its native width and height. If the file is larger than that stored native size, it was upscaled and the build is refused.
+
+On the mesh, the area-weighted 99th percentile of the long-texel to short-texel ratio stays at or under 1.3. At the follow camera's nearest ground, the texture is not magnified past one screen pixel per texel. Every material sampler has a full mip chain and anisotropic filtering.
+
+The check runs before any swatch, render, or capture. A miss exits non-zero, records HOLD, and names the material and its px/m. Today's crystal ground is a 1024 px tile at 3 m, which is about 341 px/m, so that build stays HOLD. The pictures are not changed here to force a pass.
+
+```bash
+node engine/webgpu/biome-factory/texel-gate.mjs --all
+node engine/webgpu/biome-factory/test-texel-gate.mjs
+```
+
 The house engine is the WebGPU code under [`engine/webgpu/`](../engine/webgpu/README.md). The root [`ENGINE.md`](../ENGINE.md) is the citadel DOM player. This file is the WebGPU engine.
 
 A page is one HTML file plus a module. A brick is a `makeX(config)` function. A biome passes its own numbers into those bricks. The live meadow page does not import a candidate module.
