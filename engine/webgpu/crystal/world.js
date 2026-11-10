@@ -546,6 +546,26 @@ export function buildWorld() {
   };
 }
 
+// Sample points on the near obsidian blocks. Faces are axis-aligned before the small yaw.
+export function wallMarks() {
+  const near = [
+    [-5.6, -6, 3.6, 1.15],
+    [5.8, -16, 4.4, 1.3],
+    [-5.3, -27, 3.8, 1.2],
+    [6.2, -39, 5.1, 1.45],
+    [-5.9, -52, 4.2, 1.25],
+  ];
+  const out = [];
+  for (const [lat, z, h, w] of near) {
+    const x = pathX(z) + lat;
+    const y = terrH(x, z) + h * 0.55;
+    const inward = lat < 0 ? 1 : -1;
+    out.push({ id: 'shade', p: [x, y, z + w * 0.55], n: [0, 0, 1] });
+    out.push({ id: 'sun', p: [x + inward * w * 0.55, y, z], n: [inward, 0, 0] });
+  }
+  return out;
+}
+
 export function spawn() {
   const psi = pathPsi(0);
   return { psi, x: pathX(0), z: 0, cam: psi, w: 0, v: 0, phase: 0, run: 0, hit: null };

@@ -1382,3 +1382,13 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Page m448aaa3-breath1. Release brakes at 5.5, then a 200 ms mix into the loop. Input returns the gallop at 7 m/s. |
 | Guard | `node engine/webgpu/check/meadow-epic/bolt-breath.test.mjs` |
 | Sources | `engine/webgpu/bricks/bolt-breath.js`, `engine/webgpu/breath-install/`. |
+
+### 2026-11-09 — SSGI still brightens a pocket behind a thin fin
+
+| | |
+| --- | --- |
+| Take | House WebGPU TAA and SSGI, crystal candidate only. Live meadow was not edited. |
+| Defect | A 12 cm fin between a shadowed pocket and the sunlit floor does not fully stop the bounce. Wall linear luma 0.0335 → 0.0539. Pocket 0.0336 → 0.0464. The pocket gain is about two thirds of the wall gain. The indirect buffer is also grainy at 2 rays and an 8-frame history. |
+| Root cause | The march step grows to 16 cm. A ray can pass the fin between samples. The first hit test also missed the floor, because the floor is closer to the camera than the wall, so “farther than the depth buffer” never fired. That test was replaced with a world-distance hit. The leak that remains is the step size. |
+| Fix | World-distance hit. Miss colour is zero so a miss does not look like bounce. The fin still does not seal the pocket. Not claimed as a closed room. |
+| Guard | `node engine/webgpu/check/post449/run.mjs` SSGI row. Wall gain must exceed pocket gain by 1.5×. This run: 0.0204 vs 0.0128 (1.59×). A wider leak fails that row. Phone cost is not in the guard. |

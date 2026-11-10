@@ -3,7 +3,7 @@
 import { boltIdle, measureAtlasFeet, pickPlantedFrame } from '../bricks/bolt-idle.js';
 import { stepBreath, BREATH_MEADOW, makeBreathClip, BREATH_BUILD, breathMixWgsl } from '../bricks/bolt-breath.js';
 import { makeCircleCollide } from '../engine/bricks/circle-collide.js';
-import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
+import { followEye, lookAt, persp, mul, inv, FOV_Y } from '../engine/bricks/follow-cam.js';
 import { createPlanetMesh, prepareSurfaceRGBA, frontYaw, planetCenter } from '../engine/bricks/planet-sphere.js';
 import { CRYSTAL, PLANET } from './biome.js';
 import { materialGate, TILE_M, ALBEDO } from './materials.js';
@@ -11,10 +11,16 @@ import { shadeFns, SHADE, tileScales, WATER_WAVE } from '../biome-factory/shade.
 import { LIGHT, lightWgsl } from './light.js';
 import { buildWorld, demoSteer, proofInput, skyProofInput, integrate, spawn, terrH, pathX } from './world.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
+import { createCrystalPost } from './postpass.js';
+import { applyJitter, jitterNdc } from '../engine/taa.js';
 
 const SC = tileScales();
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
+const FX = qs.get('fx') || 'off';
+const POST_TAA = FX === 'taa' || FX === 'both';
+const POST_SSGI = FX === 'ssgi' || FX === 'both';
+const POST = POST_TAA || POST_SSGI;
 const DEMO = qs.get('demo') === '1' || CAP;
 const PROOF = qs.get('proof') === '1';
 const SHOT = qs.get('shot');
@@ -71,6 +77,7 @@ struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, fog: vec4f,
   c0: vec4f, c1: vec4f, c2: vec4f, c3: vec4f, c4: vec4f, c5: vec4f, c6: vec4f,
   planet: vec4f, spin: vec4f, atmo: vec4f,
+  prev: mat4x4f, prevEye: vec4f, prevFwd: vec4f, fwd: vec4f, boltPrev: vec4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -177,6 +184,219 @@ fn darken15(c: vec3f) -> vec3f {
   let y2 = pow((L2 + 16.0) / 116.0, 3.0);
   return c * (y2 / y);
 }
+struct Shade { col: vec3f, alb: vec3f, nrm: vec3f, plane: f32 };
+fn shadePack(col: vec3f, alb: vec3f, nrm: vec3f, plane: f32) -> Shade {
+  var s: Shade;
+  s.col = col; s.alb = alb; s.nrm = nrm; s.plane = plane;
+  return s;
+}
+fn scruv(c: vec4f) -> vec2f { let n = c.xy / max(c.w, 1e-5); return vec2f(n.x * 0.5 + 0.5, 0.5 - n.y * 0.5); }
+fn shadeWorld(v: VO) -> Shade {
+  var n = normalize(v.n);
+  let scG = ${SC.ground};
+  let scW = ${SC.wall};
+  let scC = ${SC.crystal};
+  let scA = ${SC.architecture};
+  let scV = ${SC.violet};
+  let scS = ${SC.stream};
+  var gnd = textureSample(groundTex, samp, v.w.xz * scG).rgb;
+  let gOff = textureSample(groundTex, samp, v.w.xz * scG + vec2f(0.37, 0.53)).rgb;
+  let gBroad = textureSample(groundTex, samp, v.w.xz * scG * 0.22).rgb;
+  let gN = skyNoise(vec3f(v.w.x * 0.17, v.w.z * 0.17, 3.0));
+  gnd = mix(gnd, gOff, smoothstep(0.46, 0.54, gN));
+  gnd = mix(gnd, gBroad, 0.42);
+  let broadN = skyNoise(vec3f(v.w.x * 0.11, v.w.z * 0.09, 2.2));
+  let glossFlow = smoothstep(0.58, 0.78, broadN);
+  let ash = smoothstep(0.46, 0.22, broadN);
+  gnd = mix(gnd, gnd * vec3f(0.28, 0.3, 0.4), glossFlow);
+  gnd = mix(gnd, gnd * vec3f(1.55, 1.42, 1.15), ash);
+  let crackLine = abs(sin(v.w.x * 0.22 + sin(v.w.z * 0.13) * 2.0));
+  let groundCrack = 1.0 - smoothstep(0.0, 0.06, crackLine);
+  gnd = gnd * (1.0 - groundCrack * 0.62);
+  let plate = v.w.xz * 0.055;
+  let pf = fract(plate);
+  let pedge = min(min(pf.x, 1.0 - pf.x), min(pf.y, 1.0 - pf.y));
+  let lip = 1.0 - smoothstep(0.0, 0.22, pedge);
+  gnd = mix(gnd, gnd * 2.6 + vec3f(0.045, 0.048, 0.055), lip);
+  let pathLat = v.w.x - pathXg(v.w.z);
+  let worn = smoothstep(1.7, 0.15, abs(pathLat));
+  gnd = mix(gnd, gnd * vec3f(1.12, 1.08, 1.02), worn * 0.4);
+  let streamU = v.w.x - pathXg(v.w.z) - 3.55;
+  let wet = smoothstep(3.4, 1.15, abs(streamU));
+  let streak = smoothstep(0.62, 0.88, skyNoise(vec3f(v.w.x * 0.35, v.w.z * 0.9, 4.0)));
+  gnd = mix(gnd, gnd * vec3f(0.5, 0.58, 0.72), wet * streak);
+  var glow = 0.0;
+  ${world.pools.reduce((s, _v, i) => i % 3 ? s : s + `glow = max(glow, smoothstep(${world.pools[i + 2].toFixed(2)}, ${(world.pools[i + 2] * 0.22).toFixed(2)}, length(v.w.xz - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
+  glow = glow * glow * (0.6 + 0.4 * skyNoise(v.w * 0.55));
+  let wallFine = triMix(
+    textureSample(wallTex, samp, v.w.zy * scW).rgb,
+    textureSample(wallTex, samp, v.w.xz * scW).rgb,
+    textureSample(wallTex, samp, v.w.xy * scW).rgb, n);
+  let wall = triMix(
+    textureSampleLevel(wallTex, samp, v.w.zy * scW, 5.0).rgb,
+    textureSampleLevel(wallTex, samp, v.w.xz * scW, 5.0).rgb,
+    textureSampleLevel(wallTex, samp, v.w.xy * scW, 5.0).rgb, n);
+  let cry = triMix(
+    textureSample(crysTex, samp, v.w.zy * scC).rgb,
+    textureSample(crysTex, samp, v.w.xz * scC).rgb,
+    textureSample(crysTex, samp, v.w.xy * scC).rgb, n);
+  let arch = triMix(
+    textureSample(archTex, samp, v.w.zy * scA).rgb,
+    textureSample(archTex, samp, v.w.xz * scA).rgb,
+    textureSample(archTex, samp, v.w.xy * scA).rgb, n);
+  let vio = triMix(
+    textureSample(violetTex, samp, v.w.zy * scV).rgb,
+    textureSample(violetTex, samp, v.w.xz * scV).rgb,
+    textureSample(violetTex, samp, v.w.xy * scV).rgb, n);
+  let flow = vec2f(v.w.x, v.w.z + u.cam.w * 0.35) * scS;
+  let waterAlb = textureSample(streamTex, samp, flow).rgb;
+  let tip = clamp(abs(v.uv.x), 0.0, 1.0);
+  let view0 = normalize(u.cam.xyz - v.w);
+  let ip = v.w + view0 * (0.55 * (1.0 - tip));
+  let inner = triMix(
+    textureSample(crysTex, samp, ip.zy * scC).rgb,
+    textureSample(crysTex, samp, ip.xz * scC).rgb,
+    textureSample(crysTex, samp, ip.xy * scC).rgb, n);
+  let m = v.mat;
+  if (m > 4.5 && m < 5.5) {
+    if (u.misc.z > 0.5 && u.misc.z < 1.5) {
+      return shadePack(vec3f((m + 0.5) / 8.0, 1.0, 1.0), vec3f(1.0), n, 0.0);
+    }
+    var sky = skyColour(normalize(v.w - u.cam.xyz));
+    // Negative control only. Screen x plus a camera yaw term. Off in play.
+    if (u.spin.z > 0.5) {
+      let s = clamp(v.p.x / 720.0, 0.0, 1.0);
+      sky = sky + vec3f(0.045, 0.02, 0.07) * s + vec3f(0.03, 0.0, 0.05) * fract(u.spin.w * 0.37);
+    }
+    return shadePack(sky, sky, n, 0.0);
+  }
+  var alb = wall;
+  if (m < 0.5) {
+    n = groundN(v.w.xz);
+    alb = gnd;
+  } else if (m < 1.5) { alb = vio; }
+  else if (m < 2.5) { alb = cry; }
+  else if (m < 3.5) { alb = arch; }
+  else if (m < 4.5) {
+    let t = u.cam.w;
+    n = waterN(v.w, t);
+    alb = waterAlb;
+  }
+  if (m > 0.5 && m < 2.5) {
+    let id = round(n * 6.0);
+    let j = fract(sin(dot(id, vec3f(2.3, 5.1, 8.7))) * 43758.5) - 0.5;
+    n = normalize(n + vec3f(j, j * 0.28, -j) * 0.1);
+  }
+  if (m > 5.5 && m < 6.5) {
+    let mid = triMix(
+      textureSampleLevel(wallTex, samp, v.w.zy * scW, 2.0).rgb,
+      textureSampleLevel(wallTex, samp, v.w.xz * scW, 2.0).rgb,
+      textureSampleLevel(wallTex, samp, v.w.xy * scW, 2.0).rgb, n);
+    let crev = smoothstep(0.22, 0.02, skyNoise(v.w * 0.85));
+    alb = mix(wall, mid, 0.82) * (1.0 - crev * 0.3);
+    let e = 0.4;
+    let h0 = skyNoise(v.w * 1.05);
+    let hx = skyNoise((v.w + vec3f(e, 0.0, 0.0)) * 1.05);
+    let hy = skyNoise((v.w + vec3f(0.0, e, 0.0)) * 1.05);
+    let hz = skyNoise((v.w + vec3f(0.0, 0.0, e)) * 1.05);
+    n = normalize(n + vec3f(h0 - hx, h0 - hy, h0 - hz) * 0.7);
+  }
+  let view = normalize(u.cam.xyz - v.w);
+  let ndv = clamp(dot(n, view), 0.0, 1.0);
+  let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
+  let mode = u.misc.z;
+  if (mode > 1.5 && !(m > 4.5 && m < 5.5)) { return shadePack(alb, alb, n, 0.0); }
+  if (mode > 0.5 && mode < 1.5) {
+    let distm = length(v.w - u.cam.xyz);
+    let near = select(0.0, 1.0, distm < 40.0);
+    return shadePack(vec3f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0)), alb, n, 0.0);
+  }
+  let breakId = u.misc.w;
+  let crystal = select(0.0, 1.0, m > 0.5 && m < 2.5);
+  let water = select(0.0, 1.0, m > 3.5 && m < 4.5);
+  var col = shadeAlb(alb, n, view, ${SHADE.waterSpec} * water);
+  let block = select(0.0, 1.0, (m > 5.5 && m < 6.5) || (m > 2.5 && m < 3.5));
+  let dist = length(v.w - u.cam.xyz);
+  let irr = nightIrr(n);
+  let facetN = normalize(n);
+  let side = vec3f(facetN.z, 0.2, -facetN.x);
+  let slice = normalize(mix(side, vec3f(0.0, 0.55, 0.0), ${LIGHT.roughness}));
+  let env = skyColour(slice);
+  let envL = max(dot(env, vec3f(0.2126, 0.7152, 0.0722)), 0.004);
+  let tint = mix(vec3f(1.0), env / envL, 0.05);
+  let ridge = 1.0 - smoothstep(0.0, 0.03, conchGap(faceUV(v.w, n)));
+  let grain = max(dot(wallFine - wall, vec3f(0.3, 0.5, 0.2)), 0.0);
+  let rare = step(0.992, fract(sin(dot(floor(v.w * 8.0), vec3f(12.9, 47.3, 19.1))) * 43758.5));
+  let glint = rare * step(0.04, grain) * smoothstep(0.02, 0.08, ridge) * step(0.2, ndl) * alb * 0.15;
+  let blockLit = alb * irr * tint + glint;
+  col = mix(col, blockLit, block);
+  let moonN = sunN();
+  let sil = smoothstep(0.52, 0.08, ndv);
+  let moonFace = clamp(dot(n, moonN), 0.0, 1.0);
+  let rockY = max(dot(alb, vec3f(0.2126, 0.7152, 0.0722)), 0.02);
+  let rockHue = alb / rockY;
+  let envLuma = max(dot(env, vec3f(0.2126, 0.7152, 0.0722)), 0.02);
+  let rimMoon = rockHue * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * sil * moonFace * 0.11;
+  let sliceGlint = (env / envLuma) * sil * (0.045 + 0.05 * moonFace);
+  col = col + (rimMoon + sliceGlint) * block;
+  let far = smoothstep(55.0, 130.0, dist);
+  let rim = pow(1.0 - ndv, 2.4);
+  let rimK = min(0.1, rim * (0.08 + 0.2 * far));
+  col = mix(col, alb * irr * tint, rimK * block);
+  let chamfer = select(0.0, 1.0, v.uv.x < 0.0);
+  let hue = fract(sin(dot(round(n * 8.0), vec3f(3.1, 7.4, 1.9))) * 43758.5);
+  let albH = alb * vec3f(1.0, mix(1.0, 1.02, hue), mix(1.0, 0.985, hue));
+  let graze = smoothstep(0.5, 0.08, ndv);
+  let tipH = clamp(abs(v.uv.x), 0.0, 1.0);
+  let dense = smoothstep(0.5, 0.0, tipH);
+  let deep = mix(inner, inner * vec3f(0.45, 0.5, 0.62), smoothstep(0.2, 0.85, tipH));
+  let body = mix(albH, deep, 0.06 + graze * 0.4) * irr * (1.0 - dense * graze * 0.3);
+  let shade = 1.0 - smoothstep(0.12, 0.46, ndl);
+  let grad = mix(1.0, 0.2, tipH);
+  let coreCol = mix(alb, vec3f(alb.r * 0.3, max(alb.g, alb.b * 0.7), max(alb.b, alb.g)), 0.4);
+  let inst = fract(sin(dot(floor(v.w.xz * 0.07), vec2f(19.1, 47.7))) * 43758.5);
+  let bands = 1.0 + floor(inst * 2.0);
+  let wob = sin(v.w.y * (0.45 + inst * 1.8) + inst * 11.0) * 0.22;
+  let wave = abs(sin(tipH * bands * 3.14159 + wob + v.w.x * inst * 0.8));
+  let coreStreak = mix(0.86, 1.0, smoothstep(0.78, 0.96, wave) * step(0.62, inst));
+  let core = min(coreCol * grad * coreStreak * (0.04 + shade * 0.42), vec3f(0.2));
+  let refr = normalize(mix(view, n, 0.22));
+  let through = skyColour(refr);
+  let thin = pow(1.0 - ndv, 1.5);
+  let transmit = through * alb * thin * 0.1 * (0.25 + 0.75 * ndl);
+  let crack = fractureAmt(v.w + view * 0.05, view);
+  let spark = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${LIGHT.sparkPow}.0);
+  let fres = pow(1.0 - ndv, 2.8);
+  let broken = smoothstep(0.78, 0.92, fract(tip * 6.5 + v.w.y * 0.85));
+  let chamAdd = albH * fres * ndl * broken * 0.1 * chamfer;
+  let moon = sunN();
+  let gemRim = alb * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * fres * clamp(dot(n, moon), 0.0, 1.0) * 0.16;
+  let backRim = albH * skyColour(moon) * pow(1.0 - ndv, 2.6) * clamp(dot(view, moon), 0.0, 1.0) * clamp(dot(-moon, n), 0.0, 1.0) * 0.55;
+  let vein = smoothstep(0.02, 0.09, length(cry - inner));
+  let gemCol = body + core
+    + alb * thin * graze * (0.16 + 0.4 * tipH)
+    + transmit * graze
+    + albH * crack * ${LIGHT.fractureGain} * graze
+    + alb * vein * 0.07 * (0.2 + 0.8 * graze)
+    + alb * spark * 0.04 * ndl * graze
+    + chamAdd
+    + gemRim
+    + backRim;
+  col = mix(col, gemCol, crystal);
+  let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
+  col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});
+  let haze = smoothstep(70.0, 190.0, dist);
+  let skyFar = skyColour(normalize(vec3f(v.w.x - u.cam.x, 0.12, v.w.z - u.cam.z)));
+  col = mix(col, skyFar, haze * 0.62);
+  let glossPatch = smoothstep(0.55, 0.78, skyNoise(vec3f(v.w.x * 0.11, v.w.z * 0.09, 2.2)));
+  let sheen = glossPatch * pow(1.0 - ndv, 2.2);
+  col = col + alb * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * sheen * 0.2 * select(0.0, 1.0, m < 0.5);
+  col = col + vec3f(0.014, 0.06, 0.082) * glow * (1.0 - crystal) * (1.0 - water);
+  if (breakId > 0.5 && abs(m - (breakId - 1.0)) < 0.25) { col = darken15(col); }
+  let plane = max(dot(v.w - u.cam.xyz, u.fwd.xyz), 0.0);
+  return shadePack(col, alb, n, plane);
+}
+
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   var n = normalize(v.n);
   let scG = ${SC.ground};
@@ -454,6 +674,141 @@ struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) ki
   let a = fall * fall * select(0.26, 0.52, v.kind > 0.5);
   return vec4f(0.0, 0.0, 0.0, a);
 }
+struct VOG { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) puv: vec2f };
+struct GOUT { @location(0) direct: vec4f, @location(1) albedo: vec4f, @location(2) normal: vec4f, @location(3) motion: vec4f };
+@vertex fn vsG(@location(0) a: vec4f, @location(1) b: vec4f) -> VOG {
+  var plocal = a.xyz; var p = plocal; let n = b.xyz;
+  if (a.w > 4.5 && a.w < 5.5) { p = plocal + u.cam.xyz; }
+  else if (a.w > 3.5 && a.w < 4.5) {
+    let t = u.cam.w;
+    p.y += ${WATER_WAVE.az} * sin(p.z * ${WATER_WAVE.fz} + t * ${WATER_WAVE.oz}) + ${WATER_WAVE.ax} * sin(p.x * ${WATER_WAVE.fx} - t * ${WATER_WAVE.ox});
+  }
+  var prevP = p;
+  if (a.w > 4.5 && a.w < 5.5) { prevP = plocal + u.prevEye.xyz; }
+  var o: VOG;
+  o.p = u.vp * vec4f(p, 1.0);
+  o.w = p; o.n = n; o.uv = vec2f(b.w, 0.0); o.mat = a.w; o.puv = scruv(u.prev * vec4f(prevP, 1.0));
+  return o;
+}
+@vertex fn vsInstG(@location(0) a: vec4f, @location(1) b: vec4f, @location(2) i0: vec4f, @location(3) i1: vec4f) -> VOG {
+  let sc = i1.xyz;
+  let p0 = vec3f(a.x * sc.x, a.y * sc.y, a.z * sc.z);
+  let cl = cos(i1.w); let sl = sin(i1.w);
+  let pL = vec3f(cl * p0.x - sl * p0.y, sl * p0.x + cl * p0.y, p0.z);
+  let nL = vec3f(cl * b.x - sl * b.y, sl * b.x + cl * b.y, b.z);
+  let c = cos(i0.w); let s = sin(i0.w);
+  let pr = vec3f(c * pL.x + s * pL.z, pL.y, -s * pL.x + c * pL.z) + i0.xyz;
+  let nr = normalize(vec3f(c * nL.x + s * nL.z, nL.y, -s * nL.x + c * nL.z));
+  var o: VOG;
+  o.p = u.vp * vec4f(pr, 1.0);
+  o.w = pr; o.n = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w; o.puv = scruv(u.prev * vec4f(pr, 1.0));
+  return o;
+}
+@fragment fn fsG(v: VOG) -> GOUT {
+  var sv: VO; sv.p = v.p; sv.w = v.w; sv.n = v.n; sv.uv = v.uv; sv.mat = v.mat;
+  let s = shadeWorld(sv);
+  var o: GOUT;
+  o.direct = vec4f(s.col, s.plane);
+  o.albedo = vec4f(s.alb, 0.0);
+  o.normal = vec4f(s.nrm, 1.0);
+  o.motion = vec4f(scruv(v.p) - v.puv, 0.0, 0.0);
+  return o;
+}
+struct BOG { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f, @location(2) cuv: vec2f, @location(3) puv: vec2f };
+@vertex fn vsBoltG(@builtin(vertex_index) vi: u32) -> BOG {
+  var q = array<vec2f, 6>(vec2f(-0.5, 0), vec2f(0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 1));
+  let c = q[vi];
+  let lr = idleCardLy(c); let lx = lr.x; let ly = lr.y;
+  let cr = cos(u.bp.x); let sr = -sin(u.bp.x);
+  let rx = lx * cr - ly * sr; let ry = lx * sr + ly * cr;
+  let b = vec3f(u.bolt.x, u.bolt.y, u.bolt.z);
+  let toE = normalize(vec2f(u.cam.x - b.x, u.cam.z - b.z)); let rt = vec3f(-toE.y, 0.0, toE.x);
+  let w = b + rt * rx + vec3f(0.0, ry, 0.0);
+  let b2 = vec3f(u.boltPrev.x, u.boltPrev.y, u.boltPrev.z);
+  let to2 = normalize(vec2f(u.prevEye.x - b2.x, u.prevEye.z - b2.z)); let rt2 = vec3f(-to2.y, 0.0, to2.x);
+  let w2 = b2 + rt2 * rx + vec3f(0.0, ry, 0.0);
+  var o: BOG;
+  o.p = u.vp * vec4f(w, 1.0);
+  o.uv = vec2f(-c.x + 0.5, 1.0 - c.y);
+  o.w = w; o.cuv = scruv(o.p); o.puv = scruv(u.prev * vec4f(w2, 1.0));
+  return o;
+}
+@fragment fn fsBoltG(v: BOG) -> GOUT {
+  let ff = u.bp.w; let a = u32(floor(ff)) % 32u; let bb = (a + 1u) % 32u; let k = fract(ff);
+  let gph = ff / 32.0 * 6.2831853; let lw = smoothstep(0.60, 0.88, v.uv.y); let sw = smoothstep(0.40, 0.60, v.uv.x);
+  let spd = u.bp.z;
+  let lift = 0.045 * lw * ((1.0 - sw) * max(sin(gph), 0.0) + sw * max(-sin(gph), 0.0)) * smoothstep(0.25, 1.2, spd) * (1.0 - u.misc.x);
+  let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
+  let s = mix(cell(a, uvs), cell(bb, uvs), k);
+  let mixed = breathMix(s.rgb, s.a, uvs);
+  if (mixed.a < select(0.12, 0.04, u.misc.y > 0.001)) { discard; }
+  var c = mixed.rgb;
+  c = mix(c, vec3f(dot(c, vec3f(0.3, 0.59, 0.11))), 0.12) * 1.08;
+  let hgt = v.w.y - u.bolt.y;
+  let bounce = max(u.grid.xyz, vec3f(0.55));
+  c *= mix(vec3f(1.0), bounce, smoothstep(0.34, 0.02, hgt) * 0.22);
+  c *= mix(0.82, 1.0, smoothstep(-0.02, 0.25, hgt));
+  var nearGem = 0.0;
+  ${world.pools.reduce((s, _v, i) => i % 3 ? s : s + `nearGem = max(nearGem, smoothstep(${world.pools[i + 2].toFixed(2)}, ${(world.pools[i + 2] * 0.25).toFixed(2)}, length(vec2f(u.bolt.x, u.bolt.z) - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
+  let flank = abs(v.uv.x - 0.5) * 2.0;
+  c = c + vec3f(0.015, 0.055, 0.075) * nearGem * flank * 0.65;
+  var o: GOUT;
+  o.direct = vec4f(c, max(dot(v.w - u.cam.xyz, u.fwd.xyz), 0.02));
+  o.albedo = vec4f(c, 1.0);
+  o.normal = vec4f(normalize(u.cam.xyz - v.w), 1.0);
+  o.motion = vec4f(v.cuv - v.puv, 1.0, 0.0);
+  return o;
+}
+struct PVOG { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w: vec3f, @location(2) puv: vec2f };
+@vertex fn vsPlanetG(@location(0) p: vec3f, @location(1) n: vec3f) -> PVOG {
+  let r = rotY(p, u.spin.x);
+  let world = u.planet.xyz + r * u.planet.w;
+  var o: PVOG;
+  o.p = u.vp * vec4f(world, 1.0);
+  o.n = rotY(n, u.spin.x);
+  o.w = world;
+  o.puv = scruv(u.prev * vec4f(world, 1.0));
+  return o;
+}
+@fragment fn fsPlanetG(v: PVOG) -> GOUT {
+  let n = normalize(v.n);
+  let alb = textureSampleLevel(planetTex, planetSamp, planetUV(n), 0.0).rgb;
+  let day = smoothstep(-0.05, 0.2, dot(n, sunN()));
+  let ndv = abs(dot(n, normalize(u.cam.xyz - v.w)));
+  let c = alb * (0.045 + 0.955 * day) * mix(0.78, 1.0, smoothstep(0.0, 0.4, ndv));
+  var o: GOUT;
+  o.direct = vec4f(c, max(dot(v.w - u.cam.xyz, u.fwd.xyz), 0.02));
+  o.albedo = vec4f(alb, 0.0);
+  o.normal = vec4f(n, 1.0);
+  o.motion = vec4f(scruv(v.p) - v.puv, 0.0, 0.0);
+  return o;
+}
+@fragment fn fsLimbG(v: PVO) -> GOUT {
+  let n = normalize(v.n);
+  let ndv = abs(dot(n, normalize(u.cam.xyz - v.w)));
+  let rim = pow(clamp(1.0 - ndv, 0.0, 1.0), 1.65);
+  let lit = smoothstep(-0.2, 0.45, dot(n, sunN()));
+  let a = rim * (0.2 + 0.8 * lit);
+  if (a < 0.03) { discard; }
+  var o: GOUT;
+  o.direct = vec4f(u.atmo.rgb, a);
+  o.albedo = vec4f(0.0);
+  o.normal = vec4f(n, 0.0);
+  o.motion = vec4f(0.0);
+  return o;
+}
+@fragment fn fsContactG(v: CO) -> GOUT {
+  let r = length(v.uv);
+  if (r > 1.0) { discard; }
+  let fall = 1.0 - smoothstep(0.0, 1.0, r);
+  let a = fall * fall * select(0.26, 0.52, v.kind > 0.5);
+  var o: GOUT;
+  o.direct = vec4f(0.0, 0.0, 0.0, a);
+  o.albedo = vec4f(0.0);
+  o.normal = vec4f(0.0, 1.0, 0.0, 0.0);
+  o.motion = vec4f(0.0);
+  return o;
+}
 `;
 
 function srgbToLin(c) {
@@ -619,7 +974,7 @@ async function main() {
   const shardI = mkInst(world.instances.shard);
   const coverI = mkInst(world.instances.cover);
   const sproutI = mkInst(world.instances.sprout);
-  const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const ub = dev.createBuffer({ size: 640, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(8, ad.limits.maxSamplerAnisotropy || 1);
   const samp = await noteErr('sampler', async () => dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'repeat', maxAnisotropy: aniso }));
   const bgl = dev.createBindGroupLayout({ entries: [
@@ -721,7 +1076,12 @@ async function main() {
   });
 
   const crops = new Float32Array(7 * 4);
-  const U = new Float32Array(128);
+  const U = new Float32Array(160);
+  const post = POST ? await createCrystalPost(dev, W, H, fmt) : null;
+  let prevVP = null, prevEye = [0, 1, 0], prevFwd = [0, 0, -1], prevBolt = [0, 0, 0];
+  let frameI = 0;
+  let resetPost = true;
+  let lastCam = null;
   U.set(crops, 60);
   // fog.rgb + strength, grid.w = fog start. crops live at float 60.
   function fillU(t) {
@@ -739,9 +1099,17 @@ async function main() {
       tgt = SHOT === 'wall' ? [x, y + 1.7, z] : [x, y + 1.2, z];
     }
     const view = lookAt(eye, tgt, [0, 1, 0]);
-    const proj = persp(FOV_Y, W / H, 0.08, 5200);
+    const proj0 = persp(FOV_Y, W / H, 0.08, 5200);
+    const jitter = POST_TAA ? jitterNdc(frameI, W, H) : [0, 0];
+    const proj = POST_TAA ? applyJitter(proj0, jitter[0], jitter[1]) : proj0;
     const vp = mul(proj, view);
+    const ivp = inv(vp);
+    const fwd = [tgt[0] - eye[0], tgt[1] - eye[1], tgt[2] - eye[2]];
+    const fl = Math.hypot(...fwd) || 1;
+    fwd[0] /= fl; fwd[1] /= fl; fwd[2] /= fl;
+    if (!prevVP) { prevVP = vp.slice(); prevEye = eye.slice(); prevFwd = fwd.slice(); prevBolt = bp.slice(); }
     U.set(vp, 0);
+    U.set(ivp, 16);
     U.set([eye[0], eye[1], eye[2], t], 32);
     U.set([bp[0], bp[1], bp[2], live.psi], 36);
     const ff = (live.phase % 1) * 32;
@@ -759,38 +1127,119 @@ async function main() {
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 88);
     U.set([pYaw, PLANET.limb, skySwim, skyYaw], 92);
     U.set([atmo[0], atmo[1], atmo[2], 1], 96);
+    U.set(prevVP, 100);
+    U.set([prevEye[0], prevEye[1], prevEye[2], 0], 116);
+    U.set([prevFwd[0], prevFwd[1], prevFwd[2], 0], 120);
+    U.set([fwd[0], fwd[1], fwd[2], 0], 124);
+    U.set([prevBolt[0], prevBolt[1], prevBolt[2], 0], 128);
+    lastCam = { eye: eye.slice(), fwd: fwd.slice(), bp: bp.slice(), vp, ivp, proj, jitter, t };
   }
 
+  const gPipe = (vs, fs, depthWrite, buffers) => dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: vs, buffers },
+    fragment: { module: mod, entryPoint: fs, targets: post.targets },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: depthWrite, depthCompare: 'less' },
+  });
+  const pSkyG = POST ? await noteErr('sky g', async () => gPipe('vsG', 'fsG', false, [vbuf])) : null;
+  const pG = POST ? await noteErr('world g', async () => gPipe('vsG', 'fsG', true, [vbuf])) : null;
+  const pInstG = POST ? await noteErr('inst g', async () => gPipe('vsInstG', 'fsG', true, [vbuf, instBuf])) : null;
+  const pPlanetG = POST ? await noteErr('planet g', async () => gPipe('vsPlanetG', 'fsPlanetG', true, [pbuf])) : null;
+  const pBoltG = POST ? await noteErr('bolt g', async () => gPipe('vsBoltG', 'fsBoltG', true, [])) : null;
+  const keepT = { color: { srcFactor: 'zero', dstFactor: 'one', operation: 'add' }, alpha: { srcFactor: 'zero', dstFactor: 'one', operation: 'add' } };
+  const overT = { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } };
+  const four = (blend0) => [{ format: 'rgba16float', blend: blend0 }, { format: 'rgba16float', blend: keepT }, { format: 'rgba16float', blend: keepT }, { format: 'rgba16float', blend: keepT }];
+  const pLimbG = POST ? await noteErr('limb g', async () => dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: 'vsLimb', buffers: [pbuf] },
+    fragment: { module: mod, entryPoint: 'fsLimbG', targets: four(overT) },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'less' },
+  })) : null;
+  const pContactG = POST ? await noteErr('contact g', async () => dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: 'vsContact' },
+    fragment: { module: mod, entryPoint: 'fsContactG', targets: four(overT) },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'less' },
+  })) : null;
   const skyVerts = world.sky.length / 8;
   const worldVerts = world.verts.length / 8;
-  function renderFixed(t) {
-    fillU(t);
-    dev.queue.writeBuffer(ub, 0, U);
-    const target = CAP ? off : ctx.getCurrentTexture();
-    const enc = dev.createCommandEncoder();
-    const pass = enc.beginRenderPass({
-      colorAttachments: [{ view: msaa.createView(), resolveTarget: target.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: [0, 0, 0, 1] }],
-      depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
-    });
-    breathClip.sync(live.idleT || 0);
-    pass.setBindGroup(0, bg);
-    pass.setPipeline(pSky); pass.setVertexBuffer(0, sb); pass.draw(skyVerts);
-    pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
-    pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
-    pass.setPipeline(pInst);
+  function drawInstances(pass, pipeline) {
+    pass.setPipeline(pipeline);
     pass.setVertexBuffer(0, crystalI.proto); pass.setVertexBuffer(1, crystalI.inst); pass.draw(crystalI.verts, crystalI.count);
     pass.setVertexBuffer(0, rubbleI.proto); pass.setVertexBuffer(1, rubbleI.inst); pass.draw(rubbleI.verts, rubbleI.count);
     pass.setVertexBuffer(0, shardI.proto); pass.setVertexBuffer(1, shardI.inst); pass.draw(shardI.verts, shardI.count);
     pass.setVertexBuffer(0, coverI.proto); pass.setVertexBuffer(1, coverI.inst); pass.draw(coverI.verts, coverI.count);
     pass.setVertexBuffer(0, sproutI.proto); pass.setVertexBuffer(1, sproutI.inst); pass.draw(sproutI.verts, sproutI.count);
-    pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
-    if (!SHOT && !gatePose) {
-      pass.setPipeline(pContact); pass.draw(30);
-      pass.setPipeline(pBolt); pass.draw(6);
+  }
+  function renderFixed(t) {
+    fillU(t);
+    dev.queue.writeBuffer(ub, 0, U);
+    const target = CAP ? off : ctx.getCurrentTexture();
+    const enc = dev.createCommandEncoder();
+    breathClip.sync(live.idleT || 0);
+    if (!POST) {
+      const pass = enc.beginRenderPass({
+        colorAttachments: [{ view: msaa.createView(), resolveTarget: target.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: [0, 0, 0, 1] }],
+        depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
+      });
+      pass.setBindGroup(0, bg);
+      pass.setPipeline(pSky); pass.setVertexBuffer(0, sb); pass.draw(skyVerts);
+      pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
+      pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
+      drawInstances(pass, pInst);
+      pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
+      if (!SHOT && !gatePose) {
+        pass.setPipeline(pContact); pass.draw(30);
+        pass.setPipeline(pBolt); pass.draw(6);
+      }
+      pass.end();
+    } else {
+      const pass = enc.beginRenderPass({
+        colorAttachments: [
+          { view: post.direct.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
+          { view: post.albedo.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
+          { view: post.normal.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
+          { view: post.motion.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
+        ],
+        depthStencilAttachment: { view: post.depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'store' },
+      });
+      pass.setBindGroup(0, bg);
+      pass.setPipeline(pSkyG); pass.setVertexBuffer(0, sb); pass.draw(skyVerts);
+      pass.setPipeline(pPlanetG); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
+      pass.setPipeline(pG); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
+      drawInstances(pass, pInstG);
+      pass.setPipeline(pLimbG); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
+      if (!SHOT && !gatePose) {
+        pass.setPipeline(pContactG); pass.draw(30);
+        pass.setPipeline(pBoltG); pass.draw(6);
+      }
+      pass.end();
+      const pack = post.pack({
+        vp: lastCam.vp, ivp: lastCam.ivp, prev: prevVP,
+        eye: lastCam.eye, frame: frameI,
+        history: (POST_TAA && !resetPost) ? 0.95 : 0,
+        motionPx: 24, clamp: 1, reject: 1,
+        width: W, height: H, objectMv: 1, gi: POST_SSGI ? 1 : 0,
+        strength: 1, stepBase: 0.1, stepGrow: 1.18, giFrames: 8,
+        thickness: 0.08, sky: [0.02, 0.03, 0.05],
+        jx: lastCam.jitter[0], jy: lastCam.jitter[1], near: 0.08, far: 5200,
+        sun: [sun[0] / sunL, sun[1] / sunL, sun[2] / sunL], maxStep: 0.7,
+        fwd: lastCam.fwd, bolt: lastCam.bp, atlasFrame: 0, boltPrev: prevBolt,
+        prevEye, prevFwd, atlas: 0, exposure: 1, coat: 0,
+      });
+      post.draw(enc, target, pack, { taa: POST_TAA, ssgi: POST_SSGI, reset: resetPost });
+      resetPost = false;
     }
-    pass.end();
     if (CAP) enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
     dev.queue.submit([enc.finish()]);
+    prevVP = lastCam.vp.slice();
+    prevEye = lastCam.eye.slice();
+    prevFwd = lastCam.fwd.slice();
+    prevBolt = lastCam.bp.slice();
+    frameI++;
   }
 
   window.__crystalInfo = {
@@ -803,6 +1252,7 @@ async function main() {
     compile: compileNotes,
     breathClip: BREATH.clipName, breathRgba: BREATH.rgbaDir, breathFrames: BREATH.frames,
     planet: PLANET.sha256, circles: world.circles.length, fov: 62, worldVerts,
+    fx: FX, post: POST,
   };
   window.__live = live;
   window.__terrH = terrH;
