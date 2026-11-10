@@ -120,22 +120,36 @@ fn darken15(c: vec3f) -> vec3f {
   return present(sky);
 }
 @fragment fn fs(v: VO) -> @location(0) vec4f {
-  let n = normalize(v.n);
+  let gx = dpdx(v.w);
+  let gy = dpdy(v.w);
+  var n = normalize(v.n);
   let m = v.mat;
-  let alb = albedoOf(m, v.w, n);
+  let dist = length(v.w - u.cam.xyz);
+  if (m < 0.5) {
+    n = normalize(mix(n, vec3f(0.0, 1.0, 0.0), smoothstep(110.0, 260.0, dist) * 0.8));
+  }
+  let alb = albedoOf(m, v.w, n, gx, gy);
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   let mode = u.misc.z;
   if (mode > 1.5) { return present(alb); }
   if (mode > 0.5 && mode < 1.5) {
-    let near = select(0.0, 1.0, length(v.w - u.cam.xyz) < 40.0);
+    let near = select(0.0, 1.0, dist < 40.0);
     return vec4f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0), ndv * near);
   }
   var col = litIce(alb, n, view);
-  if (m > 6.5) {
-    let rim = pow(1.0 - ndv, 2.4) * ndl;
-    col = col + alb * rim * 0.22;
+  let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
+  if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
+    col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
+  }
+  let aerial = smoothstep(280.0, 6200.0, dist);
+  let horizon = skyColour(normalize(v.w - u.cam.xyz));
+  col = mix(col, horizon, aerial * 0.62);
+  if (m > 6.5 && m < 7.5) {
+    let rim = pow(1.0 - ndv, 1.6) * smoothstep(0.0, 0.35, ndl);
+    let head = max(col.r, max(col.g, col.b));
+    col = col + vec3f(0.62, 0.28, 0.18) * rim * clamp(1.15 - head, 0.0, 1.0) * (1.0 - aerial * 0.35);
   }
   if (u.misc.w > 0.5 && abs(m - (u.misc.w - 1.0)) < 0.25) { col = darken15(col); }
   return present(col);
@@ -262,11 +276,17 @@ async function main() {
     const res = await fetch(new URL(file, import.meta.url).href);
     if (!res.ok) throw new Error('albedo missing ' + file);
     const img = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' });
+    const levels = Math.floor(Math.log2(Math.max(img.width, img.height))) + 1;
     const tex = dev.createTexture({
-      size: [img.width, img.height], format: 'rgba8unorm-srgb',
+      size: [img.width, img.height], mipLevelCount: levels, format: 'rgba8unorm-srgb',
       usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
     });
-    dev.queue.copyExternalImageToTexture({ source: img }, { texture: tex }, [img.width, img.height]);
+    for (let level = 0; level < levels; level++) {
+      const w = Math.max(1, img.width >> level);
+      const h = Math.max(1, img.height >> level);
+      const src = level === 0 ? img : await createImageBitmap(img, { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' });
+      dev.queue.copyExternalImageToTexture({ source: src }, { texture: tex, mipLevel: level }, [w, h]);
+    }
     return tex;
   }
   const snowTex = await loadAlbedo('./tex/glacier-snow-floor.jpg');
@@ -295,7 +315,7 @@ async function main() {
   const ub = dev.createBuffer({ size: 256, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
   const samp = dev.createSampler({
-    magFilter: 'linear', minFilter: 'linear', maxAnisotropy: aniso,
+    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
     addressModeU: 'repeat', addressModeV: 'repeat',
   });
   const bgl = dev.createBindGroupLayout({ entries: [

@@ -24,4 +24,4 @@ Gates, unchanged:
 
 Phone budget from `test-cpu.mjs` is the committed mesh, not a lowered cap.
 
-Run 2 adds three Imagine albedo photographs (snow floor, ice wall, planet) and rebuilds the mesh: one ground sheet, ridgelines, paw contacts, a dawn-shifted shadow. `test-film-grid.mjs` scores every chase frame. On the run 2 film, 145 of 300 frames are over the grid limit 1.8 (min 1.143, mean 1.938, max 6.736). The limit was not lowered.
+Run 3 filters the Imagine photographs with a mip chain, anisotropic sampling, derivative LOD, hex tiling, and a two-scale blend. Wall scale is larger than the snow scale. The walls are strata with ledges, fracture columns, and meltwater grooves. The arches are thick faceted bridges with icicles underneath. The far land is a glacier plateau meeting the wall rims, with ridgelines sat on that surface. `test-film-grid.mjs` scores every chase frame. On the run 3 film, 151 of 300 frames are over the grid limit 1.8 (min 1.163, mean 1.971, max 6.090). The limit was not lowered. The live Bolt card sits in that measurement band; the dog was not smeared and no screen vignette was added to move the score.

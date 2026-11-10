@@ -68,20 +68,56 @@ export function wallHeight(z, side) {
   return 60 + swell * 112 + n * 28;
 }
 
-export function wallPoint(z, side, u) {
+const WALL_ROWS = 28;
+const LEDGES = 6;
+
+function placeWall(z, side, u, lateral) {
   const half = floorHalf(z);
   const h = wallHeight(z, side);
-  const n = fbm2(z * 0.09 + u * 3.1, side * 2.4);
-  const chip = fbm2(z * 0.62, u * 9.5 + side);
-  const groove = Math.exp(-((fbm2(z * 0.21, side * 5.5) - 0.5) ** 2) / 0.012);
-  const base = half + 0.35;
-  const bulge = Math.sin(Math.min(1, u) * Math.PI) * (3.2 + 6.5 * n);
-  const ledge = u > 0.72 && u < 0.86 ? (0.86 - Math.abs(u - 0.79) * 8) * 1.6 : 0;
-  const x = pathX(z) + side * (base + bulge + (chip - 0.5) * 2.2 + ledge - groove * 1.35);
   const y0 = floorH(pathX(z) + side * (half - 0.4), z);
-  const thick = 0.55 + hash(Math.floor(u * 9 + side), 3) * 0.9;
-  const y = y0 + Math.pow(Math.min(1, Math.max(0, u)), 0.8) * h + (n - 0.5) * thick;
-  return [x, y, z];
+  const uu = Math.min(1, Math.max(0, u));
+  const meso = (fbm2(z * 0.022 + uu * 0.4, side * 2.4) - 0.5) * 1.4;
+  const y = y0 + Math.pow(uu, 0.92) * h + meso;
+  const corridor = half - 1.4;
+  const out = Math.max(corridor, half + 1.1 + lateral);
+  return [pathX(z) + side * out, y, z];
+}
+
+function wallSample(z, side, row) {
+  const u = row / (WALL_ROWS - 1);
+  let off = 0;
+  for (let b = 0; b < LEDGES; b++) {
+    const u0 = b / LEDGES;
+    const u1 = (b + 1) / LEDGES;
+    if (u + 1e-6 < u0 || u > u1 + 1e-6) continue;
+    const along = 0.4 + fbm2(z * 0.006 + b * 0.41, side * 1.7);
+    const jut = (hash(b * 3.7, side * 2.4 + 0.6) - 0.28) * 5.2 * along;
+    const local = (u - u0) / (u1 - u0);
+    const lip = local > 0.8 ? (local - 0.8) / 0.2 : 0;
+    off = jut + lip * (2.4 + hash(b * 1.9, side + 5) * 3.1);
+    break;
+  }
+  const col = Math.floor(z * 0.055 + fbm2(z * 0.003, side) * 1.6);
+  const colShift = (hash(col, side + 4) - 0.5) * 3.6;
+  const groove = Math.exp(-((fbm2(z * 0.11, side * 3.2) - 0.47) ** 2) / 0.009) * 1.7;
+  const chip = (hash(Math.floor(z * 1.7) + row * 3, side * 8 + row) - 0.5) * 1.15;
+  return placeWall(z, side, u, off + colShift - groove + chip);
+}
+
+export function wallPoint(z, side, u) {
+  const row = Math.min(WALL_ROWS - 1, Math.max(0, Math.round(u * (WALL_ROWS - 1))));
+  return wallSample(z, side, row);
+}
+
+export function plateauH(x, z) {
+  const side = x >= pathX(z) ? 1 : -1;
+  const rim = wallPoint(z, side, 1);
+  const rimLat = Math.abs(rim[0] - pathX(z));
+  const out = Math.max(0, Math.abs(x - pathX(z)) - rimLat);
+  const t = Math.min(1, out / 1500);
+  const roll = (fbm2(x * 0.00085, z * 0.0005) - 0.5) * 56;
+  const far = Math.min(1, Math.max(0, (-z - 700) / 5200));
+  return rim[1] + (roll + far * 210 + 14) * t;
 }
 
 function stepZ(z) {
@@ -174,40 +210,69 @@ function addRibbon(mesh, zs, rowFn, mat, towardFn) {
   }
 }
 
-function addArch(mesh, z0, spring, peak) {
-  const half = floorHalf(z0) + 3;
-  const segs = 28;
-  const sides = 9;
+function archFrame(z0, index) {
+  return {
+    half: floorHalf(z0) * 0.9,
+    foot: 8 + (index % 3) * 1.4,
+    crown: index > 3 ? 28 : 15 + index * 1.6,
+    thick: index > 3 ? 8.2 : 6.4,
+  };
+}
+
+function archCenter(z0, u, frame) {
+  const lat = -frame.half + u * 2 * frame.half;
+  const lift = Math.sin(Math.min(1, Math.max(0, u)) * Math.PI);
+  const y = frame.foot + lift * (frame.crown - frame.foot);
+  return {
+    x: pathX(z0) + lat,
+    y,
+    z: z0 + Math.sin(lift * Math.PI) * 1.6,
+    lift,
+  };
+}
+
+function addArch(mesh, z0, index) {
+  const frame = archFrame(z0, index);
+  const segs = 16;
+  const sides = 8;
   const rings = [];
   for (let s = 0; s <= segs; s++) {
     const u = s / segs;
-    const lat = -half + u * 2 * half;
-    const lift = Math.sin(u * Math.PI);
-    const x = pathX(z0) + lat;
-    const y = spring + lift * (peak - spring);
-    const z = z0 + Math.sin(u * Math.PI) * 3.2 + (fbm2(u * 4.4, z0 * 0.01) - 0.5) * 2.2;
+    const c = archCenter(z0, u, frame);
     const ring = [];
     for (let k = 0; k < sides; k++) {
-      const a = (k / sides) * Math.PI * 2;
-      const chip = hash(k * 3 + Math.floor(u * 8), z0 * 0.01) > 0.72 ? 0.62 : 1;
-      const rad = (2.4 + (fbm2(u * 4.2 + k, z0 * 0.02) - 0.5) * 1.5) * chip;
-      const top = Math.max(0, Math.sin(a));
-      const rx = rad * (0.7 - top * 0.2);
-      const ry = rad * (top > 0.2 ? 0.55 : 1);
+      const a = (k / sides) * Math.PI * 2 - Math.PI / 2;
+      const up = Math.sin(a);
+      const chip = 0.58 + hash(k * 5 + Math.floor(u * 6), z0 * 0.013 + index) * 0.75;
+      let rx;
+      let ry;
+      if (up > 0.45) {
+        rx = frame.thick * (0.62 + 0.22 * chip);
+        ry = frame.thick * 0.2;
+      } else if (up < -0.15) {
+        rx = frame.thick * (0.26 + 0.28 * chip);
+        ry = frame.thick * (0.48 + 0.42 * chip);
+      } else {
+        rx = frame.thick * (0.32 + 0.34 * chip);
+        ry = frame.thick * (0.36 + 0.22 * chip);
+      }
       ring.push([
-        x + Math.cos(a) * rx,
-        y + Math.sin(a) * ry,
-        z + Math.cos(a + 0.4) * rad * 0.45,
+        c.x + Math.cos(a) * rx,
+        c.y + up * ry,
+        c.z + Math.cos(a + 0.7) * rx * 0.28,
       ]);
     }
-    rings.push({ ring, x, y, z });
+    rings.push({ ring, x: c.x, y: c.y, z: c.z });
   }
   for (let s = 0; s < segs; s++) {
     for (let k = 0; k < sides; k++) {
       const k2 = (k + 1) % sides;
       const c0 = rings[s];
       const c1 = rings[s + 1];
-      const a = c0.ring[k], b = c0.ring[k2], c = c1.ring[k2], d = c1.ring[k];
+      const a = c0.ring[k];
+      const b = c0.ring[k2];
+      const c = c1.ring[k2];
+      const d = c1.ring[k];
       const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
       const axis = [(c0.x + c1.x) / 2, (c0.y + c1.y) / 2, (c0.z + c1.z) / 2];
       face(mesh, a, b, c, d, MAT.arch, sub(mid, axis));
@@ -244,9 +309,77 @@ function addFall(mesh, z0, side) {
   }
 }
 
-function addRidge(mesh, x0, z0, x1, z1, height, halfW) {
-  const segs = 11;
-  const sides = 4;
+function addPlateau(mesh, side) {
+  const nz = 28;
+  const nx = 8;
+  const zFar = -10500;
+  const grid = [];
+  for (let j = 0; j <= nz; j++) {
+    const t = j / nz;
+    const z = GLACIER.z0 + (zFar - GLACIER.z0) * t;
+    const rim = wallPoint(z, side, 1);
+    const row = [];
+    for (let i = 0; i <= nx; i++) {
+      const u = i / nx;
+      const reach = -7 + u * (980 + Math.min(4400, Math.max(0, -z) * 0.45));
+      const x = rim[0] + side * reach;
+      const y = (i === 0 ? rim[1] : plateauH(x, z)) + 0.3;
+      row.push([x, y, z]);
+    }
+    grid.push(row);
+  }
+  for (let j = 0; j < nz; j++) {
+    for (let i = 0; i < nx; i++) {
+      const a = grid[j][i];
+      const b = grid[j][i + 1];
+      const c = grid[j + 1][i + 1];
+      const d = grid[j + 1][i];
+      const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
+      face(mesh, a, b, c, d, MAT.snow, [mid[0], mid[1] + 1, mid[2]]);
+    }
+  }
+}
+
+function addFarFloor(mesh) {
+  const z0 = GLACIER.z1;
+  const z1 = -10500;
+  const nz = 8;
+  const nx = 12;
+  const grid = [];
+  for (let j = 0; j <= nz; j++) {
+    const z = z0 + (z1 - z0) * (j / nz);
+    const left = wallPoint(z, -1, 1);
+    const right = wallPoint(z, 1, 1);
+    const row = [];
+    for (let i = 0; i <= nx; i++) {
+      const x = left[0] + (right[0] - left[0]) * (i / nx);
+      const cx = pathX(z);
+      const lat = Math.abs(x - cx);
+      const half = floorHalf(z);
+      const rimLat = Math.max(half + 1, Math.min(Math.abs(left[0] - cx), Math.abs(right[0] - cx)));
+      const edge = Math.min(1, Math.max(0, (lat - half * 0.65) / Math.max(1, rimLat - half * 0.65)));
+      const floor = floorH(cx, z);
+      const rimY = x < cx ? left[1] : right[1];
+      const far = Math.min(1, Math.max(0, (-z - 5000) / 4200));
+      const y = floor + (rimY - floor) * edge + far * 90 * (1 - edge);
+      row.push([x, y, z]);
+    }
+    grid.push(row);
+  }
+  for (let j = 0; j < nz; j++) {
+    for (let i = 0; i < nx; i++) {
+      const a = grid[j][i];
+      const b = grid[j][i + 1];
+      const c = grid[j + 1][i + 1];
+      const d = grid[j + 1][i];
+      face(mesh, a, b, c, d, MAT.snow, [0, 1, 0]);
+    }
+  }
+}
+
+function addRange(mesh, x0, z0, x1, z1, height, halfW) {
+  const segs = 20;
+  const sides = 7;
   const dx = x1 - x0;
   const dz = z1 - z0;
   const len = Math.hypot(dx, dz) || 1;
@@ -255,24 +388,35 @@ function addRidge(mesh, x0, z0, x1, z1, height, halfW) {
   const rows = [];
   for (let s = 0; s <= segs; s++) {
     const t = s / segs;
-    const crest = Math.sin(t * Math.PI);
-    const h = height * (0.28 + 0.72 * Math.pow(crest, 0.9)) * (0.78 + 0.22 * fbm2(t * 4.4, z0 * 0.002));
-    const cx = x0 + dx * t + (fbm2(t * 3, 6) - 0.5) * halfW * 0.35;
+    const envelope = Math.sin(t * Math.PI);
+    const tooth = Math.pow(Math.abs(Math.sin(t * 9.4 + z0 * 0.001)), 0.42);
+    const nick = 0.55 + 0.45 * Math.abs(Math.sin(t * 17.0 + x0 * 0.0007));
+    const h = height * envelope * (0.28 + 0.72 * tooth * nick);
+    const cx = x0 + dx * t;
     const cz = z0 + dz * t;
+    const base = plateauH(cx, cz);
     const row = [];
     for (let k = 0; k <= sides; k++) {
       const q = k / sides * 2 - 1;
-      const fall = Math.pow(Math.abs(q), 1.25);
-      const span = halfW * (0.25 + 0.75 * Math.abs(q));
-      row.push([cx + rx * q * span, h * (1 - fall), cz + rz * q * span]);
+      const fall = Math.pow(Math.abs(q), 0.48);
+      const span = halfW * (0.12 + 0.88 * Math.abs(q));
+      const jag = (hash(k * 3 + s, z0 * 0.01) - 0.5) * halfW * 0.08;
+      row.push([
+        cx + rx * (q * span + jag),
+        base - 3 + h * (1 - fall),
+        cz + rz * (q * span + jag),
+      ]);
     }
     rows.push(row);
   }
   for (let s = 0; s < segs; s++) {
     for (let k = 0; k < sides; k++) {
-      const a = rows[s][k], b = rows[s][k + 1], c = rows[s + 1][k + 1], d = rows[s + 1][k];
+      const a = rows[s][k];
+      const b = rows[s][k + 1];
+      const c = rows[s + 1][k + 1];
+      const d = rows[s + 1][k];
       const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
-      face(mesh, a, b, c, d, MAT.mountain, [mid[0] - (x0 + x1) * 0.5, 0.8, mid[2] - (z0 + z1) * 0.5]);
+      face(mesh, a, b, c, d, MAT.mountain, [mid[0] - (x0 + x1) * 0.5, 1.2, mid[2] - (z0 + z1) * 0.5]);
     }
   }
 }
@@ -368,10 +512,26 @@ function pushInst(list, x, y, z, yaw, sx, sy, sz, lean = 0) {
   list.push(x, y, z, yaw, sx, sy, sz, lean);
 }
 
+function addWall(mesh, side) {
+  const zs = columns(GLACIER.z0, GLACIER.z1);
+  let prev = null;
+  for (const z of zs) {
+    const col = [];
+    for (let r = 0; r < WALL_ROWS; r++) col.push(wallSample(z, side, r));
+    if (prev) {
+      for (let r = 0; r < WALL_ROWS - 1; r++) {
+        face(mesh, prev[r], col[r], col[r + 1], prev[r + 1], MAT.wall, [-side, 0.2, 0]);
+      }
+    }
+    prev = col;
+  }
+  return zs.length;
+}
+
 function smoothSnow(verts) {
   const acc = new Map();
   const key = (x, y, z) => `${Math.round(x * 40)}_${Math.round(y * 40)}_${Math.round(z * 40)}`;
-  const soft = (m) => m === MAT.snow || m === MAT.wall || m === MAT.arch || m === MAT.fall;
+  const soft = (m) => m === MAT.snow || m === MAT.wall;
   for (let i = 0; i < verts.length; i += 8) {
     if (!soft(Math.round(verts[i + 3]))) continue;
     const k = key(verts[i], verts[i + 1], verts[i + 2]);
@@ -409,55 +569,51 @@ export function buildWorld() {
   }
   let prev = null;
   for (const z of groundZs) {
-    const half = floorHalf(z) - 0.05;
+    const half = floorHalf(z) + 2.8;
     const row = fracs.map((f) => {
       const lat = -half + f * 2 * half;
       const x = pathX(z) + lat;
-      return [x, floorH(x, z), z];
+      const tuck = f < 0.06 || f > 0.94 ? 0.35 : 0;
+      return [x, floorH(x, z) - tuck, z];
     });
     if (prev) {
       for (let i = 0; i < nx; i++) face(mesh, prev[i], prev[i + 1], row[i + 1], row[i], MAT.snow, [0, 1, 0]);
     }
     prev = row;
   }
-  const zs = columns(GLACIER.z0, GLACIER.z1);
-  addRibbon(mesh, zs, (z, u) => wallPoint(z, -1, u), MAT.wall, () => [1, 0.12, 0]);
-  addRibbon(mesh, zs, (z, u) => wallPoint(z, 1, u), MAT.wall, () => [-1, 0.12, 0]);
+  const columnsN = addWall(mesh, -1) + addWall(mesh, 1);
 
   const arches = [-24, -70, -160, -480, -1200, -2200];
-  arches.forEach((z, i) => addArch(mesh, z, 8 + (i % 2), i > 3 ? 42 : 14 + i * 2));
+  arches.forEach((z, i) => addArch(mesh, z, i));
   [-40, -110, -260, -640, -1600].forEach((z) => addFall(mesh, z, -1));
+  addPlateau(mesh, -1);
+  addPlateau(mesh, 1);
+  addFarFloor(mesh);
 
-  const bands = [
-    { z: -2200, n: 4, h: 260, w: 180, len: 700, spread: 900 },
-    { z: -4200, n: 3, h: 520, w: 280, len: 1100, spread: 1400 },
-    { z: -6800, n: 3, h: 780, w: 360, len: 1600, spread: 1800 },
+  const ranges = [
+    { side: -1, z: -1600, reach: 700, len: 900, h: 180, w: 220 },
+    { side: -1, z: -3400, reach: 1400, len: 1500, h: 320, w: 340 },
+    { side: -1, z: -6200, reach: 2100, len: 2200, h: 460, w: 480 },
+    { side: 1, z: -2100, reach: 900, len: 1100, h: 200, w: 240 },
+    { side: 1, z: -4800, reach: 1600, len: 1700, h: 380, w: 400 },
+    { side: 1, z: -8600, reach: 1800, len: 2600, h: 520, w: 560 },
+    { side: 0, z: -9800, reach: 0, len: 4200, h: 340, w: 700 },
   ];
-  for (const band of bands) {
-    for (let i = 0; i < band.n; i++) {
-      const side = (i - (band.n - 1) / 2) * band.spread;
-      const jitter = (hash(i, band.z) - 0.5) * 400;
-      const x = pathX(band.z) + side + jitter;
-      const h = band.h * (0.75 + hash(i, band.z + 2) * 0.5);
-      addRidge(mesh, x - band.len * 0.5, band.z + 180, x + band.len * 0.5, band.z - 220, h, band.w);
-    }
+  for (const r of ranges) {
+    const x = pathX(r.z) + r.side * r.reach;
+    addRange(mesh, x - r.len * 0.5, r.z + r.len * 0.15, x + r.len * 0.5, r.z - r.len * 0.2, r.h, r.w);
   }
 
   const icicles = [];
-  for (const z0 of arches) {
-    const spring = 10;
-    const peak = z0 < -400 ? 36 : 16;
-    for (let k = 0; k < 7; k++) {
-      const u = 0.18 + (k / 6) * 0.64;
-      const half = floorHalf(z0) + 3;
-      const lat = -half + u * 2 * half;
-      const lift = Math.sin(u * Math.PI);
-      const x = pathX(z0) + lat;
-      const y = spring + lift * (peak - spring) - 2.1;
-      const len = 0.8 + hash(z0, k) * 2.2;
-      pushInst(icicles, x, y, z0, hash(k, z0) * 4, 0.35 + hash(k, 2) * 0.3, len, 0.32, (hash(k, 5) - 0.5) * 0.2);
+  arches.forEach((z0, index) => {
+    const frame = archFrame(z0, index);
+    for (let k = 0; k < 12; k++) {
+      const u = 0.16 + (k / 11) * 0.68;
+      const c = archCenter(z0, u, frame);
+      const len = 1.4 + hash(z0, k) * 3.4;
+      pushInst(icicles, c.x, c.y - frame.thick * 0.78, c.z, hash(k, z0) * 5, 0.42 + hash(k, 2) * 0.28, len, 0.36, (hash(k, 5) - 0.5) * 0.35);
     }
-  }
+  });
 
   const drifts = [];
   const chunks = [];
@@ -505,7 +661,7 @@ export function buildWorld() {
     },
     budget,
     extentZ: [GLACIER.z1, GLACIER.z0],
-    columns: zs.length,
+    columns: columnsN,
   };
 }
 
