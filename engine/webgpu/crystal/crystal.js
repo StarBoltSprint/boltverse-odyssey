@@ -122,10 +122,11 @@ fn terrHs(p: vec2f) -> f32 {
   let trench = exp(-(d * d) / 1.15) * 0.62;
   let grain = 0.045 * sin(p.x * 1.3 + p.y * 0.7) + 0.03 * sin(-p.x * 0.45 + p.y * 0.9);
   let roll = 0.4 * sin(p.x * 0.07 + p.y * 0.045) + 0.22 * sin(p.y * 0.11 - p.x * 0.05);
+  let mid = 0.16 * sin(p.x * 0.23 + p.y * 0.17) + 0.1 * sin(p.x * 0.47 - p.y * 0.31);
   let st = clamp((ad - 2.4) / 2.8, 0.0, 1.0);
   let shelfT = st * st * (3.0 - 2.0 * st);
   let shelf = round(lateral / 7.5) * 0.22 * shelfT;
-  return lip - trench + grain + roll + shelf;
+  return lip - trench + grain + roll + mid + shelf;
 }
 fn groundN(p: vec2f) -> vec3f {
   let e = 0.45;
@@ -336,7 +337,8 @@ fn darken15(c: vec3f) -> vec3f {
   let tipH = clamp(abs(v.uv.x), 0.0, 1.0);
   let dense = smoothstep(0.5, 0.0, tipH);
   let deep = mix(inner, inner * vec3f(0.45, 0.5, 0.62), smoothstep(0.2, 0.85, tipH));
-  let body = mix(albH, deep, 0.06 + graze * 0.4) * irr * (1.0 - dense * graze * 0.3);
+  let along = mix(0.92, 1.0, tipH);
+  let body = mix(albH, deep, 0.06 + graze * 0.4) * along * irr * (1.0 - dense * graze * 0.3);
   let shade = 1.0 - smoothstep(0.12, 0.46, ndl);
   let grad = mix(1.0, 0.2, tipH);
   let coreCol = mix(alb, vec3f(alb.r * 0.3, max(alb.g, alb.b * 0.7), max(alb.b, alb.g)), 0.4);
@@ -362,7 +364,7 @@ fn darken15(c: vec3f) -> vec3f {
   let gemCol = body + core
     + alb * thin * graze * (0.16 + 0.4 * tipH)
     + transmit * graze
-    + albH * crack * ${LIGHT.fractureGain} * graze
+    + albH * crack * ${LIGHT.fractureGain} * (0.1 + 0.9 * graze)
     + alb * vein * 0.07 * (0.2 + 0.8 * graze)
     + alb * spark * 0.04 * ndl * graze
     + chamAdd
@@ -378,6 +380,7 @@ fn darken15(c: vec3f) -> vec3f {
   let sheen = glossPatch * pow(1.0 - ndv, 2.2);
   col = col + alb * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * sheen * 0.2 * select(0.0, 1.0, m < 0.5);
   col = col + vec3f(0.014, 0.06, 0.082) * glow * (1.0 - crystal) * (1.0 - water);
+  col = col + vec3f(0.01, 0.045, 0.06) * groundCrack * select(0.0, 1.0, m < 0.5);
   if (breakId > 0.5 && abs(m - (breakId - 1.0)) < 0.25) { col = darken15(col); }
   return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }

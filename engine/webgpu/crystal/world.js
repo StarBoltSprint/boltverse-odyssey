@@ -22,9 +22,10 @@ export function terrH(x, z) {
   const trench = Math.exp(-((lateral - CRYSTAL.streamLat) ** 2) / 1.15) * 0.62;
   const grain = 0.045 * Math.sin(x * 1.3 + z * 0.7) + 0.03 * Math.sin(x * 0.45 - z * 0.9);
   const roll = 0.4 * Math.sin(x * 0.07 + z * 0.045) + 0.22 * Math.sin(z * 0.11 - x * 0.05);
+  const mid = 0.16 * Math.sin(x * 0.23 + z * 0.17) + 0.1 * Math.sin(x * 0.47 - z * 0.31);
   const shelfT = smooth(2.4, 5.2, Math.abs(lateral));
   const shelf = Math.round(lateral / 7.5) * 0.22 * shelfT;
-  return lip - trench + grain + roll + shelf;
+  return lip - trench + grain + roll + mid + shelf;
 }
 
 export const WATER_Y = -0.28;
@@ -210,9 +211,9 @@ function addCanyonSide(mesh, circles, crystals, side) {
     const l = Math.hypot(nx, ny, nz) || 1;
     return [nx / l, ny / l, nz / l];
   };
-  const quad = (A, B, C, D, chips) => {
+  const quad = (A, B, C, D, nSub) => {
     const n = nrm(A, B, C);
-    const N = chips ? 3 : 1;
+    const N = Math.max(1, nSub);
     const g = [];
     for (let j = 0; j <= N; j++) {
       for (let i = 0; i <= N; i++) {
@@ -222,7 +223,7 @@ function addCanyonSide(mesh, circles, crystals, side) {
           (1 - u) * (1 - v) * A[1] + u * (1 - v) * B[1] + u * v * C[1] + (1 - u) * v * D[1],
           (1 - u) * (1 - v) * A[2] + u * (1 - v) * B[2] + u * v * C[2] + (1 - u) * v * D[2],
         ];
-        if (chips) {
+        if (N > 1 && i > 0 && i < N && j > 0 && j < N) {
           const k = (hash(Math.round(p[0] * 5) + i, Math.round(p[1] * 3) + j * 7) - 0.42) * 0.28;
           p[0] += n[0] * k; p[1] += n[1] * k; p[2] += n[2] * k;
         }
@@ -241,12 +242,17 @@ function addCanyonSide(mesh, circles, crystals, side) {
   for (let i = 0; i < cols.length - 1; i++) {
     const A = cols[i];
     const B = cols[i + 1];
-    const chips = A.z > -180;
+    const nSub = A.z > -180 ? 4 : 1;
     for (let s = 0; s < strata; s++) {
-      quad(A.pts[s], B.pts[s], B.pts[s + 1], A.pts[s + 1], chips);
-      quad(B.back[s], A.back[s], A.back[s + 1], B.back[s + 1], false);
+      quad(A.pts[s], B.pts[s], B.pts[s + 1], A.pts[s + 1], nSub);
+      quad(B.back[s], A.back[s], A.back[s + 1], B.back[s + 1], 1);
+      if (side < 0 && nSub > 1 && i % 2 === 0 && s === 2) {
+        const vein = A.pts[s];
+        const sc = 0.018 + hash(i, s) * 0.02;
+        pushInst(crystals, vein[0], vein[1], vein[2], hash(i, s + 3) * 4, sc, sc * 1.4, sc, side * 0.8);
+      }
     }
-    quad(A.pts[strata], B.pts[strata], B.back[strata], A.back[strata], false);
+    quad(A.pts[strata], B.pts[strata], B.back[strata], A.back[strata], 1);
     if (i % 5 === 0 && A.z > -900) {
       const foot = A.pts[1];
       circles.push({ x: foot[0], z: foot[2], r: 1.15 });
@@ -296,34 +302,30 @@ function makeRubbleProto() {
   return m.finish();
 }
 
-function spike(m, x, z, h, r, mat) {
-  const tip = [x, h, z];
-  for (let i = 0; i < 4; i++) {
-    const a0 = (i / 4) * Math.PI * 2;
-    const a1 = ((i + 1) / 4) * Math.PI * 2;
-    m.tri(
-      [x + Math.cos(a0) * r, 0, z + Math.sin(a0) * r],
-      [x + Math.cos(a1) * r, 0, z + Math.sin(a1) * r],
-      tip, [0, 0], [1, 0], [0.5, 1], mat,
-    );
-  }
-}
-
 function makeSproutProto() {
   const m = createMesh();
-  spike(m, 0, 0, 0.22, 0.04, MAT.cyan);
-  spike(m, 0.07, 0.03, 0.11, 0.025, MAT.cyan);
-  spike(m, -0.05, 0.05, 0.07, 0.018, MAT.cyan);
+  m.hexPrism(0, 0, 0, 0.05, 0.26, 0.25, 0.2, MAT.cyan, 4);
   return m.finish();
 }
 
 function makeCoverProto() {
   const m = createMesh();
-  const y = 0.035;
-  m.tri([-0.62, y, -0.38], [0.48, y, -0.3], [0.36, y, 0.4], [0, 0], [1, 0], [1, 1], MAT.stone);
-  m.tri([-0.62, y, -0.38], [0.36, y, 0.4], [-0.44, y, 0.34], [0, 0], [1, 1], [0, 1], MAT.stone);
-  m.tri([-0.62, y, -0.38], [-0.44, y, 0.34], [-0.44, y + 0.09, 0.34], [0, 0], [1, 0], [1, 1], MAT.stone);
-  m.tri([-0.62, y, -0.38], [-0.44, y + 0.09, 0.34], [-0.62, y + 0.09, -0.38], [0, 0], [1, 1], [0, 1], MAT.stone);
+  const y0 = -0.14;
+  const y1 = 0.022;
+  const x0 = -0.5, x1 = 0.42, z0 = -0.28, z1 = 0.3;
+  const top = (y) => {
+    m.tri([x0, y, z0], [x1, y, z0], [x1, y, z1], [0, 0], [1, 0], [1, 1], MAT.stone);
+    m.tri([x0, y, z0], [x1, y, z1], [x0, y, z1], [0, 0], [1, 1], [0, 1], MAT.stone);
+  };
+  top(y1);
+  const side = (a, b, c, d) => {
+    m.tri(a, b, c, [0, 0], [1, 0], [1, 1], MAT.stone);
+    m.tri(a, c, d, [0, 0], [1, 1], [0, 1], MAT.stone);
+  };
+  side([x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]);
+  side([x1, y0, z1], [x0, y0, z1], [x0, y1, z1], [x1, y1, z1]);
+  side([x0, y0, z1], [x0, y0, z0], [x0, y1, z0], [x0, y1, z1]);
+  side([x1, y0, z0], [x1, y0, z1], [x1, y1, z1], [x1, y1, z0]);
   return m.finish();
 }
 
