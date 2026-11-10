@@ -1,15 +1,25 @@
 {
   "runId": "af79dbb3ceeb",
   "shade": {
-    "ambient": 0.1,
-    "sun": 0.9,
+    "ambient": [
+      0.026,
+      0.014,
+      0.138
+    ],
+    "sun": 1,
+    "moon": [
+      0.76,
+      1.08,
+      1.55
+    ],
+    "flatScale": 0.4,
     "specPower": 56,
     "crystalSpec": 0.06,
     "waterSpec": 0.45,
     "waterFresnelDark": 0.55,
     "waterFresnelMix": 0.4
   },
-  "groundNdl": 0.757,
+  "groundNdl": 0.174,
   "materials": [
     {
       "id": "obsidian-wall",
@@ -32,20 +42,20 @@
       },
       "shadedAtNdl075": {
         "r": {
-          "mean": 28.03,
-          "pstdev": 7.77
+          "mean": 28.58,
+          "pstdev": 7.94
         },
         "g": {
-          "mean": 28.98,
-          "pstdev": 7.81
+          "mean": 29.56,
+          "pstdev": 7.99
         },
         "b": {
-          "mean": 30.74,
-          "pstdev": 7.89
+          "mean": 31.37,
+          "pstdev": 8.06
         }
       },
       "sourcePstdevMax": 9.94,
-      "shadedPstdevMax": 7.89
+      "shadedPstdevMax": 8.06
     },
     {
       "id": "ground",
@@ -68,20 +78,20 @@
       },
       "shadedAtNdl075": {
         "r": {
-          "mean": 67.07,
-          "pstdev": 9.96
+          "mean": 68.44,
+          "pstdev": 10.15
         },
         "g": {
-          "mean": 67.88,
-          "pstdev": 10.06
+          "mean": 69.26,
+          "pstdev": 10.26
         },
         "b": {
-          "mean": 69.37,
-          "pstdev": 10.04
+          "mean": 70.78,
+          "pstdev": 10.24
         }
       },
       "sourcePstdevMax": 12.03,
-      "shadedPstdevMax": 10.06
+      "shadedPstdevMax": 10.26
     },
     {
       "id": "crystal",
@@ -104,20 +114,20 @@
       },
       "shadedAtNdl075": {
         "r": {
-          "mean": 44.81,
-          "pstdev": 6.59
+          "mean": 45.73,
+          "pstdev": 6.74
         },
         "g": {
-          "mean": 174.56,
-          "pstdev": 7.02
+          "mean": 178.12,
+          "pstdev": 7.16
         },
         "b": {
-          "mean": 202.86,
-          "pstdev": 5.4
+          "mean": 206.99,
+          "pstdev": 5.5
         }
       },
       "sourcePstdevMax": 8.13,
-      "shadedPstdevMax": 7.02
+      "shadedPstdevMax": 7.16
     },
     {
       "id": "architecture",
@@ -140,20 +150,20 @@
       },
       "shadedAtNdl075": {
         "r": {
-          "mean": 43.09,
-          "pstdev": 7.45
+          "mean": 43.98,
+          "pstdev": 7.61
         },
         "g": {
-          "mean": 44.03,
-          "pstdev": 7.48
+          "mean": 44.94,
+          "pstdev": 7.63
         },
         "b": {
-          "mean": 47.51,
-          "pstdev": 7.53
+          "mean": 48.5,
+          "pstdev": 7.7
         }
       },
       "sourcePstdevMax": 9.24,
-      "shadedPstdevMax": 7.53
+      "shadedPstdevMax": 7.7
     },
     {
       "id": "violet",
@@ -176,20 +186,20 @@
       },
       "shadedAtNdl075": {
         "r": {
-          "mean": 117.94,
-          "pstdev": 7.79
+          "mean": 120.36,
+          "pstdev": 7.96
         },
         "g": {
-          "mean": 92.59,
-          "pstdev": 7.68
+          "mean": 94.47,
+          "pstdev": 7.85
         },
         "b": {
-          "mean": 155.65,
-          "pstdev": 7.71
+          "mean": 158.77,
+          "pstdev": 7.9
         }
       },
       "sourcePstdevMax": 8.96,
-      "shadedPstdevMax": 7.79
+      "shadedPstdevMax": 7.96
     },
     {
       "id": "stream",
@@ -212,20 +222,20 @@
       },
       "shadedAtNdl075": {
         "r": {
-          "mean": 49.28,
-          "pstdev": 1.72
+          "mean": 50.36,
+          "pstdev": 1.82
         },
         "g": {
-          "mean": 152.95,
-          "pstdev": 1.7
+          "mean": 156.01,
+          "pstdev": 1.79
         },
         "b": {
-          "mean": 157.32,
-          "pstdev": 1.81
+          "mean": 160.43,
+          "pstdev": 1.7
         }
       },
       "sourcePstdevMax": 2.07,
-      "shadedPstdevMax": 1.81
+      "shadedPstdevMax": 1.82
     }
   ],
   "swatch": null,

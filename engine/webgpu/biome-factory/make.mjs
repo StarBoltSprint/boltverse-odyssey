@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { runPipeline } from './pipeline.mjs';
 import { assemble } from './assemble.mjs';
 import { crystalColourStatus } from './colour-same-light.mjs';
+import { advisoryKey } from './same-light-table.mjs';
 import { measureSky } from './procedural-sky.js';
 import { jpegPixels } from './albedo-stats.mjs';
 
@@ -86,19 +87,21 @@ try {
     state.label = 'FAIL';
   }
   const fixtureDir = path.join(here, 'fixtures/materials-v2');
+  const colourMats = (ctx.config.materials || []).filter(m => m.file && ctx.files[m.file]).map(m => ({
+    id: m.id,
+    pixels: jpegPixels(path.join(fixtureDir, m.file)),
+    sha256: m.sha256 || null,
+    knownTarget: null,
+  }));
+  state.renderColour = {
+    blocking: true,
+    runner: 'node engine/webgpu/crystal/test-render-colour.mjs',
+    note: 'The blocking dE76 is measured from SwiftShader pixels, not from albedo times the rig compared with itself.',
+  };
+  state.keyAdvisory = advisoryKey();
+  state.keyAdvisory.blocking = false;
   const sameLight = args.includes('--same-light') && args[args.indexOf('--same-light') + 1] === 'crystal-rig';
-  state.materialsColour = crystalColourStatus(
-    (ctx.config.materials || []).filter(m => m.file && ctx.files[m.file]).map(m => ({
-      id: m.id,
-      pixels: jpegPixels(path.join(fixtureDir, m.file)),
-      sha256: m.sha256 || null,
-      knownTarget: null,
-    })),
-    sameLight ? { sameLight: 'crystal-rig' } : {},
-  );
-  if (sameLight && state.materialsColour.length && state.materialsColour.every(m => m.verdict !== 'UNCERTAIN')) {
-    state.hold = state.hold.filter(h => h.code !== 'colour_uncertain');
-  }
+  if (sameLight) state.crystalRigCheck = crystalColourStatus(colourMats, { sameLight: 'crystal-rig' });
   state.label = state.hard.length ? 'FAIL' : (state.hold.length ? 'HOLD' : 'RELEASE');
   state.release = state.label === 'RELEASE';
   state.pending = report.pending;
@@ -115,7 +118,8 @@ console.log(JSON.stringify({
   release: state.release,
   premise: state.premise && state.premise.holds,
   sky: state.sky || null,
-  materials: (state.materialsColour || []).map(m => ({ id: m.id, verdict: m.verdict, dE76: m.dE76 ?? null, mode: m.mode || 'no-target' })),
+  renderColour: state.renderColour || null,
+  keyAdvisory: state.keyAdvisory ? { blocking: false, maxDE: state.keyAdvisory.maxDE } : null,
   runId: state.runId || null,
   hold: state.hold.map(h => h.code),
   hard: state.hard.map(h => h.code),
