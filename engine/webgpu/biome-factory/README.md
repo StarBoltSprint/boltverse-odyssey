@@ -29,4 +29,4 @@ node engine/webgpu/biome-factory/test-colour-same-light.mjs
 node engine/webgpu/biome-factory/test-sky-sphere.mjs
 ```
 
-The crystal candidate sky is house code, a full sphere coloured by direction. The nebula is domain-warped fbm of that unit direction, denser on a tilted galactic band and faded toward the horizon. Stars stay on the same direction grid, with a small spread of size and brightness. It is not an Imagine JPEG, and the 2048×1024 contract does not apply to it. Materials stay Imagine. The 16:9 plate stays blocked.
+The crystal candidate sky is house code, a full sphere coloured by direction. The nebula is domain-warped fbm of that unit direction, denser on a tilted band that crosses the chase-camera sky and fades toward the horizon. Stars stay on the same direction grid, with a small spread of size and brightness. It is not an Imagine JPEG, and the 2048×1024 contract does not apply to it. Materials stay Imagine. The 16:9 plate stays blocked.

@@ -725,6 +725,28 @@ async function main() {
       }
       return { ok: true, samples, jpg, gpuErr: colour.gpuErr };
     };
+    window.__crystalChase = async (shot) => {
+      gatePose = null;
+      skySwim = 0;
+      skyYaw = 0;
+      gateMode = 0;
+      live.x = shot.x;
+      live.z = shot.z;
+      live.psi = shot.psi;
+      live.cam = shot.psi;
+      live.v = shot.v || 0;
+      live.w = 0;
+      live.phase = shot.phase || 0;
+      const colour = await readFrame();
+      const img = new ImageData(W, H);
+      for (let y = 0; y < H; y++) img.data.set(colour.src.subarray(y * bpr, y * bpr + W * 4), y * W * 4);
+      x2.putImageData(img, 0, 0);
+      const blob = await c2.convertToBlob({ type: 'image/jpeg', quality: 0.85 });
+      const buf = new Uint8Array(await blob.arrayBuffer());
+      let s = '';
+      for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+      return { ok: true, jpg: btoa(s), gpuErr: colour.gpuErr };
+    };
     window.__crystalReady = true;
     return;
   }

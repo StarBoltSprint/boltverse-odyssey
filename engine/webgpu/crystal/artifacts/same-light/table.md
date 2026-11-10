@@ -66,9 +66,9 @@ Advisory max dE76 against the key 25.06. Flat scale 0.4 is the shared rig that k
 
 ## Sky
 
-Zenith L* 5.08  a* 10.18  b* -20.87. The nebula is domain-warped fbm of the unit direction, gain 1.7, denser on a tilted band and faded toward the horizon. The elev-12 pair of two different view directions is advisory and measures 0.00000. It does not block.
+Zenith L* 5.08  a* 10.18  b* -20.87. The nebula is the same domain-warped fbm. The galactic band is wider and lower, so about a third of the yaw at elev 5–40 carries wisps, and it fades into the horizon. Gain 1.55. The elev-12 pair of two view directions is advisory and measures 0.00233. It does not block.
 
-The 0.015 limit is one world direction rendered from many cameras. Eight directions, 32 cameras, screen spread at least 707 px, max colour delta 0.00047. A 36-frame 360 turn, max frame-to-frame delta 0.00047, no pops. A screen-space sky reaches 0.04881 and fails. Volume gap 6.07. `sky-yaw-strip.png` is a full yaw turn at elev 12, 25, and 45. `sky-fisheye.png` is the upper dome. `sky-turn.mp4` is the slow 360.
+The 0.015 limit is one world direction rendered from many cameras. Eight directions, 32 cameras, screen spread at least 707 px, max colour delta 0. A 36-frame 360, max frame-to-frame delta 0, no pops. A screen-space sky reaches 0.04816 and fails. Volume gap 9.25. `sky-yaw-strip.png` is elev 12, 25, and 45. `sky-fisheye.png` is the upper dome. `sky-chase.mp4` is the player chase camera, 720×1280, a slow orbit then a short run.
 
 ## Crystals
 

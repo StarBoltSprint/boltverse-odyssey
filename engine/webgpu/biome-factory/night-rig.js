@@ -24,8 +24,8 @@ export const NIGHT = {
     nebulaFloor: 0.510484,
     // Octave persistence of the direction-space fbm.
     nebulaHf: 0.5,
-    // Weight of the wisps. Zenith stays the atmosphere; the band misses it.
-    nebulaGain: 1.7,
+    // Weight of the wisps. The band misses the zenith. A 3° step stays under 0.08.
+    nebulaGain: 1.55,
   },
 };
 

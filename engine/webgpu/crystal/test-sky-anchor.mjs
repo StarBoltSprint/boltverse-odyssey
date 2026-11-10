@@ -6,6 +6,7 @@ import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { skyLinear, skyDelta, dirFrom } from '../biome-factory/procedural-sky.js';
+import { pathX, pathPsi } from './world.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webgpu = path.resolve(here, '..');
@@ -116,20 +117,20 @@ async function chromeSession() {
     let ready = false, err = '';
     for (let i = 0; i < 160 && !ready; i++) {
       await new Promise((r) => setTimeout(r, 250));
-      const ev = await call('Runtime.evaluate', { expression: 'JSON.stringify({ready: window.__crystalReady, err: window.__crystalErr || null, sky: typeof window.__crystalSky})', returnByValue: true });
+      const ev = await call('Runtime.evaluate', { expression: 'JSON.stringify({ready: window.__crystalReady, err: window.__crystalErr || null, sky: typeof window.__crystalSky, chase: typeof window.__crystalChase})', returnByValue: true });
       const v = JSON.parse(ev.result.value);
       err = v.err || '';
-      ready = v.ready === true && v.sky === 'function';
+      ready = v.ready === true && v.sky === 'function' && v.chase === 'function';
       if (v.err) break;
     }
     if (!ready) throw new Error(err || 'page not ready');
-    const shoot = async (shot) => {
-      const expr = `window.__crystalSky(${JSON.stringify(shot)}).then(r => JSON.stringify(r))`;
+    const ask = async (fn, shot) => {
+      const expr = `window.${fn}(${JSON.stringify(shot)}).then(r => JSON.stringify(r))`;
       const ev = await call('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
       if (ev.exceptionDetails) throw new Error(JSON.stringify(ev.exceptionDetails).slice(0, 500));
       return JSON.parse(ev.result.value);
     };
-    return { shoot, chrome };
+    return { shoot: (shot) => ask('__crystalSky', shot), shootChase: (shot) => ask('__crystalChase', shot), chrome };
   } catch (err) {
     try { chrome.kill('SIGKILL'); } catch { /* ignore */ }
     throw err;
@@ -166,7 +167,7 @@ const server = await listen(8766);
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
 try {
-  const { shoot, chrome } = await chromeSession();
+  const { shoot, shootChase, chrome } = await chromeSession();
   try {
     const anchorFrames = [];
     for (const p of poses) anchorFrames.push(await shoot({ ...p, dirs, swim: 0, jpg: false }));
@@ -250,6 +251,47 @@ try {
     });
     if (!(swimMax >= LIMIT)) bad('screen-space sky did not fail, delta ' + swimMax);
     if (!(swimSpread > 80)) bad('screen-space control did not move on screen');
+
+    const chaseDir = '/tmp/crystal-sky-chase';
+    fs.rmSync(chaseDir, { recursive: true, force: true });
+    fs.mkdirSync(chaseDir, { recursive: true });
+    const z0 = -110;
+    const heading = pathPsi(z0);
+    const shots = [];
+    for (let i = 0; i < 36; i++) {
+      shots.push({ x: pathX(z0), z: z0, psi: heading + i / 36 * Math.PI * 2, v: 0, phase: i * 0.35 });
+    }
+    for (let i = 0; i < 12; i++) {
+      const z = z0 - i * 1.6;
+      shots.push({ x: pathX(z), z, psi: pathPsi(z), v: 6.5, phase: i * 0.8 });
+    }
+    const chaseJpg = [];
+    for (let i = 0; i < shots.length; i++) {
+      const frame = await shootChase(shots[i]);
+      if (!frame.jpg) bad('missing chase frame ' + i);
+      else {
+        const file = path.join(chaseDir, `f_${String(i).padStart(3, '0')}.jpg`);
+        fs.writeFileSync(file, Buffer.from(frame.jpg, 'base64'));
+        chaseJpg.push(file);
+      }
+    }
+    const stills = [
+      ['sky-chase-band.jpg', 0],
+      ['sky-chase-canyon.jpg', 18],
+      ['sky-chase-run.jpg', 42],
+    ];
+    for (const [name, idx] of stills) {
+      const src = chaseJpg[idx];
+      if (!src) bad('missing still ' + name);
+      else fs.copyFileSync(src, path.join(art, name));
+    }
+    const chase = spawn('ffmpeg', [
+      '-y', '-v', 'error', '-framerate', '12', '-i', path.join(chaseDir, 'f_%03d.jpg'),
+      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+      path.join(art, 'sky-chase.mp4'),
+    ], { stdio: 'inherit' });
+    const chaseCode = await new Promise((resolve) => { chase.on('close', resolve); });
+    if (chaseCode !== 0) bad('ffmpeg chase ' + chaseCode);
 
     const ff = spawn('ffmpeg', [
       '-y', '-v', 'error', '-framerate', '12', '-i', path.join(tmp, 'f_%03d.jpg'),
