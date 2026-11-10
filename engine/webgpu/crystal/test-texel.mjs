@@ -1,46 +1,68 @@
-// Crystal candidate texel gate. 2048 px/m is not configurable.
+// Scores the crystal candidate with the engine texel gate. Limits are that file's.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { buildWorld } from './world.js';
 import { TILE_M, VARIANTS } from './materials.js';
-import { jpegSize, texelRow, MIN_PX_PER_M, MAX_STRETCH } from '../biome-factory/texel-gate.mjs';
+import { gateBiome, stretchByMaterial, formatTable, imageSize } from '../biome-factory/texel-gate.mjs';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../biome-factory/fixtures/materials-v2');
-const LARGE = new Set(['ground', 'wall', 'architecture', 'stream']);
-let fail = 0;
-const bad = (m) => { console.error('FAIL', m); fail++; };
+const here = path.dirname(fileURLToPath(import.meta.url));
+const webgpu = path.resolve(here, '..');
+const dir = path.join(webgpu, 'biome-factory/fixtures/materials-v2');
+const page = fs.readFileSync(path.join(here, 'crystal.js'), 'utf8');
 
-const neg = texelRow({ name: 'negative-1024-at-1m', width: 1024, height: 1024, metres: 1, variants: 4, minVariants: 4 });
-if (neg.pass) bad('negative control passed ' + JSON.stringify(neg));
-if (!(neg.pxPerM < MIN_PX_PER_M) || !(neg.stretch > MAX_STRETCH)) bad('negative control did not trip both limits ' + JSON.stringify(neg));
+const CLASS = {
+  ground: 'ground',
+  wall: 'wall',
+  architecture: 'wall',
+  stream: 'ground',
+  crystal: 'prop',
+  violet: 'prop',
+};
+const MAT = { ground: 0, violet: 1, crystal: 2, architecture: 3, stream: 4, wall: 6 };
 
-const rows = [];
-for (const [name, files] of Object.entries(VARIANTS)) {
-  const metres = TILE_M[name];
-  let width = 0;
-  let height = 0;
-  for (const file of files) {
-    const size = jpegSize(path.join(root, file));
-    if (!width) { width = size.width; height = size.height; }
-    if (size.width !== width || size.height !== height) bad(name + ' variant size ' + file);
+const files = {};
+const materials = [];
+const tileByMat = new Map();
+const texByMat = new Map();
+for (const [key, list] of Object.entries(VARIANTS)) {
+  const id = key === 'wall' ? 'obsidian-wall' : key;
+  for (const file of list) {
+    const p = path.join(dir, file);
+    files[file] = fs.readFileSync(p);
   }
-  const row = texelRow({
-    name,
-    width,
-    height,
-    metres,
-    variants: files.length,
-    minVariants: LARGE.has(name) ? 4 : 3,
+  const size = imageSize(files[list[0]]);
+  materials.push({
+    id,
+    surfaceClass: CLASS[key],
+    tileMetres: TILE_M[key],
+    file: list[0],
+    files: list,
   });
-  rows.push(row);
-  if (!row.pass) bad(name + ' ' + row.fails.join(', '));
+  const mat = MAT[key];
+  tileByMat.set(mat, TILE_M[key]);
+  texByMat.set(mat, size);
 }
-const shader = fs.readFileSync(new URL('./crystal.js', import.meta.url), 'utf8');
-for (const hit of shader.matchAll(/gUv\s*\*\s*([0-9]*\.?[0-9]+)/g)) {
-  const scale = Number(hit[1]);
-  if (!(scale + 1e-6 >= 1 / MAX_STRETCH)) bad('ground UV scale ' + scale + ' stretches past ' + MAX_STRETCH);
-}
-if (!shader.includes("mipmapFilter: 'linear'") || !shader.includes('maxAnisotropy: aniso')) bad('sampler missing mips or anisotropy');
 
-if (fail) process.exit(1);
-console.log('PASS texel', JSON.stringify({ minPxPerM: MIN_PX_PER_M, maxStretch: MAX_STRETCH, negative: neg, rows }, null, 2));
+const world = buildWorld();
+const protos = Object.values(world.instances || {}).map((slot) => slot.proto).filter(Boolean);
+const extra = protos.reduce((n, proto) => n + proto.length, 0);
+const all = new Float32Array(world.verts.length + extra);
+all.set(world.verts);
+let offset = world.verts.length;
+for (const proto of protos) {
+  all.set(proto, offset);
+  offset += proto.length;
+}
+const byMat = stretchByMaterial(all, tileByMat, texByMat);
+const stretchById = new Map();
+for (const [key, mat] of Object.entries(MAT)) {
+  const id = key === 'wall' ? 'obsidian-wall' : key;
+  const p99 = byMat.get(mat);
+  if (p99 != null) stretchById.set(id, p99);
+}
+
+const result = gateBiome({ id: 'crystal-canyon', materials }, files, { pageSource: page, stretchById });
+console.log(formatTable(result));
+if (!result.ok) process.exit(1);
+console.log('PASS texel-gate', JSON.stringify({ minPxPerM: result.minPxPerM, stretch: Object.fromEntries(stretchById) }));

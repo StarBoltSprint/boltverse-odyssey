@@ -67,17 +67,14 @@ export function createMesh() {
       const s = Math.sin(seed * 17.2 + k * 91.7) * 43758.5453;
       return s - Math.floor(s);
     };
-    const weights = [];
-    for (let i = 0; i < N; i++) weights.push(0.72 + hsh(i) * 0.55);
-    const wsum = weights.reduce((a, b) => a + b, 0);
+    // Equal faces, one flat within 30° of an axis. A 45° face stretches past 1.3.
+    const step = (Math.PI * 2) / N;
+    const yawUse = Math.round(yaw / step) * step;
+    const tiltUse = Math.max(-0.18, Math.min(0.18, tilt));
     const ang = [];
-    let acc = hsh(20) * 0.5;
-    for (let i = 0; i < N; i++) {
-      ang.push(acc);
-      acc += (weights[i] / wsum) * Math.PI * 2;
-    }
-    const co = Math.cos(yaw), si = Math.sin(yaw);
-    const ct = Math.cos(tilt), st = Math.sin(tilt);
+    for (let i = 0; i < N; i++) ang.push(yawUse + i * step);
+    const co = Math.cos(yawUse), si = Math.sin(yawUse);
+    const ct = Math.cos(tiltUse), st = Math.sin(tiltUse);
     const P = (x, y, z) => {
       const y1 = y * ct - z * st;
       const z1 = y * st + z * ct;
@@ -101,20 +98,10 @@ export function createMesh() {
       triH(a, ha, b, hb, c, hc);
       triH(a, ha, c, hc, d, hd);
     };
-    const dir = (x, y, z) => {
-      const y1 = y * ct - z * st;
-      const z1 = y * st + z * ct;
-      return norm([x * co - z1 * si, y1, x * si + z1 * co]);
-    };
-    const faceN = (i) => {
-      const j = (i + 1) % N;
-      const a = (ang[i] + ang[j]) / 2;
-      const wob = (hsh(i + 30) - 0.5) * 0.16;
-      return dir(Math.cos(a) + wob, 0.07, Math.sin(a) - wob * 0.45);
-    };
-    const quadN = (a, ha, b, hb, c, hc, d, hd, nrm) => {
-      emit(a, nrm, ha); emit(b, nrm, hb); emit(c, nrm, hc);
-      emit(a, nrm, ha); emit(c, nrm, hc); emit(d, nrm, hd);
+    // Geometric normal of the quad. A painted normal that does not match the plane
+    // makes the texel gate pick the wrong axis and report a huge Jacobian.
+    const quadN = (a, ha, b, hb, c, hc, d, hd) => {
+      quadH(a, ha, b, hb, c, hc, d, hd);
     };
     const broken = hsh(21) > 0.28;
     const lipY = height * 0.62;
@@ -125,14 +112,14 @@ export function createMesh() {
     for (let i = 0; i < N; i++) {
       const j = (i + 1) % N;
       quadH(baseIn[i], 0, baseIn[j], 0, lipIn[j], 0.6, lipIn[i], 0.6);
-      quadN(baseOut[i], -0.02, baseIn[i], -0.02, lipIn[i], -0.62, lipOut[i], -0.62, faceN(i));
+      quadN(baseOut[i], -0.02, baseIn[i], -0.02, lipIn[i], -0.62, lipOut[i], -0.62);
     }
     if (!broken) {
       const tip = P(0, height, 0);
       for (let i = 0; i < N; i++) {
         const j = (i + 1) % N;
         triH(lipIn[j], 0.6, lipIn[i], 0.6, tip, 1);
-        quadN(lipOut[i], -0.62, lipIn[i], -0.62, lipIn[j], -0.62, lipOut[j], -0.62, faceN(i));
+        quadN(lipOut[i], -0.62, lipIn[i], -0.62, lipIn[j], -0.62, lipOut[j], -0.62);
       }
     } else {
       const stepY = height * (0.74 + hsh(22) * 0.08);

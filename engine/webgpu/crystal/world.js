@@ -224,7 +224,7 @@ function addCanyonSide(mesh, circles, crystals, side) {
           (1 - u) * (1 - v) * A[2] + u * (1 - v) * B[2] + u * v * C[2] + (1 - u) * v * D[2],
         ];
         if (N > 1 && i > 0 && i < N && j > 0 && j < N) {
-          const k = (hash(Math.round(p[0] * 5) + i, Math.round(p[1] * 3) + j * 7) - 0.42) * 0.28;
+          const k = (hash(Math.round(p[0] * 5) + i, Math.round(p[1] * 3) + j * 7) - 0.42) * 0.02;
           p[0] += n[0] * k; p[1] += n[1] * k; p[2] += n[2] * k;
         }
         g.push(p);
@@ -234,11 +234,67 @@ function addCanyonSide(mesh, circles, crystals, side) {
     for (let j = 0; j < N; j++) {
       for (let i = 0; i < N; i++) {
         const a = g[j * w + i], b = g[j * w + i + 1], c = g[(j + 1) * w + i + 1], d = g[(j + 1) * w + i];
-        mesh.tri(a, b, c, [0, 0], [1, 0], [1, 1], MAT.wall, n);
-        mesh.tri(a, c, d, [0, 0], [1, 1], [0, 1], MAT.wall, n);
+        mesh.tri(a, b, c, [0, 0], [1, 0], [1, 1], MAT.wall);
+        mesh.tri(a, c, d, [0, 0], [1, 1], [0, 1], MAT.wall);
       }
     }
   };
+  // A face whose normal is near 45° to every axis stretches past 1.3. Pull those
+  // quads toward the nearer axis before they are meshed. Points are shared.
+  const gentle = Math.tan(24 * Math.PI / 180);
+  const planCap = Math.tan(28 * Math.PI / 180);
+  const relax = (key) => {
+    for (let i = 0; i < cols.length - 1; i++) {
+      for (let s = 0; s <= strata; s++) {
+        const A = cols[i][key][s];
+        const B = cols[i + 1][key][s];
+        const dz = B[2] - A[2] || 0.001;
+        const dx = B[0] - A[0];
+        const cap = Math.abs(dz) * planCap;
+        if (Math.abs(dx) > cap) B[0] = A[0] + Math.sign(dx) * cap;
+      }
+      for (let s = 0; s < strata; s++) {
+        const A = cols[i][key][s];
+        const B = cols[i + 1][key][s];
+        const C = cols[i + 1][key][s + 1];
+        const D = cols[i][key][s + 1];
+        const n1 = nrm(A, B, C);
+        const n2 = nrm(A, C, D);
+        const domOf = (n) => Math.max(Math.abs(n[0]), Math.abs(n[1]), Math.abs(n[2]));
+        if (domOf(n1) >= 0.9 && domOf(n2) >= 0.9) continue;
+        const n = domOf(n1) < domOf(n2) ? n1 : n2;
+        const ax = Math.abs(n[0]), ay = Math.abs(n[1]), az = Math.abs(n[2]);
+        const y0 = (A[1] + B[1]) * 0.5;
+        const run = Math.max(Math.hypot((C[0] + D[0]) * 0.5 - (A[0] + B[0]) * 0.5, (C[2] + D[2]) * 0.5 - (A[2] + B[2]) * 0.5), 0.4);
+        if (ay >= ax && ay >= az) {
+          const sign = Math.sign((C[1] + D[1]) * 0.5 - y0 || 1);
+          const y1 = y0 + sign * run * gentle;
+          C[1] = y1;
+          D[1] = y1;
+        } else {
+          D[0] = A[0];
+          C[0] = B[0];
+        }
+      }
+    }
+    for (let i = 0; i < cols.length; i++) {
+      const top = cols[i].pts[strata];
+      const back = cols[i].back[strata];
+      back[1] = top[1];
+    }
+    for (let i = 0; i < cols.length - 1; i++) {
+      for (let s = 0; s <= strata; s++) {
+        const A = cols[i][key][s];
+        const B = cols[i + 1][key][s];
+        const dz = B[2] - A[2] || 0.001;
+        const dx = B[0] - A[0];
+        const cap = Math.abs(dz) * planCap;
+        if (Math.abs(dx) > cap) B[0] = A[0] + Math.sign(dx) * cap;
+      }
+    }
+  };
+  relax('pts');
+  relax('back');
   for (let i = 0; i < cols.length - 1; i++) {
     const A = cols[i];
     const B = cols[i + 1];

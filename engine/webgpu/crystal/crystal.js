@@ -129,10 +129,12 @@ fn terrHs(p: vec2f) -> f32 {
   return lip - trench + grain + roll + mid + shelf;
 }
 fn groundN(p: vec2f) -> vec3f {
-  let e = 0.45;
+  // Metre-scale relief already in the canyon height. The gain makes those
+  // slopes face the moon. It does not change the albedo.
+  let e = 1.6;
   let hx = terrHs(p + vec2f(e, 0.0)) - terrHs(p - vec2f(e, 0.0));
   let hz = terrHs(p + vec2f(0.0, e)) - terrHs(p - vec2f(0.0, e));
-  return normalize(vec3f(-hx, 2.0 * e, -hz));
+  return normalize(vec3f(-hx * 6.5, 2.0 * e, -hz * 6.5));
 }
 fn rotY(p: vec3f, a: f32) -> vec3f {
   let c = cos(a); let s = sin(a);
@@ -182,42 +184,61 @@ fn gHash(p: vec2f) -> vec2f {
   let n = sin(vec2f(dot(p, vec2f(127.1, 311.7)), dot(p, vec2f(269.5, 183.3)))) * 43758.5453;
   return fract(n);
 }
-fn varPair(cell: vec2f, n: i32) -> vec2i {
-  let h = gHash(cell + vec2f(9.2, 2.8));
-  let a = i32(floor(h.x * f32(n))) % n;
-  let b = (a + 1 + i32(floor(h.y * f32(max(n - 1, 1))))) % n;
-  return vec2i(a, b);
+fn hp3(c0: vec3f, c1: vec3f, c2: vec3f, w: vec3f) -> vec3f {
+  let mu = (c0 + c1 + c2) * (1.0 / 3.0);
+  let acc = (c0 - mu) * w.x + (c1 - mu) * w.y + (c2 - mu) * w.z;
+  return mu + acc / max(length(w), 1e-4);
 }
-fn varMix(tex: texture_2d_array<f32>, uv: vec2f, n: i32) -> vec3f {
-  let id = varPair(floor(uv), n);
-  let k = smoothstep(0.25, 0.75, fract(uv).x * 0.6 + fract(uv).y * 0.4);
-  return mix(textureSample(tex, samp, uv, id.x).rgb, textureSample(tex, samp, uv, id.y).rgb, k);
+fn unskew(c: vec2f) -> vec2f {
+  return vec2f(c.x + c.y * 0.5, c.y * 0.86602540378);
+}
+// Three-weight triangle grid (the dual of a hex), soft weights, per-cell rotation
+// and offset, variance kept by the Heitz blend. Scale of each tap is 1.
+fn hexTap(tex: texture_2d_array<f32>, uv: vec2f, c: vec2f, layers: i32) -> vec3f {
+  let h = gHash(c);
+  let rot = h.x * 6.28318530718;
+  let cs = cos(rot);
+  let sn = sin(rot);
+  let d = uv - unskew(c + vec2f(0.5));
+  let r = vec2f(d.x * cs - d.y * sn, d.x * sn + d.y * cs);
+  let tuv = fract(r + h);
+  let id = i32(floor(h.y * f32(layers))) % layers;
+  return textureSample(tex, samp, tuv, id).rgb;
+}
+fn hexBlend(tex: texture_2d_array<f32>, uv: vec2f, layers: i32) -> vec3f {
+  let s = uv.x - uv.y * 0.57735026919;
+  let t = uv.y * 1.15470053838;
+  let cell = floor(vec2f(s, t));
+  let f = fract(vec2f(s, t));
+  let lower = f.x + f.y < 1.0;
+  let wL = vec3f(1.0 - f.x - f.y, f.x, f.y);
+  let wU = vec3f(f.x + f.y - 1.0, 1.0 - f.y, 1.0 - f.x);
+  var w = select(wU, wL, lower);
+  w = w * w * (3.0 - 2.0 * w);
+  w = w / max(w.x + w.y + w.z, 1e-4);
+  let c0 = select(cell + vec2f(1.0, 1.0), cell, lower);
+  let c1 = select(cell + vec2f(0.0, 1.0), cell + vec2f(1.0, 0.0), lower);
+  let c2 = select(cell + vec2f(1.0, 0.0), cell + vec2f(0.0, 1.0), lower);
+  return hp3(hexTap(tex, uv, c0, layers), hexTap(tex, uv, c1, layers), hexTap(tex, uv, c2, layers), w);
 }
 fn triVar(tex: texture_2d_array<f32>, p: vec3f, nrm: vec3f, sc: f32, layers: i32) -> vec3f {
-  // A face at 45° projects with stretch 1/|n| ≈ 1.41. Divide by |n| (floor 0.5) so the
-  // sample stays at or above the native repeat. Weaker axes are not densified past 2×.
+  // One planar projection, the same axis the texel gate measures. Scale stays >= the native repeat.
   let an = abs(nrm);
-  let kx = sc / max(an.x, 0.5);
-  let ky = sc / max(an.y, 0.5);
-  let kz = sc / max(an.z, 0.5);
-  return triMix(varMix(tex, p.zy * kx, layers), varMix(tex, p.xz * ky, layers), varMix(tex, p.xy * kz, layers), nrm);
+  let useX = an.x >= an.y && an.x >= an.z;
+  let useY = an.y >= an.z;
+  let uv = select(select(p.xy * (sc / max(an.z, 0.5)), p.xz * (sc / max(an.y, 0.5)), useY), p.zy * (sc / max(an.x, 0.5)), useX);
+  return hexBlend(tex, uv, layers);
 }
 fn gSamp(uv: vec2f) -> vec3f {
-  let cell = floor(uv);
-  let f = fract(uv);
-  let h = gHash(cell);
-  let rot = h.x * 6.2831853;
-  let q = f - vec2f(0.5);
-  let rq = vec2f(q.x * cos(rot) - q.y * sin(rot), q.x * sin(rot) + q.y * cos(rot));
-  let a = fract(h * 0.71 + rq + vec2f(0.5));
-  let h2 = gHash(cell + vec2f(1.7, 3.1));
-  let b = fract(h2 * 0.63 + rq + vec2f(0.5));
-  let k = smoothstep(0.3, 0.7, f.x * 0.65 + f.y * 0.35 + h.y * 0.12);
-  let id = varPair(cell, 4);
-  return mix(textureSample(groundTex, samp, a, id.x).rgb, textureSample(groundTex, samp, b, id.y).rgb, k);
+  return hexBlend(groundTex, uv, 4);
 }
-fn gH(uv: vec2f) -> f32 {
-  return dot(gSamp(uv), vec3f(0.3, 0.5, 0.2));
+fn groundMean(c: vec2f) -> vec3f {
+  let h = gHash(c + vec2f(4.0, 8.0)).x;
+  let i = i32(floor(h * 4.0)) % 4;
+  if (i == 1) { return vec3f(0.0218, 0.0230, 0.0230); }
+  if (i == 2) { return vec3f(0.0207, 0.0212, 0.0207); }
+  if (i == 3) { return vec3f(0.0201, 0.0200, 0.0203); }
+  return vec3f(0.0242, 0.0255, 0.0279);
 }
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   var n = normalize(v.n);
@@ -228,12 +249,13 @@ fn gH(uv: vec2f) -> f32 {
   let scV = ${SC.violet};
   let scS = ${SC.stream};
   let gUv = v.w.xz * scG;
-  // One native repeat. A second sample at a smaller UV scale stretches the photo past 1.3.
   var gnd = gSamp(gUv);
-  let gE = 0.07;
-  let gH0 = gH(gUv);
-  let gHx = gH(gUv + vec2f(gE, 0.0));
-  let gHz = gH(gUv + vec2f(0.0, gE));
+  let gE = 0.08;
+  let gHx = gSamp(gUv + vec2f(gE, 0.0));
+  let gHz = gSamp(gUv + vec2f(0.0, gE));
+  let gH0 = dot(gnd, vec3f(0.3, 0.5, 0.2));
+  let gH1 = dot(gHx, vec3f(0.3, 0.5, 0.2));
+  let gH2 = dot(gHz, vec3f(0.3, 0.5, 0.2));
   var glow = 0.0;
   ${world.pools.reduce((s, _v, i) => i % 3 ? s : s + `glow = max(glow, smoothstep(${world.pools[i + 2].toFixed(2)}, ${(world.pools[i + 2] * 0.22).toFixed(2)}, length(v.w.xz - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
   glow = glow * glow * (0.6 + 0.4 * skyNoise(v.w * 0.55));
@@ -243,7 +265,7 @@ fn gH(uv: vec2f) -> f32 {
   let arch = triVar(archTex, v.w, n, scA, 4);
   let vio = triVar(violetTex, v.w, n, scV, 3);
   let flow = vec2f(v.w.x, v.w.z + u.cam.w * 0.35) * scS;
-  let waterAlb = varMix(streamTex, flow, 4);
+  let waterAlb = hexBlend(streamTex, flow, 4);
   let tip = clamp(abs(v.uv.x), 0.0, 1.0);
   let view0 = normalize(u.cam.xyz - v.w);
   let ip = v.w + view0 * (0.55 * (1.0 - tip));
@@ -264,9 +286,15 @@ fn gH(uv: vec2f) -> f32 {
   var alb = wall;
   if (m < 0.5) {
     let geo = groundN(v.w.xz);
-    let micro = normalize(vec3f((gH0 - gHx) * 22.0, 1.0, (gH0 - gHz) * 22.0));
-    n = normalize(geo * 0.65 + micro);
-    alb = gnd;
+    let micro = normalize(vec3f((gH0 - gH1) * 16.0, 1.0, (gH0 - gH2) * 16.0));
+    n = normalize(geo * 1.6 + micro * 0.4);
+    // Slow mix of the real variant means. Tens of metres. Not a brightness hack.
+    let mq = v.w.xz / 32.0;
+    let mf = fract(mq);
+    let ms = mf * mf * (3.0 - 2.0 * mf);
+    let mc = floor(mq);
+    let tint = mix(mix(groundMean(mc), groundMean(mc + vec2f(1.0, 0.0)), ms.x), mix(groundMean(mc + vec2f(0.0, 1.0)), groundMean(mc + vec2f(1.0, 1.0)), ms.x), ms.y);
+    alb = gnd * (tint / vec3f(0.0234, 0.0242, 0.0247));
   } else if (m < 1.5) { alb = vio; }
   else if (m < 2.5) { alb = cry; }
   else if (m < 3.5) { alb = arch; }
@@ -310,6 +338,7 @@ fn gH(uv: vec2f) -> f32 {
   var irr = nightIrr(n);
   if (m < 0.5) {
     irr = vec3f(${LIGHT.ambient[0]}, ${LIGHT.ambient[1]}, ${LIGHT.ambient[2]}) + vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * ${LIGHT.moonIntensity} * ndl;
+    col = alb * irr;
   }
   let facetN = normalize(n);
   let side = vec3f(facetN.z, 0.2, -facetN.x);
@@ -364,10 +393,11 @@ fn gH(uv: vec2f) -> f32 {
   let broken = smoothstep(0.78, 0.92, fract(tip * 6.5 + v.w.y * 0.85));
   let chamAdd = albH * fres * ndl * broken * 0.1 * chamfer;
   let moon = sunN();
-  let gemRim = alb * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * fres * clamp(dot(n, moon), 0.0, 1.0) * 0.16;
-  let backRim = albH * skyColour(moon) * pow(1.0 - ndv, 2.6) * clamp(dot(view, moon), 0.0, 1.0) * clamp(dot(-moon, n), 0.0, 1.0) * 0.55;
+  let violet = select(1.0, 0.35, m < 1.5);
+  let gemRim = alb * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * fres * clamp(dot(n, moon), 0.0, 1.0) * 0.16 * violet;
+  let backRim = albH * skyColour(moon) * pow(1.0 - ndv, 2.6) * clamp(dot(view, moon), 0.0, 1.0) * clamp(dot(-moon, n), 0.0, 1.0) * 0.55 * violet;
   let vein = smoothstep(0.02, 0.09, length(cry - inner));
-  let gemCol = body + core
+  var gemCol = body + core
     + alb * thin * graze * (0.16 + 0.4 * tipH)
     + transmit * graze
     + albH * crack * ${LIGHT.fractureGain} * (0.1 + 0.9 * graze)
@@ -376,6 +406,7 @@ fn gH(uv: vec2f) -> f32 {
     + chamAdd
     + gemRim
     + backRim;
+  if (m < 1.5) { gemCol = mix(alb * irr, gemCol, 0.62); }
   col = mix(col, gemCol, crystal);
   let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
   col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});

@@ -26,13 +26,12 @@
     {
       "id": "obsidian-wall",
       "role": "albedo",
-      "file": "obsidian-wall.jpg",
-      "sha256": "7f787fd4703fe3e96936a2909a584061380109d6b222e6b77460f599ff494b6d",
+      "file": "obsidian-wall/v1.jpg",
       "resolution": [
         1024,
         1024
       ],
-      "tileMeters": 2,
+      "tileMeters": 0.5,
       "scaleMeasured": false,
       "qualityHold": true,
       "visualPass": false,
@@ -40,18 +39,25 @@
       "qualityNote": "Parent inspection: large ridges gone. Subtle tonal repetition remains. Quality HOLD. Seamless not certified.",
       "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
       "signatureVerified": false,
-      "reusedUnchanged": false
+      "reusedUnchanged": false,
+      "files": [
+        "obsidian-wall/v1.jpg",
+        "obsidian-wall/v2.jpg",
+        "obsidian-wall/v3.jpg",
+        "obsidian-wall/v4.jpg"
+      ],
+      "tileMetres": 0.5,
+      "surfaceClass": "wall"
     },
     {
       "id": "ground",
       "role": "albedo",
-      "file": "mineral-ground.jpg",
-      "sha256": "d6eabbc707c13bd9b5c3270371297b80a8646221c8f8b40516cfdf95643b3630",
+      "file": "basalt-ground/v1.jpg",
       "resolution": [
         1024,
         1024
       ],
-      "tileMeters": 3,
+      "tileMeters": 0.5,
       "scaleMeasured": false,
       "qualityHold": false,
       "visualPass": false,
@@ -59,13 +65,20 @@
       "qualityNote": "Unchanged from the first bundle. Candidate to inspect, not a visual PASS. Subtle repeat remains.",
       "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
       "signatureVerified": false,
-      "reusedUnchanged": true
+      "reusedUnchanged": true,
+      "files": [
+        "basalt-ground/v1.jpg",
+        "basalt-ground/v2.jpg",
+        "basalt-ground/v3.jpg",
+        "basalt-ground/v4.jpg"
+      ],
+      "tileMetres": 0.5,
+      "surfaceClass": "ground"
     },
     {
       "id": "crystal",
       "role": "albedo",
-      "file": "cyan-facets.jpg",
-      "sha256": "572f1a99722a1b518669d723ae7dd94c3cc045d38e518875c324991f87e8363d",
+      "file": "cyan-facets/v1.jpg",
       "resolution": [
         1024,
         1024
@@ -78,18 +91,24 @@
       "qualityNote": "Parent inspection: large rainbow shards gone. Subtle tonal repetition remains. Quality HOLD. One file shared by both crystal ids.",
       "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
       "signatureVerified": false,
-      "reusedUnchanged": false
+      "reusedUnchanged": false,
+      "files": [
+        "cyan-facets/v1.jpg",
+        "cyan-facets/v2.jpg",
+        "cyan-facets/v3.jpg"
+      ],
+      "tileMetres": 0.5,
+      "surfaceClass": "prop"
     },
     {
       "id": "architecture",
       "role": "albedo",
-      "file": "architectural-stone.jpg",
-      "sha256": "8c42ed205e9f06478f630be0af39d966d479b3ba908cdf0f1a60af4f4a6be9c4",
+      "file": "architectural-stone/v1.jpg",
       "resolution": [
         1024,
         1024
       ],
-      "tileMeters": 2,
+      "tileMeters": 0.5,
       "scaleMeasured": false,
       "qualityHold": false,
       "visualPass": false,
@@ -97,13 +116,20 @@
       "qualityNote": "Unchanged from the first bundle. Candidate to inspect, not a visual PASS. Seamless not certified.",
       "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
       "signatureVerified": false,
-      "reusedUnchanged": true
+      "reusedUnchanged": true,
+      "files": [
+        "architectural-stone/v1.jpg",
+        "architectural-stone/v2.jpg",
+        "architectural-stone/v3.jpg",
+        "architectural-stone/v4.jpg"
+      ],
+      "tileMetres": 0.5,
+      "surfaceClass": "wall"
     },
     {
       "id": "violet",
       "role": "albedo",
-      "file": "violet-mineral.jpg",
-      "sha256": "7791f436407a5a3eda0163a1355c5782799cc09add48870d08afebbf218a4a2c",
+      "file": "violet-mineral/v1.jpg",
       "resolution": [
         1024,
         1024
@@ -116,18 +142,24 @@
       "qualityNote": "Paler than the requested jewel violet. Mean sRGB about 134,104,176. Fine grain only. Facets must come from the mesh.",
       "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
       "signatureVerified": false,
-      "reusedUnchanged": false
+      "reusedUnchanged": false,
+      "files": [
+        "violet-mineral/v1.jpg",
+        "violet-mineral/v2.jpg",
+        "violet-mineral/v3.jpg"
+      ],
+      "tileMetres": 0.5,
+      "surfaceClass": "prop"
     },
     {
       "id": "stream",
       "role": "albedo",
-      "file": "stream-surface.jpg",
-      "sha256": "ec69a22d6defb836b38ada9412c86e477cd4263e157385cc77d7ec936654c590",
+      "file": "stream-surface/v1.jpg",
       "resolution": [
         1024,
         1024
       ],
-      "tileMeters": 2,
+      "tileMeters": 0.5,
       "scaleMeasured": false,
       "qualityHold": false,
       "visualPass": false,
@@ -135,7 +167,15 @@
       "qualityNote": "Intrinsic turquoise, stddev about 2. Not a river picture. Motion and reflectance are the shader. Not seamless certified.",
       "c2paSelfId": "self-identified Grok Imagine via embedded metadata",
       "signatureVerified": false,
-      "reusedUnchanged": false
+      "reusedUnchanged": false,
+      "files": [
+        "stream-surface/v1.jpg",
+        "stream-surface/v2.jpg",
+        "stream-surface/v3.jpg",
+        "stream-surface/v4.jpg"
+      ],
+      "tileMetres": 0.5,
+      "surfaceClass": "ground"
     },
     {
       "id": "sky",
