@@ -99,9 +99,12 @@ struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: 
 @vertex fn vsInst(@location(0) a: vec4f, @location(1) b: vec4f, @location(2) i0: vec4f, @location(3) i1: vec4f) -> VO {
   let sc = i1.xyz;
   let p0 = vec3f(a.x * sc.x, a.y * sc.y, a.z * sc.z);
+  let cl = cos(i1.w); let sl = sin(i1.w);
+  let pL = vec3f(cl * p0.x - sl * p0.y, sl * p0.x + cl * p0.y, p0.z);
+  let nL = vec3f(cl * b.x - sl * b.y, sl * b.x + cl * b.y, b.z);
   let c = cos(i0.w); let s = sin(i0.w);
-  let pr = vec3f(c * p0.x + s * p0.z, p0.y, -s * p0.x + c * p0.z) + i0.xyz;
-  let nr = normalize(vec3f(c * b.x + s * b.z, b.y, -s * b.x + c * b.z));
+  let pr = vec3f(c * pL.x + s * pL.z, pL.y, -s * pL.x + c * pL.z) + i0.xyz;
+  let nr = normalize(vec3f(c * nL.x + s * nL.z, nL.y, -s * nL.x + c * nL.z));
   var o: VO;
   o.p = u.vp * vec4f(pr, 1.0);
   o.w = pr; o.n = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w; return o;
@@ -117,7 +120,12 @@ fn terrHs(p: vec2f) -> f32 {
   let lip = (t * t * (3.0 - 2.0 * t)) * 0.55;
   let d = lateral - 3.55;
   let trench = exp(-(d * d) / 1.15) * 0.62;
-  return lip - trench + 0.045 * sin(p.x * 1.3 + p.y * 0.7) + 0.03 * sin(-p.x * 0.45 + p.y * 0.9);
+  let grain = 0.045 * sin(p.x * 1.3 + p.y * 0.7) + 0.03 * sin(-p.x * 0.45 + p.y * 0.9);
+  let roll = 0.32 * sin(p.x * 0.07 + p.y * 0.045) + 0.18 * sin(p.y * 0.11 - p.x * 0.05);
+  let st = clamp((ad - 2.4) / 2.8, 0.0, 1.0);
+  let shelfT = st * st * (3.0 - 2.0 * st);
+  let shelf = round(lateral / 7.5) * 0.18 * shelfT;
+  return lip - trench + grain + roll + shelf;
 }
 fn groundN(p: vec2f) -> vec3f {
   let e = 0.45;
@@ -185,11 +193,8 @@ fn darken15(c: vec3f) -> vec3f {
   let gloss = smoothstep(0.78, 0.93, glossN);
   let crackLine = abs(sin(v.w.x * 0.48 + sin(v.w.z * 0.27) * 2.2));
   let groundCrack = 1.0 - smoothstep(0.0, 0.035, crackLine);
-  let sparkCell = floor(v.w.xz * 2.2);
-  let shard = step(0.994, fract(sin(dot(sparkCell, vec2f(19.1, 47.7))) * 43758.5));
   gnd = mix(gnd, gnd * vec3f(0.42, 0.48, 0.6), gloss);
   gnd = gnd * (1.0 - groundCrack * 0.55);
-  gnd = mix(gnd, vec3f(0.04, 0.42, 0.52), shard);
   let wallFine = triMix(
     textureSample(wallTex, samp, v.w.zy * scW).rgb,
     textureSample(wallTex, samp, v.w.xz * scW).rgb,
@@ -232,7 +237,7 @@ fn darken15(c: vec3f) -> vec3f {
     }
     return present(sky);
   }
-  var alb = wall;
+  var alb = mix(wall, wallFine, 0.72);
   if (m < 0.5) {
     n = groundN(v.w.xz);
     alb = gnd;
@@ -274,12 +279,14 @@ fn darken15(c: vec3f) -> vec3f {
   let blockLit = alb * irr * tint + glint;
   col = mix(col, blockLit, block);
   let moonN = sunN();
-  let sil = smoothstep(0.42, 0.06, ndv);
+  let sil = smoothstep(0.52, 0.08, ndv);
   let moonFace = clamp(dot(n, moonN), 0.0, 1.0);
-  let rockY = max(dot(alb, vec3f(0.2126, 0.7152, 0.0722)), 0.025);
+  let rockY = max(dot(alb, vec3f(0.2126, 0.7152, 0.0722)), 0.02);
   let rockHue = alb / rockY;
-  let rimMoon = rockHue * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * sil * moonFace * 0.055;
-  col = col + rimMoon * block;
+  let envLuma = max(dot(env, vec3f(0.2126, 0.7152, 0.0722)), 0.02);
+  let rimMoon = rockHue * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * sil * moonFace * 0.11;
+  let sliceGlint = (env / envLuma) * sil * (0.045 + 0.05 * moonFace);
+  col = col + (rimMoon + sliceGlint) * block;
   let far = smoothstep(55.0, 130.0, dist);
   let rim = pow(1.0 - ndv, 2.4);
   let rimK = min(0.1, rim * (0.08 + 0.2 * far));
@@ -289,6 +296,8 @@ fn darken15(c: vec3f) -> vec3f {
   let albH = alb * vec3f(1.0, mix(1.0, 1.02, hue), mix(1.0, 0.985, hue));
   let graze = smoothstep(0.45, 0.05, ndv);
   let body = albH * irr * (1.0 - graze * 0.2);
+  let shade = 1.0 - smoothstep(0.08, 0.42, ndl);
+  let core = alb * shade * (1.0 - graze * 0.35) * 0.34;
   let refr = normalize(mix(view, n, 0.22));
   let through = skyColour(refr);
   let thin = pow(1.0 - ndv, 1.7);
@@ -300,7 +309,7 @@ fn darken15(c: vec3f) -> vec3f {
   let chamAdd = albH * fres * ndl * broken * 0.16 * chamfer;
   let moon = sunN();
   let backRim = albH * skyColour(moon) * pow(1.0 - ndv, 2.6) * clamp(dot(view, moon), 0.0, 1.0) * clamp(dot(-moon, n), 0.0, 1.0) * 1.05;
-  let gemCol = body * mix(1.0, 0.94, chamfer)
+  let gemCol = body * mix(1.0, 0.94, chamfer) + core
     + transmit * graze
     + albH * crack * ${LIGHT.fractureGain} * graze
     + alb * spark * ${LIGHT.sparkle} * ndl * 0.35
@@ -521,9 +530,9 @@ async function main() {
     verts: slot.proto.length / 8,
     count: slot.count,
   });
-  const wallI = mkInst(world.instances.wall);
   const crystalI = mkInst(world.instances.crystal);
   const rubbleI = mkInst(world.instances.rubble);
+  const shardI = mkInst(world.instances.shard);
   const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(8, ad.limits.maxSamplerAnisotropy || 1);
   const samp = await noteErr('sampler', async () => dev.createSampler({ magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'repeat', maxAnisotropy: aniso }));
@@ -683,9 +692,9 @@ async function main() {
     pass.setPipeline(pPlanet); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.draw(worldVerts);
     pass.setPipeline(pInst);
-    pass.setVertexBuffer(0, wallI.proto); pass.setVertexBuffer(1, wallI.inst); pass.draw(wallI.verts, wallI.count);
     pass.setVertexBuffer(0, crystalI.proto); pass.setVertexBuffer(1, crystalI.inst); pass.draw(crystalI.verts, crystalI.count);
     pass.setVertexBuffer(0, rubbleI.proto); pass.setVertexBuffer(1, rubbleI.inst); pass.draw(rubbleI.verts, rubbleI.count);
+    pass.setVertexBuffer(0, shardI.proto); pass.setVertexBuffer(1, shardI.inst); pass.draw(shardI.verts, shardI.count);
     pass.setPipeline(pLimb); pass.setVertexBuffer(0, pvb); pass.draw(pCount);
     if (!SHOT && !gatePose) {
       pass.setPipeline(pContact); pass.draw(6);
@@ -698,8 +707,8 @@ async function main() {
 
   window.__crystalInfo = {
     biome: CRYSTAL.id, W, H, msaa: SAMPLES, dprCap: 2, tris: worldVerts / 3, skyVerts,
-    draws: world.budget.draws, instancedTris: world.budget.wallTris + world.budget.crystalTris + world.budget.rubbleTris,
-    instances: { wall: wallI.count, crystal: crystalI.count, rubble: rubbleI.count },
+    draws: world.budget.draws, instancedTris: world.budget.crystalTris + world.budget.rubbleTris + world.budget.shardTris,
+    instances: { crystal: crystalI.count, rubble: rubbleI.count, shard: shardI.count },
     extentZ: world.extentZ,
     candidate: gate.candidate, release: gate.release, missing: gate.missing, tiles: TILE_M,
     referenceTexture: false, bolt: 'bolt439_atlas', breath: BREATH_BUILD,

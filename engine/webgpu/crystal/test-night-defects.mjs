@@ -129,9 +129,6 @@ function rasterHoles(world, eye, tgt, punch) {
   const depth = new Float32Array(W * H).fill(1);
   let written = 0;
   let seen = 0;
-  const slot = world.instances.wall;
-  const proto = slot.proto;
-  const data = slot.data;
   const tri = (ax, ay, bx, by, cx, cy, za, zb, zc) => {
     const minx = Math.max(0, Math.floor(Math.min(ax, bx, cx)));
     const maxx = Math.min(W - 1, Math.ceil(Math.max(ax, bx, cx)));
@@ -153,22 +150,19 @@ function rasterHoles(world, eye, tgt, punch) {
       }
     }
   };
-  for (let n = 0; n < slot.count; n++) {
-    const o = n * 8;
-    const ix = data[o], iy = data[o + 1], iz = data[o + 2], yaw = data[o + 3];
-    const sx = data[o + 4], sy = data[o + 5], sz = data[o + 6];
-    const c = Math.cos(yaw), s = Math.sin(yaw);
-    const pts = [];
-    for (let v = 0; v < proto.length; v += 8) {
-      const px = proto[v] * sx, py = proto[v + 1] * sy, pz = proto[v + 2] * sz;
-      const world = [ix + c * px + s * pz, iy + py, iz - s * px + c * pz];
-      pts.push(project(vp, world, W, H));
+  const verts = world.verts;
+  for (let v = 0; v < verts.length; v += 24) {
+    if (Math.abs(verts[v + 3] - 6) > 0.2) continue;
+    const P = [];
+    let ok = true;
+    for (let k = 0; k < 3; k++) {
+      const o = v + k * 8;
+      const pr = project(vp, [verts[o], verts[o + 1], verts[o + 2]], W, H);
+      if (!pr) ok = false;
+      P.push(pr);
     }
-    for (let t = 0; t < pts.length; t += 3) {
-      const A = pts[t], B = pts[t + 1], C = pts[t + 2];
-      if (!A || !B || !C) continue;
-      tri(A[0], A[1], B[0], B[1], C[0], C[1], A[2], B[2], C[2]);
-    }
+    if (!ok) continue;
+    tri(P[0][0], P[0][1], P[1][0], P[1][1], P[2][0], P[2][1], P[0][2], P[1][2], P[2][2]);
   }
   if (punch) {
     for (let y = 8; y < H - 8; y++) {
@@ -202,10 +196,9 @@ if (grid > GRID_PEAK) bad('periodic grid ' + grid.toFixed(2));
 if (!(gridded > GRID_PEAK)) bad('grid injection did not fail ' + gridded.toFixed(2));
 
 const world = buildWorld();
-const wall = world.instances.wall.data;
-const wx = wall[8], wy = wall[9], wz = wall[10];
-const eye = [wx + 2, wy + 8, wz + 16];
-const tgt = [wx, wy + 10, wz];
+const wx = pathX(-40) - 9;
+const eye = [pathX(-24), 6, -24];
+const tgt = [wx, 12, -40];
 const cleanHoles = rasterHoles(world, eye, tgt, false);
 const injected = rasterHoles(world, eye, tgt, true);
 if (cleanHoles > 0) bad('far depth inside a wall hull ' + cleanHoles);

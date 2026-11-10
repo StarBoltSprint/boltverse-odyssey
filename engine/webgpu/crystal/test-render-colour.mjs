@@ -30,11 +30,54 @@ function norm(v) {
 function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
 function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
 
+function pushTri(buckets, mat, a, b, c, n, dist) {
+  if (!buckets.has(mat)) return;
+  const area = 0.5 * Math.hypot(...cross(sub(b, a), sub(c, a)));
+  const ndl = Math.max(0, n[0] * sunN[0] + n[1] * sunN[1] + n[2] * sunN[2]);
+  const flat = n[1] > 0.75;
+  if (area < 0.02) return;
+  if (flat ? ndl < 0.12 : ndl < 0.45) return;
+  const at = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3];
+  const d = dist || (mat === MAT.violet || mat === MAT.cyan ? 1.15 : 0.55);
+  buckets.get(mat).push({
+    at,
+    eye: [at[0] + n[0] * d + 0.05, at[1] + n[1] * d, at[2] + n[2] * d],
+    tgt: at,
+    ndl,
+    area,
+  });
+}
+
+let sunN = [0, 1, 0];
+
 function pickShots() {
-  const sun = norm(NIGHT.moon.direction);
+  sunN = norm(NIGHT.moon.direction);
   const world = buildWorld();
   const v = world.verts;
   const buckets = new Map(MATERIALS.map((m) => [m.mat, []]));
+  for (const slot of Object.values(world.instances)) {
+    const data = slot.data;
+    const proto = slot.proto;
+    for (let n = 0; n < slot.count; n++) {
+      const o = n * 8;
+      const ix = data[o], iy = data[o + 1], iz = data[o + 2], yaw = data[o + 3];
+      const sx = data[o + 4], sy = data[o + 5], sz = data[o + 6], lean = data[o + 7];
+      const cl = Math.cos(lean), sl = Math.sin(lean);
+      const cy = Math.cos(yaw), syaw = Math.sin(yaw);
+      const xform = (px, py, pz) => {
+        const x = px * sx, y = py * sy, z = pz * sz;
+        const xl = cl * x - sl * y, yl = sl * x + cl * y;
+        return [ix + cy * xl + syaw * z, iy + yl, iz - syaw * xl + cy * z];
+      };
+      const nxform = (px, py, pz) => {
+        const xl = cl * px - sl * py, yl = sl * px + cl * py;
+        return norm([cy * xl + syaw * pz, yl, -syaw * xl + cy * pz]);
+      };
+      for (let t = 0; t + 24 <= proto.length; t += 24) {
+        pushTri(buckets, Math.round(proto[t + 3]), xform(proto[t], proto[t + 1], proto[t + 2]), xform(proto[t + 8], proto[t + 9], proto[t + 10]), xform(proto[t + 16], proto[t + 17], proto[t + 18]), nxform(proto[t + 4], proto[t + 5], proto[t + 6]));
+      }
+    }
+  }
   for (let i = 0; i + 24 <= v.length; i += 24) {
     const mat = Math.round(v[i + 3]);
     if (!buckets.has(mat)) continue;
@@ -42,34 +85,20 @@ function pickShots() {
     const b = [v[i + 8], v[i + 9], v[i + 10]];
     const c = [v[i + 16], v[i + 17], v[i + 18]];
     const n = norm([v[i + 4], v[i + 5], v[i + 6]]);
-    const area = 0.5 * Math.hypot(...cross(sub(b, a), sub(c, a)));
-    const ndl = Math.max(0, n[0] * sun[0] + n[1] * sun[1] + n[2] * sun[2]);
-    const flat = n[1] > 0.75;
-    if (area < 0.02) continue;
-    if (flat ? ndl < 0.12 : ndl < 0.45) continue;
-    const at = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3];
-    if (mat === MAT.stream && at[1] < terrH(at[0], at[2]) + 0.08) continue;
-    let dist = 0.55;
     if (mat === MAT.stream) {
-      // The sheet is the rest plane. The shader lifts it by up to 0.16, and the
-      // near plane is 0.08, so a camera 0.1 m up clips the crest and shows the bed.
+      const at = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3];
+      if (at[1] < terrH(at[0], at[2]) + 0.08) continue;
       const rise = WATER_WAVE.az * Math.sin(at[2] * WATER_WAVE.fz) + WATER_WAVE.ax * Math.sin(at[0] * WATER_WAVE.fx);
       const dydx = WATER_WAVE.ax * WATER_WAVE.fx * Math.cos(at[0] * WATER_WAVE.fx);
       const dydz = WATER_WAVE.az * WATER_WAVE.fz * Math.cos(at[2] * WATER_WAVE.fz);
       const nl = Math.hypot(dydx, 1, dydz) || 1;
       const ny = 1 / nl;
-      const ndlW = Math.max(0, (-dydx * sun[0] + sun[1] - dydz * sun[2]) / nl);
+      const ndlW = Math.max(0, (-dydx * sunN[0] + sunN[1] - dydz * sunN[2]) / nl);
       if (ny < 0.7 || ndlW < 0.12 || 0.4 - rise < 0.12) continue;
-      dist = 0.4;
+      pushTri(buckets, mat, a, b, c, n, 0.4);
+      continue;
     }
-    if (mat === MAT.violet || mat === MAT.cyan) dist = 1.15;
-    buckets.get(mat).push({
-      at,
-      eye: [at[0] + n[0] * dist + 0.05, at[1] + n[1] * dist, at[2] + n[2] * dist],
-      tgt: at,
-      ndl,
-      area,
-    });
+    pushTri(buckets, mat, a, b, c, n);
   }
   const shots = [];
   for (const spec of MATERIALS) {
