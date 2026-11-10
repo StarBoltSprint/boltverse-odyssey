@@ -187,19 +187,26 @@ fn darken15(c: vec3f) -> vec3f {
   let scS = ${SC.stream};
   var gnd = textureSample(groundTex, samp, v.w.xz * scG).rgb;
   let gOff = textureSample(groundTex, samp, v.w.xz * scG + vec2f(0.37, 0.53)).rgb;
+  let gBroad = textureSample(groundTex, samp, v.w.xz * scG * 0.22).rgb;
   let gN = skyNoise(vec3f(v.w.x * 0.17, v.w.z * 0.17, 3.0));
   gnd = mix(gnd, gOff, smoothstep(0.46, 0.54, gN));
-  let glossN = skyNoise(vec3f(v.w.x * 0.045, v.w.z * 0.045, 1.7));
-  let gloss = smoothstep(0.78, 0.93, glossN);
-  let crackLine = abs(sin(v.w.x * 0.48 + sin(v.w.z * 0.27) * 2.2));
-  let groundCrack = 1.0 - smoothstep(0.0, 0.035, crackLine);
-  gnd = mix(gnd, gnd * vec3f(0.42, 0.48, 0.6), gloss);
-  gnd = gnd * (1.0 - groundCrack * 0.55);
-  let plate = v.w.xz * 0.072;
+  gnd = mix(gnd, gBroad, 0.42);
+  let broadN = skyNoise(vec3f(v.w.x * 0.11, v.w.z * 0.09, 2.2));
+  let glossFlow = smoothstep(0.58, 0.78, broadN);
+  let ash = smoothstep(0.46, 0.22, broadN);
+  gnd = mix(gnd, gnd * vec3f(0.28, 0.3, 0.4), glossFlow);
+  gnd = mix(gnd, gnd * vec3f(1.55, 1.42, 1.15), ash);
+  let crackLine = abs(sin(v.w.x * 0.22 + sin(v.w.z * 0.13) * 2.0));
+  let groundCrack = 1.0 - smoothstep(0.0, 0.06, crackLine);
+  gnd = gnd * (1.0 - groundCrack * 0.62);
+  let plate = v.w.xz * 0.055;
   let pf = fract(plate);
   let pedge = min(min(pf.x, 1.0 - pf.x), min(pf.y, 1.0 - pf.y));
-  let lip = 1.0 - smoothstep(0.0, 0.16, pedge);
-  gnd = mix(gnd, gnd * 1.75 + vec3f(0.02, 0.022, 0.03), lip);
+  let lip = 1.0 - smoothstep(0.0, 0.22, pedge);
+  gnd = mix(gnd, gnd * 2.6 + vec3f(0.045, 0.048, 0.055), lip);
+  let pathLat = v.w.x - pathXg(v.w.z);
+  let worn = smoothstep(1.7, 0.15, abs(pathLat));
+  gnd = mix(gnd, gnd * vec3f(1.12, 1.08, 1.02), worn * 0.4);
   let streamU = v.w.x - pathXg(v.w.z) - 3.55;
   let wet = smoothstep(3.4, 1.15, abs(streamU));
   let streak = smoothstep(0.62, 0.88, skyNoise(vec3f(v.w.x * 0.35, v.w.z * 0.9, 4.0)));
@@ -231,7 +238,7 @@ fn darken15(c: vec3f) -> vec3f {
   let waterAlb = textureSample(streamTex, samp, flow).rgb;
   let tip = clamp(abs(v.uv.x), 0.0, 1.0);
   let view0 = normalize(u.cam.xyz - v.w);
-  let ip = v.w + view0 * (0.16 * (1.0 - tip));
+  let ip = v.w + view0 * (0.55 * (1.0 - tip));
   let inner = triMix(
     textureSample(crysTex, samp, ip.zy * scC).rgb,
     textureSample(crysTex, samp, ip.xz * scC).rgb,
@@ -328,11 +335,13 @@ fn darken15(c: vec3f) -> vec3f {
   let graze = smoothstep(0.5, 0.08, ndv);
   let tipH = clamp(abs(v.uv.x), 0.0, 1.0);
   let dense = smoothstep(0.5, 0.0, tipH);
-  let body = albH * irr * (1.0 - dense * graze * 0.3);
+  let deep = mix(inner, inner * vec3f(0.45, 0.5, 0.62), smoothstep(0.2, 0.85, tipH));
+  let body = mix(albH, deep, 0.06 + graze * 0.4) * irr * (1.0 - dense * graze * 0.3);
   let shade = 1.0 - smoothstep(0.12, 0.46, ndl);
   let grad = mix(1.0, 0.2, tipH);
   let coreCol = mix(alb, vec3f(alb.r * 0.3, max(alb.g, alb.b * 0.7), max(alb.b, alb.g)), 0.4);
-  let core = min(coreCol * grad * (0.04 + shade * 0.42), vec3f(0.2));
+  let coreStreak = 0.62 + 0.38 * smoothstep(0.35, 0.82, abs(sin(tipH * 16.0 + v.w.x * 1.7)));
+  let core = min(coreCol * grad * coreStreak * (0.04 + shade * 0.42), vec3f(0.2));
   let refr = normalize(mix(view, n, 0.22));
   let through = skyColour(refr);
   let thin = pow(1.0 - ndv, 1.5);
@@ -361,7 +370,10 @@ fn darken15(c: vec3f) -> vec3f {
   let haze = smoothstep(70.0, 190.0, dist);
   let skyFar = skyColour(normalize(vec3f(v.w.x - u.cam.x, 0.12, v.w.z - u.cam.z)));
   col = mix(col, skyFar, haze * 0.62);
-  col = col + vec3f(0.006, 0.03, 0.042) * glow * (1.0 - crystal) * (1.0 - water);
+  let glossPatch = smoothstep(0.55, 0.78, skyNoise(vec3f(v.w.x * 0.11, v.w.z * 0.09, 2.2)));
+  let sheen = glossPatch * pow(1.0 - ndv, 2.2);
+  col = col + alb * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * sheen * 0.2 * select(0.0, 1.0, m < 0.5);
+  col = col + vec3f(0.014, 0.06, 0.082) * glow * (1.0 - crystal) * (1.0 - water);
   if (breakId > 0.5 && abs(m - (breakId - 1.0)) < 0.25) { col = darken15(col); }
   return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }
@@ -396,6 +408,10 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let bounce = max(u.grid.xyz, vec3f(0.55));
   c *= mix(vec3f(1.0), bounce, smoothstep(0.34, 0.02, hgt) * 0.22);
   c *= mix(0.82, 1.0, smoothstep(-0.02, 0.25, hgt));
+  var nearGem = 0.0;
+  ${world.pools.reduce((s, _v, i) => i % 3 ? s : s + `nearGem = max(nearGem, smoothstep(${world.pools[i + 2].toFixed(2)}, ${(world.pools[i + 2] * 0.25).toFixed(2)}, length(vec2f(u.bolt.x, u.bolt.z) - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
+  let flank = abs(v.uv.x - 0.5) * 2.0;
+  c = c + vec3f(0.015, 0.055, 0.075) * nearGem * flank * 0.65;
   return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), mixed.a);
 }
 ${breathMixWgsl()}
@@ -403,12 +419,12 @@ struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
 @vertex fn vsContact(@builtin(vertex_index) vi: u32) -> CO {
   var q = array<vec2f, 6>(vec2f(-1, -1), vec2f(1, -1), vec2f(1, 1), vec2f(-1, -1), vec2f(1, 1), vec2f(-1, 1));
   let c = q[vi]; let b = u.bolt;
-  let w = vec3f(b.x + c.x * 0.34, b.y + 0.025, b.z + c.y * 0.22);
+  let w = vec3f(b.x + c.x * 0.52, b.y + 0.02, b.z + c.y * 0.36);
   var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; return o;
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
   let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
-  let a = (1.0 - smoothstep(0.2, 1.0, r2)) * 0.38;
+  let a = (1.0 - smoothstep(0.08, 1.0, r2)) * 0.7;
   return vec4f(0.0, 0.0, 0.0, a);
 }
 `;

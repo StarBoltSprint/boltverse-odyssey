@@ -272,19 +272,27 @@ function makeCrystalProto() {
 function makeRubbleProto() {
   const m = createMesh();
   const ring = [];
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2 + 0.15;
-    const r = 0.5 + hash(4, i) * 0.55;
-    ring.push([Math.cos(a) * r, 0.06 + hash(4, i + 3) * 0.22, Math.sin(a) * r * (0.65 + hash(4, i + 6) * 0.45)]);
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2 + 0.2;
+    const r = 0.55 + hash(4, i) * 0.4;
+    ring.push([Math.cos(a) * r, 0.02, Math.sin(a) * r * (0.7 + hash(4, i + 6) * 0.35)]);
   }
-  const top = [(hash(4, 9) - 0.5) * 0.35, 0.7 + hash(4, 10) * 0.45, (hash(4, 11) - 0.5) * 0.3];
-  const bot = [(hash(4, 12) - 0.5) * 0.15, 0, (hash(4, 13) - 0.5) * 0.15];
-  for (let i = 0; i < 8; i++) {
+  const top = [(hash(4, 9) - 0.5) * 0.2, 0.16 + hash(4, 10) * 0.1, (hash(4, 11) - 0.5) * 0.15];
+  for (let i = 0; i < 7; i++) {
     const a = ring[i];
-    const b = ring[(i + 1) % 8];
-    m.tri(bot, b, a, [0, 0], [1, 0], [1, 1], MAT.wall);
-    m.tri(a, b, top, [0, 0], [1, 0], [0.5, 1], MAT.wall);
+    const b = ring[(i + 1) % 7];
+    m.tri([0, 0, 0], b, a, [0, 0], [1, 0], [1, 1], MAT.stone);
+    m.tri(a, b, top, [0, 0], [1, 0], [0.5, 1], MAT.stone);
   }
+  const chip = (ox, oz, yaw, sx, sz) => {
+    const c = Math.cos(yaw), s = Math.sin(yaw);
+    const p = (x, z) => [ox + x * c - z * s, 0.03, oz + x * s + z * c];
+    const A = p(-sx, -sz), B = p(sx, -sz * 0.7), C = p(sx * 0.6, sz), D = p(-sx * 0.8, sz * 0.5);
+    m.tri(A, B, C, [0, 0], [1, 0], [1, 1], MAT.stone);
+    m.tri(A, C, D, [0, 0], [1, 1], [0, 1], MAT.stone);
+  };
+  chip(0.85, 0.15, 0.4, 0.34, 0.16);
+  chip(-0.7, -0.25, -0.6, 0.28, 0.12);
   return m.finish();
 }
 
@@ -368,21 +376,26 @@ export function buildWorld() {
     if (pools.length < 24) pools.push(x, z, Math.max(2.4, h * 0.42));
   }
   const giants = [[-12, -78, 22], [13, -102, 25], [-11, -132, 20]];
-  for (let i = 0; i < 8; i++) {
-    const z = -8 - i * 18;
+  for (let i = 0; i < 5; i++) {
+    const z = -16 - i * 28;
     const side = i % 2 === 0 ? -1 : 1;
-    const x = pathX(z) + side * (5.5 + hash(i, 51));
-    const y = terrH(x, z);
-    const ring = [];
-    for (let k = 0; k < 6; k++) {
-      const a = (k / 6) * Math.PI * 2;
-      const r = 0.7 + hash(i, k) * 0.6;
-      ring.push([x + Math.cos(a) * r, y + 0.15, z + Math.sin(a) * r * 0.8]);
-    }
-    const top = [x, y + 0.8 + hash(i, 52) * 0.5, z];
-    for (let k = 0; k < 6; k++) {
-      mesh.tri(ring[k], ring[(k + 1) % 6], top, [0, 0], [1, 0], [0.5, 1], MAT.stone);
-    }
+    const x = pathX(z) + side * 6.2;
+    const y = terrH(x, z) + 0.45;
+    const N = [0.587, 0.174, -0.79];
+    const nl = Math.hypot(...N);
+    const n = N.map(v => v / nl);
+    const b = [n[1] * 0 - n[2] * 1, n[2] * 0 - n[0] * 0, n[0] * 1 - n[1] * 0];
+    const bl = Math.hypot(...b);
+    const B = b.map(v => v / bl);
+    const C = [n[1] * B[2] - n[2] * B[1], n[2] * B[0] - n[0] * B[2], n[0] * B[1] - n[1] * B[0]];
+    const P = (u, v) => [
+      x + (B[0] * u + C[0] * v) * 0.85,
+      y + (B[1] * u + C[1] * v) * 0.85,
+      z + (B[2] * u + C[2] * v) * 0.85,
+    ];
+    const A = P(-1, -0.55), Bp = P(1, -0.4), Cp = P(0.7, 0.6), D = P(-0.8, 0.45);
+    mesh.tri(A, Bp, Cp, [0, 0], [1, 0], [1, 1], MAT.stone, n);
+    mesh.tri(A, Cp, D, [0, 0], [1, 1], [0, 1], MAT.stone, n);
   }
   for (const [lat, z, h] of giants) {
     const x = pathX(z) + lat;
