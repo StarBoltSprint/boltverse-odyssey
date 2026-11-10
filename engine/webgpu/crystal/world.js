@@ -365,9 +365,9 @@ export function buildWorld() {
     const x = pathX(z) + lat;
     const sc = h / 12;
     pushInst(crystals, x, terrH(x, z), z, hash(i, 33) * 5, sc, sc, sc, side * 0.25);
-    if (pools.length < 16) pools.push(x, z);
+    if (pools.length < 24) pools.push(x, z, Math.max(2.4, h * 0.42));
   }
-  const giants = [[-11, -46, 22], [12, -74, 25], [-10.5, -104, 20]];
+  const giants = [[-12, -78, 22], [13, -102, 25], [-11, -132, 20]];
   for (let i = 0; i < 8; i++) {
     const z = -8 - i * 18;
     const side = i % 2 === 0 ? -1 : 1;
@@ -389,6 +389,23 @@ export function buildWorld() {
     const sc = h / 12;
     pushInst(crystals, x, terrH(x, z), z, 0.4, sc, sc, sc, Math.sign(lat) * 0.2);
     circles.push({ x, z, r: 2.1 });
+    pools.push(x, z, h * 0.55);
+  }
+  for (let i = 0; i < 16; i++) {
+    const z = 2 - i * 2.4;
+    const side = i % 2 === 0 ? -1 : 1;
+    const lat = side * (1.45 + hash(i, 71) * 0.55);
+    const x = pathX(z) + lat;
+    const s = 0.32 + hash(i, 72) * 0.28;
+    pushInst(shards, x, terrH(x, z), z, hash(i, 73) * 6, s, s, s, (hash(i, 74) - 0.5) * 0.8);
+  }
+  for (let i = 0; i < 24; i++) {
+    const z = 5 - i * 2.2;
+    const side = i % 2 === 0 ? 1 : -1;
+    const lat = side * (1.7 + hash(i, 81) * 0.9);
+    const x = pathX(z) + lat;
+    const s = 0.14 + hash(i, 82) * 0.22;
+    pushInst(rubble, x, terrH(x, z), z, hash(i, 83) * 6, s, s * 0.65, s * 0.8);
   }
   for (let i = 0; i < 40; i++) {
     const z = 12 - i * 4.5;

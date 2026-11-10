@@ -195,19 +195,18 @@ fn darken15(c: vec3f) -> vec3f {
   let groundCrack = 1.0 - smoothstep(0.0, 0.035, crackLine);
   gnd = mix(gnd, gnd * vec3f(0.42, 0.48, 0.6), gloss);
   gnd = gnd * (1.0 - groundCrack * 0.55);
-  let plate = v.w.xz * 0.18;
+  let plate = v.w.xz * 0.072;
   let pf = fract(plate);
   let pedge = min(min(pf.x, 1.0 - pf.x), min(pf.y, 1.0 - pf.y));
-  let lip = 1.0 - smoothstep(0.0, 0.09, pedge);
-  gnd = mix(gnd, gnd * 1.45 + vec3f(0.015, 0.016, 0.02), lip);
+  let lip = 1.0 - smoothstep(0.0, 0.16, pedge);
+  gnd = mix(gnd, gnd * 1.75 + vec3f(0.02, 0.022, 0.03), lip);
   let streamU = v.w.x - pathXg(v.w.z) - 3.55;
   let wet = smoothstep(3.4, 1.15, abs(streamU));
   let streak = smoothstep(0.62, 0.88, skyNoise(vec3f(v.w.x * 0.35, v.w.z * 0.9, 4.0)));
   gnd = mix(gnd, gnd * vec3f(0.5, 0.58, 0.72), wet * streak);
-  var pool = 0.0;
-  ${world.pools.reduce((s, v, i) => i % 2 ? s : s + `pool = max(pool, smoothstep(3.6, 0.5, length(v.w.xz - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
-  pool = pool * pool * (0.55 + 0.45 * skyNoise(v.w * 0.7));
-  gnd = gnd + vec3f(0.01, 0.045, 0.06) * pool;
+  var glow = 0.0;
+  ${world.pools.reduce((s, _v, i) => i % 3 ? s : s + `glow = max(glow, smoothstep(${world.pools[i + 2].toFixed(2)}, ${(world.pools[i + 2] * 0.22).toFixed(2)}, length(v.w.xz - vec2f(${world.pools[i].toFixed(2)}, ${world.pools[i + 1].toFixed(2)}))));\n  `, '')}
+  glow = glow * glow * (0.6 + 0.4 * skyNoise(v.w * 0.55));
   let wallFine = triMix(
     textureSample(wallTex, samp, v.w.zy * scW).rgb,
     textureSample(wallTex, samp, v.w.xz * scW).rgb,
@@ -261,6 +260,11 @@ fn darken15(c: vec3f) -> vec3f {
     let t = u.cam.w;
     n = waterN(v.w, t);
     alb = waterAlb;
+  }
+  if (m > 0.5 && m < 2.5) {
+    let id = round(n * 6.0);
+    let j = fract(sin(dot(id, vec3f(2.3, 5.1, 8.7))) * 43758.5) - 0.5;
+    n = normalize(n + vec3f(j, j * 0.28, -j) * 0.1);
   }
   if (m > 5.5 && m < 6.5) {
     let mid = triMix(
@@ -321,26 +325,35 @@ fn darken15(c: vec3f) -> vec3f {
   let chamfer = select(0.0, 1.0, v.uv.x < 0.0);
   let hue = fract(sin(dot(round(n * 8.0), vec3f(3.1, 7.4, 1.9))) * 43758.5);
   let albH = alb * vec3f(1.0, mix(1.0, 1.02, hue), mix(1.0, 0.985, hue));
-  let graze = smoothstep(0.45, 0.05, ndv);
-  let body = albH * irr * (1.0 - graze * 0.2);
-  let shade = 1.0 - smoothstep(0.08, 0.42, ndl);
-  let core = alb * shade * (1.0 - graze * 0.35) * 0.34;
+  let graze = smoothstep(0.5, 0.08, ndv);
+  let tipH = clamp(abs(v.uv.x), 0.0, 1.0);
+  let dense = smoothstep(0.5, 0.0, tipH);
+  let body = albH * irr * (1.0 - dense * graze * 0.3);
+  let shade = 1.0 - smoothstep(0.12, 0.46, ndl);
+  let grad = mix(1.0, 0.2, tipH);
+  let coreCol = mix(alb, vec3f(alb.r * 0.3, max(alb.g, alb.b * 0.7), max(alb.b, alb.g)), 0.4);
+  let core = min(coreCol * grad * (0.04 + shade * 0.42), vec3f(0.2));
   let refr = normalize(mix(view, n, 0.22));
   let through = skyColour(refr);
-  let thin = pow(1.0 - ndv, 1.7);
-  let transmit = through * alb * thin * 0.08 * (0.25 + 0.75 * ndl);
+  let thin = pow(1.0 - ndv, 1.5);
+  let transmit = through * alb * thin * 0.1 * (0.25 + 0.75 * ndl);
   let crack = fractureAmt(v.w + view * 0.05, view);
   let spark = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${LIGHT.sparkPow}.0);
-  let fres = pow(1.0 - ndv, 3.0);
+  let fres = pow(1.0 - ndv, 2.8);
   let broken = smoothstep(0.78, 0.92, fract(tip * 6.5 + v.w.y * 0.85));
-  let chamAdd = albH * fres * ndl * broken * 0.16 * chamfer;
+  let chamAdd = albH * fres * ndl * broken * 0.1 * chamfer;
   let moon = sunN();
-  let backRim = albH * skyColour(moon) * pow(1.0 - ndv, 2.6) * clamp(dot(view, moon), 0.0, 1.0) * clamp(dot(-moon, n), 0.0, 1.0) * 1.05;
-  let gemCol = body * mix(1.0, 0.94, chamfer) + core
+  let gemRim = alb * vec3f(${LIGHT.moon[0]}, ${LIGHT.moon[1]}, ${LIGHT.moon[2]}) * fres * clamp(dot(n, moon), 0.0, 1.0) * 0.16;
+  let backRim = albH * skyColour(moon) * pow(1.0 - ndv, 2.6) * clamp(dot(view, moon), 0.0, 1.0) * clamp(dot(-moon, n), 0.0, 1.0) * 0.55;
+  let vein = smoothstep(0.02, 0.09, length(cry - inner));
+  let gemCol = body + core
+    + alb * thin * graze * (0.16 + 0.4 * tipH)
     + transmit * graze
     + albH * crack * ${LIGHT.fractureGain} * graze
-    + alb * spark * ${LIGHT.sparkle} * ndl * 0.35
+    + alb * vein * 0.07 * (0.2 + 0.8 * graze)
+    + alb * spark * 0.04 * ndl * graze
     + chamAdd
+    + gemRim
     + backRim;
   col = mix(col, gemCol, crystal);
   let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
@@ -348,6 +361,7 @@ fn darken15(c: vec3f) -> vec3f {
   let haze = smoothstep(70.0, 190.0, dist);
   let skyFar = skyColour(normalize(vec3f(v.w.x - u.cam.x, 0.12, v.w.z - u.cam.z)));
   col = mix(col, skyFar, haze * 0.62);
+  col = col + vec3f(0.006, 0.03, 0.042) * glow * (1.0 - crystal) * (1.0 - water);
   if (breakId > 0.5 && abs(m - (breakId - 1.0)) < 0.25) { col = darken15(col); }
   return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);
 }

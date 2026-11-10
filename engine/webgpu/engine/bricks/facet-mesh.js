@@ -109,18 +109,19 @@ export function createMesh() {
     const faceN = (i) => {
       const j = (i + 1) % N;
       const a = (ang[i] + ang[j]) / 2;
-      return dir(Math.cos(a), 0.05, Math.sin(a));
+      const wob = (hsh(i + 30) - 0.5) * 0.16;
+      return dir(Math.cos(a) + wob, 0.07, Math.sin(a) - wob * 0.45);
     };
     const quadN = (a, ha, b, hb, c, hc, d, hd, nrm) => {
       emit(a, nrm, ha); emit(b, nrm, hb); emit(c, nrm, hc);
       emit(a, nrm, ha); emit(c, nrm, hc); emit(d, nrm, hd);
     };
-    const broken = hsh(21) > 0.5;
-    const lipY = height * 0.6;
-    const baseOut = ring(0, radius * 0.9, 0);
-    const baseIn = ring(0, Math.max(radius * 0.9 - bevel, radius * 0.55), 0);
-    const lipOut = ring(lipY, radius, 0.6);
-    const lipIn = ring(lipY, Math.max(radius - bevel, radius * 0.62), 0.6);
+    const broken = hsh(21) > 0.28;
+    const lipY = height * 0.62;
+    const baseOut = ring(0, radius * 1.08, 0);
+    const baseIn = ring(0, Math.max(radius * 1.08 - bevel, radius * 0.55), 0);
+    const lipOut = ring(lipY, radius * 0.62, 0.6);
+    const lipIn = ring(lipY, Math.max(radius * 0.62 - bevel, radius * 0.34), 0.6);
     for (let i = 0; i < N; i++) {
       const j = (i + 1) % N;
       quadH(baseIn[i], 0, baseIn[j], 0, lipIn[j], 0.6, lipIn[i], 0.6);
