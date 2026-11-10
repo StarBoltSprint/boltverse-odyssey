@@ -210,25 +210,19 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   var col = shadeAlb(alb, n, view, ${SHADE.waterSpec} * water);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let block = select(0.0, 1.0, (m > 5.5 && m < 6.5) || (m > 2.5 && m < 3.5));
-  let glow = select(0.0, 1.0, m > 6.5);
-  if (glow > 0.5) {
-    let src = select(cry, vio, m > 7.5);
-    let k = smoothstep(1.0, 0.15, v.uv.x);
-    if (k < 0.04) { discard; }
-    return present(src * (0.12 + 0.38 * k));
-  }
   let skyDir = normalize(vec3f(n.x * 0.45, 0.72 + max(n.y, 0.0) * 0.35, n.z * 0.45));
   let skyFace = skyColour(skyDir);
   let skyLin = dot(skyFace, vec3f(0.2126, 0.7152, 0.0722));
   let fill = clamp(skyLin * ${LIGHT.fillGain}.0, ${LIGHT.fillMin}, ${LIGHT.fillMax});
   let F = ${LIGHT.f0} + (1.0 - ${LIGHT.f0}) * pow(1.0 - ndv, 5.0);
-  let relief = normalize(n + conchGrad(v.w, n) * ${LIGHT.relief});
-  let refl = reflect(-view, relief);
-  let broad = normalize(mix(refl, relief, ${LIGHT.roughness}));
-  let env = skyColour(broad);
+  let facetN = normalize(n);
+  let side = vec3f(facetN.z, 0.2, -facetN.x);
+  let slice = normalize(mix(side, vec3f(0.0, 0.55, 0.0), ${LIGHT.roughness}));
+  let env = skyColour(slice);
+  let envL = dot(env, vec3f(0.2126, 0.7152, 0.0722));
   let bevel = smoothstep(0.18, 0.42, abs(n.y)) * (1.0 - smoothstep(0.72, 0.92, abs(n.y)));
   let ridge = 1.0 - smoothstep(0.0, 0.03, conchGap(faceUV(v.w, n)));
-  let sheen = env * F * 0.055 * (1.0 + bevel * 0.8) + env * ridge * 0.02;
+  let sheen = mix(vec3f(envL), env, 0.28) * 0.2;
   let grain = max(dot(wallFine - wall, vec3f(0.3, 0.5, 0.2)), 0.0);
   let rare = step(0.992, fract(sin(dot(floor(v.w * 8.0), vec3f(12.9, 47.3, 19.1))) * 43758.5));
   let glint = rare * step(0.04, grain) * smoothstep(0.02, 0.08, ridge) * step(0.2, ndl) * wall * 0.35;
@@ -239,17 +233,16 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let dist = length(v.w - u.cam.xyz);
   let far = smoothstep(55.0, 130.0, dist);
   let rim = pow(1.0 - ndv, 2.4);
-  let rimCol = env;
-  let rimK = min(0.28, rim * (0.15 + 0.4 * far));
+  let rimCol = wallBody * 0.8 + env * 0.08;
+  let rimK = min(0.12, rim * (0.1 + 0.25 * far));
   col = mix(col, rimCol, rimK * block);
   let chamfer = select(0.0, 1.0, v.uv.x < 0.0);
-  let facetJit = 0.72 + 0.56 * fract(sin(dot(round(n * 8.0), vec3f(12.9, 4.7, 8.3))) * 43758.5);
+  let facetJit = 0.94 + 0.12 * fract(sin(dot(round(n * 8.0), vec3f(12.9, 4.7, 8.3))) * 43758.5);
   let hue = fract(sin(dot(round(n * 8.0), vec3f(3.1, 7.4, 1.9))) * 43758.5);
-  let albH = alb * vec3f(mix(1.0, 0.7, hue), mix(0.9, 1.18, hue), mix(1.08, 0.72, hue));
-  let core = pow(ndv, 1.15);
-  let depthTint = mix(0.92, 0.58, core);
+  let albH = alb * vec3f(1.0, mix(1.0, 1.035, hue), mix(1.0, 0.965, hue));
   let lit = max(ndl, 0.0);
-  let body = albH * facetJit * depthTint * (0.14 + 0.78 * lit) * (0.5 + 0.5 * tip);
+  let graze = smoothstep(0.5, 0.08, ndv);
+  let body = albH * facetJit * (0.62 + 1.05 * lit) * (0.78 + 0.22 * tip) * (1.0 - graze * 0.2);
   let refr = normalize(mix(view, n, 0.22));
   let through = skyColour(refr);
   let thin = pow(1.0 - ndv, 1.7);
@@ -259,26 +252,15 @@ struct PVO { @builtin(position) p: vec4f, @location(0) n: vec3f, @location(1) w:
   let fres = pow(1.0 - ndv, 3.0);
   let broken = smoothstep(0.78, 0.92, fract(tip * 6.5 + v.w.y * 0.85));
   let chamAdd = albH * fres * lit * broken * 0.16 * chamfer;
-  let axis = v.w - n * 0.28;
-  let slide = view - n * dot(view, n);
-  let hit = v.w - n * 0.16 + slide * 0.22;
-  let side = hit - axis;
-  let flat = side - vec3f(0.0, 1.0, 0.0) * side.y;
-  let ang = atan2(flat.z, flat.x);
-  let hexR = length(flat) * (0.8 + 0.2 * abs(cos(ang * 3.0)));
-  let phantom = smoothstep(0.48, 0.1, hexR);
-  let coreCol = albH * vec3f(0.16, 0.4, 0.55) * 0.14;
   let moon = sunN();
   let backRim = albH * skyColour(moon) * pow(1.0 - ndv, 2.6) * clamp(dot(view, moon), 0.0, 1.0) * clamp(dot(-n, moon), 0.0, 1.0) * 1.05;
-  let gemCol = mix(
-    body * mix(1.0, 0.7, chamfer)
-      + transmit
-      + albH * crack * ${LIGHT.fractureGain}
-      + alb * spark * ${LIGHT.sparkle} * lit
-      + inner * (1.0 - tip) * 0.16
-      + chamAdd
-      + backRim,
-    coreCol, phantom * 0.92);
+  let gemCol = body * mix(1.0, 0.85, chamfer)
+    + transmit
+    + albH * crack * ${LIGHT.fractureGain}
+    + alb * spark * ${LIGHT.sparkle} * lit
+    + inner * (1.0 - tip) * 0.08
+    + chamAdd
+    + backRim;
   col = mix(col, gemCol, crystal);
   let waterFres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);
   col = mix(col, col * ${SHADE.waterFresnelDark}, waterFres * water * ${SHADE.waterFresnelMix});

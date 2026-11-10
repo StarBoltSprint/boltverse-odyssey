@@ -105,22 +105,6 @@ function addCluster(mesh, x, y, z, radius, height, yaw, mat, seed) {
       rr, hh, ang + hash(seed, i + 7), tilt, mat, seed * 13 + i,
     );
   }
-  glowDisc(mesh, x, y + 0.03, z, radius * 0.95, mat === MAT.violet ? MAT.glowV : MAT.glowC);
-}
-
-function glowDisc(mesh, x, y, z, r, mat) {
-  const N = 20;
-  const c = [x, y, z];
-  for (let i = 0; i < N; i++) {
-    const a0 = (i / N) * Math.PI * 2;
-    const a1 = ((i + 1) / N) * Math.PI * 2;
-    mesh.tri(
-      c,
-      [x + Math.cos(a1) * r, y, z + Math.sin(a1) * r],
-      [x + Math.cos(a0) * r, y, z + Math.sin(a0) * r],
-      [0, 0], [1, 0], [1, 0], mat,
-    );
-  }
 }
 
 function stackBlock(mesh, x, yBase, z, sx, sy, sz, yaw, mat) {
@@ -266,7 +250,7 @@ export function buildWorld() {
     const x = pathX(z) + lat;
     const y0 = terrH(x, z);
     const top = stackBlock(mesh, x, y0, z, w, h, w * 0.92, 0.15, MAT.wall);
-    addCluster(mesh, x, top, z, 0.48, h * 0.42, 0.4, gem, 800 + z);
+    if (z !== -6) addCluster(mesh, x, top, z, 0.48, h * 0.42, 0.4, gem, 800 + z);
     circles.push({ x, z, r: w * 0.42 });
   }
   {
