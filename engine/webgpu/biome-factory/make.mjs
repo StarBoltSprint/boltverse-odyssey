@@ -12,6 +12,7 @@ import { measureSky } from './procedural-sky.js';
 import { jpegPixels } from './albedo-stats.mjs';
 import { spawnSync } from 'child_process';
 import { DE76_MAX } from './cie76.mjs';
+import { auditBiome, MIN_PX_PER_M, MIN_LARGE_VARIANTS, MIN_PROP_VARIANTS } from './texel-gate.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webgpu = path.resolve(here, '..');
@@ -78,6 +79,37 @@ function loadBiome(id) {
     evidence: cfg.evidence || { capture: false, visualVerdict: null, phoneMeasured: false },
     openDefects: cfg.openDefects || [],
   };
+}
+
+const texel = await auditBiome(biome, { webgpu, repo });
+if (!texel.ok) {
+  const dest = path.join(outRoot, biome);
+  fs.mkdirSync(dest, { recursive: true });
+  const state = {
+    label: 'HOLD',
+    release: false,
+    visualKeep: false,
+    minPxPerM: MIN_PX_PER_M,
+    minLargeVariants: MIN_LARGE_VARIANTS,
+    minPropVariants: MIN_PROP_VARIANTS,
+    reason: texel.message,
+    texelGate: texel.rows.map((row) => ({
+      id: row.id,
+      native: row.native,
+      tileMetres: row.tileMetres,
+      pxPerM: row.pxPerM == null ? null : Math.round(row.pxPerM),
+      variants: row.variants,
+      stretch: row.stretch,
+      pass: row.pass,
+      reasons: row.reasons,
+    })),
+  };
+  fs.writeFileSync(path.join(dest, 'state.json'), JSON.stringify(state, null, 2) + '\n');
+  const keep = path.join(dest, 'KEEP');
+  if (fs.existsSync(keep)) fs.rmSync(keep);
+  console.error(texel.message);
+  console.log(JSON.stringify({ label: 'HOLD', release: false, minPxPerM: MIN_PX_PER_M, texel: texel.message }));
+  process.exit(2);
 }
 
 if (biome === 'glacier') {

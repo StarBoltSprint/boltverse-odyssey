@@ -2,6 +2,12 @@
 
 One command builds an isolated crystal candidate from `crystal/biome.factory.json` and the house mesh and shade modules. It does not call Imagine and it does not release.
 
+Before that build, `texel-gate.mjs` checks every material. The floor is 2048 native Imagine px per metre (`MIN_PX_PER_M`). Large surfaces need at least 4 distinct variants (`MIN_LARGE_VARIANTS`). Small props need at least 3 (`MIN_PROP_VARIANTS`). Distinct means a different sha256. A config cannot lower the pixel floor or either variant floor. A miss exits 2, writes HOLD, and does not render a swatch. A slot declares `files` (Imagine variants), `tileMetres`, and `surfaceClass` (`ground`, `floor`, `snow`, `ice`, `wall`, `cliff`, or `prop`). Mesh UV stretch stays at or under 1.3, and on-screen magnification at the follow camera stays at or under 1.
+
+```bash
+node engine/webgpu/biome-factory/texel-gate.mjs --all
+```
+
 ```bash
 node engine/webgpu/biome-factory/make.mjs --biome crystal
 node engine/webgpu/biome-factory/test-factory.mjs
