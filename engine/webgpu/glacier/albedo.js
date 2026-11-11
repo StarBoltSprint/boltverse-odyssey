@@ -73,7 +73,14 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let c0 = blend4(arr, uv + vec2f(hash21(i), hash21(i + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(i + vec2f(8.0, 1.0)), 1.0), gain);
   let c1 = blend4(arr, uv + vec2f(hash21(id1), hash21(id1 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id1 + vec2f(8.0, 1.0)), 1.0), gain);
   let c2 = blend4(arr, uv + vec2f(hash21(id2), hash21(id2 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id2 + vec2f(8.0, 1.0)), 1.0), gain);
-  return c0 * w.x + c1 * w.y + c2 * w.z;
+  let soft = c0 * w.x + c1 * w.y + c2 * w.z;
+  // One still's grain on top of the even blend, so the lane keeps the photo
+  // and does not turn into a flat average. The coarse mip keeps the mean.
+  let k = i32(floor(hash21(i + vec2f(8.0, 1.0)) * 4.0)) % 4;
+  let gv = dot(gain, vec4f(select(0.0, 1.0, k == 0), select(0.0, 1.0, k == 1), select(0.0, 1.0, k == 2), select(0.0, 1.0, k == 3)));
+  let fine = textureSampleGrad(arr, samp, uv, k, du, dv).rgb * gv;
+  let coarse = textureSampleLevel(arr, samp, uv, k, 4.5).rgb * gv;
+  return soft + (fine - coarse) * 1.7;
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
@@ -95,8 +102,10 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let ice = sampleArr(iceArr, p, nrm, px, py, iceGain);
     if (m < 1.5) {
       let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
-      let lip = smoothstep(0.45, 0.8, nrm.y);
-      return mix(ice, snow, lip * 0.85);
+      let lip = smoothstep(0.35, 0.75, nrm.y);
+      let streak = 0.5 + 0.5 * sin(p.x * 2.4 + p.z * 0.8);
+      var fall = mix(ice * vec3f(0.86, 0.92, 1.0), snow, 0.5 + streak * 0.38);
+      return mix(fall, snow, lip * 0.9);
     }
     if (m < 2.5) {
       let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);

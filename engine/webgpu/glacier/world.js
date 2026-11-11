@@ -58,21 +58,21 @@ export function floorH(x, z) {
   const crev = Math.exp(-((lat - crevLat) ** 2) / crevW) * (2.4 + 1.1 * fbm2(z * 0.017, 4.1));
   // The route is a smooth band wider than the chase view. Sastrugi start
   // outside it, so no near facet rises between the camera and the paws.
-  // Smooth under Bolt (1.4 m). Ripples and sastrugi begin just outside that band.
-  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - 1.35) / 1.3));
-  const wind = fbm2(lat * 0.09, z * 0.018);
-  const wind2 = fbm2(lat * 0.16 + 2.2, z * 0.028);
-  const ridge = Math.pow(Math.max(0, (wind - 0.36) / 0.64), 1.2);
-  const amp = 0.1 + 0.42 * lane;
-  const sast = ridge * amp + (wind2 - 0.5) * (0.06 + 0.16 * lane);
-  const band = Math.min(1, Math.max(0, (Math.abs(lat) - 1.35) / 1.1));
-  // Wind ripples stay a few centimetres, so the pads still meet the snow.
-  const ripple = Math.sin(z * 0.72 + lat * 1.1) * 0.016 + Math.sin(z * 0.31) * 0.012;
+  // Flat only under the paws. Sastrugi start at the lane edge so the chase
+  // camera sees them, and they stay off the raycast under the pads.
+  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - 0.8) / 0.7));
+  const wind = fbm2(lat * 0.11, z * 0.02);
+  const wind2 = fbm2(lat * 0.2 + 2.2, z * 0.035);
+  const ridge = Math.pow(Math.max(0, (wind - 0.32) / 0.68), 1.15);
+  const amp = 0.45 + 0.7 * lane;
+  const sast = ridge * amp + (wind2 - 0.5) * (0.14 + 0.36 * lane);
+  const band = Math.min(1, Math.max(0, (Math.abs(lat) - 0.8) / 0.4));
+  const ripple = Math.sin(z * 1.15 + lat * 2.2) * 0.035 * band + Math.sin(lat * 3.1 + z * 0.4) * 0.02 * band;
   return routeSmooth(z) + ripple + (sast - crev - footDent(x, z, lat)) * band;
 }
 
 function footDent(x, z, lat) {
-  if (Math.abs(lat) < 0.4 || Math.abs(lat) > 1.7 || z > 8 || z < -55) return 0;
+  if (Math.abs(lat) < 0.4 || Math.abs(lat) > 1.7 || z > 8 || z < -340) return 0;
   const cell = Math.floor(z * 1.15 + (lat > 0 ? 3 : 0));
   if (hash(cell, 9.2) < 0.7) return 0;
   const zc = (cell + 0.3 + hash(cell, 2.4) * 0.45) / 1.15;
@@ -331,6 +331,83 @@ function addCurtain(mesh, z0) {
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
       face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.fall, [0, 0.15, 1]);
+    }
+  }
+}
+
+// A frozen fall on the lane shoulder. The foot sits on the snow and the
+// sheet faces the chase, so it stays in the portrait frame for several seconds.
+function addStream(mesh, z0, lat0, lat1, yTop, yBot) {
+  const cols = 8;
+  const rows = 24;
+  const grid = [];
+  for (let j = 0; j <= rows; j++) {
+    const row = [];
+    const t = j / rows;
+    for (let i = 0; i <= cols; i++) {
+      const u = i / cols;
+      const lat = lat0 + (lat1 - lat0) * u;
+      const rib = Math.sin(u * Math.PI * 3) * 0.45 * Math.sin(Math.min(1, t) * Math.PI);
+      row.push([
+        pathX(z0) + lat,
+        yTop + (yBot - yTop) * t + (hash(i, j + z0) - 0.5) * 0.35,
+        z0 + rib,
+      ]);
+    }
+    grid.push(row);
+  }
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.fall, [0, 0.1, 1]);
+    }
+  }
+}
+
+// Two frozen streams with a gap on the lane, joined by a lip, so the chase
+// looks at a fall for several seconds and Bolt runs between them.
+function addChaseFall(mesh, z0) {
+  const yTop = routeSmooth(z0) + 32;
+  const yBot = routeSmooth(z0) + 0.2;
+  addStream(mesh, z0, -9.2, -1.7, yTop, yBot);
+  addStream(mesh, z0, 1.7, 9.2, yTop, yBot);
+  const cols = 16;
+  const lipA = [];
+  const lipB = [];
+  for (let i = 0; i <= cols; i++) {
+    const lat = -9.2 + (i / cols) * 18.4;
+    const x = pathX(z0) + lat;
+    lipA.push([x, yTop + 0.2, z0 - 1.3]);
+    lipB.push([x, yTop + 0.7, z0 + 0.5]);
+  }
+  for (let i = 0; i < cols; i++) face(mesh, lipA[i], lipA[i + 1], lipB[i + 1], lipB[i], MAT.fall, [0, 1, 0]);
+}
+
+// A ridge past the dither range. Mountain material is not discarded, and the
+// sheet is wider than the portrait view so the lane meets ice instead of sky.
+function addHorizonRidge(mesh, z0, height, half) {
+  const cols = 24;
+  const rows = 5;
+  const base = routeSmooth(z0);
+  const grid = [];
+  for (let j = 0; j <= rows; j++) {
+    const row = [];
+    const t = j / rows;
+    for (let i = 0; i <= cols; i++) {
+      const u = i / cols;
+      const lat = -half + u * 2 * half;
+      const crest = 0.62 + hash(i * 1.9, z0 * 0.02) * 0.38;
+      const jag = (hash(i * 2.3, z0 * 0.01 + j) - 0.5) * height * 0.08;
+      row.push([
+        pathX(z0) + lat,
+        base + Math.pow(t, 0.72) * height * crest + jag,
+        z0 - t * 28 + (hash(i, j + 4) - 0.5) * 3,
+      ]);
+    }
+    grid.push(row);
+  }
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.snow, [0, 0.45, 0.9]);
     }
   }
 }
@@ -598,7 +675,9 @@ function pinRouteBand(verts) {
     if (Math.round(verts[i + 3]) !== 0) continue;
     const lat = verts[i] - pathX(verts[i + 2]);
     if (Math.abs(lat) > 0.62) continue;
-    verts[i + 1] = routeSmooth(verts[i + 2]);
+    const route = routeSmooth(verts[i + 2]);
+    if (Math.abs(verts[i + 1] - route) > 2.5) continue;
+    verts[i + 1] = route;
   }
 }
 
@@ -763,6 +842,10 @@ export function buildWorld() {
   arches.forEach((z, i) => addArch(mesh, z, i));
   [-40, -110, -260, -640, -1600].forEach((z) => addFall(mesh, z, -1));
   addCurtain(mesh, -120);
+  addChaseFall(mesh, -115);
+  addChaseFall(mesh, -210);
+  addHorizonRidge(mesh, -860, 150, 520);
+  addHorizonRidge(mesh, -2100, 220, 900);
   addPlateau(mesh, -1);
   addPlateau(mesh, 1);
   addFarFloor(mesh);
@@ -817,6 +900,16 @@ export function buildWorld() {
     const thick = 0.45 + hash(n, 3.1) * 0.5;
     pushInst(icicles, p[0] - side * 0.3, p[1] - 0.2, p[2], hash(n, 4), thick, len, thick * 0.75, (hash(n, 5) - 0.5) * 0.25);
   }
+  for (const z0 of [-115, -210]) {
+    for (let k = 0; k < 18; k++) {
+      const side = k % 2 === 0 ? -1 : 1;
+      const lat = side * (1.9 + (Math.floor(k / 2) / 8) * 7.0);
+      const x = pathX(z0) + lat;
+      const len = 0.7 + hash(k, z0) * 1.8;
+      const y = routeSmooth(z0) + (k < 10 ? 31 : 18) - len;
+      pushInst(icicles, x, y, z0 + 0.5, hash(k, 6), 0.16, len, 0.12, 0.06);
+    }
+  }
 
   const drifts = [];
   const chunks = [];
@@ -837,9 +930,9 @@ export function buildWorld() {
   for (let n = 0; n < 32; n++) {
     const z = 16 - n * 11;
     const side = n % 2 === 0 ? 1 : -1;
-    const lat = side * (2.2 + hash(n, 6.2) * 2.4);
+    const lat = side * (1.25 + hash(n, 6.2) * 0.5);
     const x = pathX(z) + lat;
-    const s = 0.16 + hash(n, 7.4) * 0.32;
+    const s = 0.1 + hash(n, 7.4) * 0.12;
     pushInst(chunks, x, floorH(x, z) + s * 0.15, z, hash(n, 8) * 5, s, s * 0.45, s * 0.75, 0);
   }
 
@@ -867,8 +960,8 @@ export function buildWorld() {
     draws: DRAWS.length,
     drawNames: DRAWS,
   };
-  budget.particleTris = (FLAKES.near + FLAKES.far + FLAKES.puff) * 2;
-  budget.particles = FLAKES.near + FLAKES.far;
+  budget.particleTris = (FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow + FLAKES.puff) * 2;
+  budget.particles = FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow;
   budget.puffs = FLAKES.puff;
   budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris + budget.particleTris;
   return {

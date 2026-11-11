@@ -7,7 +7,7 @@ import { lightWgsl, norm3, sunOf } from '../biome-factory/light-rig.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
-import { buildWorld, chaseInput, integrate, spawn, pathX } from './world.js';
+import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
@@ -46,67 +46,174 @@ function playerInput() {
   return { turn: Math.max(-1, Math.min(1, t)), run };
 }
 
-const FLAKE_N = FLAKES.near + FLAKES.far + FLAKES.puff;
+const FLAKE_N = FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow + FLAKES.puff;
+const FLAKE_SNOW = FLAKE_N - FLAKES.puff;
 const flakes = new Float32Array(FLAKE_N * 8);
+const flakeVel = new Float32Array(FLAKE_N * 3);
 let puffArm = 0;
-function seedFlake(i, ahead) {
-  const puff = i >= FLAKES.near + FLAKES.far;
-  const far = !puff && i >= FLAKES.near;
-  const h = hash(i * 1.7, 4.2);
-  const h2 = hash(i * 3.1, 9.4);
-  const rad = puff ? 0.15 : (far ? 8 + h * 18 : 0.25 + h * 2.6);
-  const ang = h2 * Math.PI * 2;
-  const y0 = puff ? 0.25 : (far ? 8 + h * 12 : 3.2 + h2 * 4.5);
-  const x = live.x + Math.sin(ang) * rad;
-  const z = live.z - Math.cos(ang) * rad - (ahead ? 4 + h * 8 : 0);
-  flakes[i * 8] = x;
-  flakes[i * 8 + 1] = world.heightAt(x, z) + y0;
-  flakes[i * 8 + 2] = z;
-  flakes[i * 8 + 3] = puff ? 0 : h;
-  flakes[i * 8 + 4] = puff ? 0.28 : (far ? 0.04 + h2 * 0.05 : 0.1 + h * 0.16);
-  flakes[i * 8 + 5] = far ? 1 : 0;
-  flakes[i * 8 + 6] = puff ? 1 : 0;
-  flakes[i * 8 + 7] = 0;
-}
+const HALF_W = Math.atan(Math.tan(FOV_Y / 2) * (720 / 1280));
+const HALF_H = FOV_Y / 2;
 function hash(x, y) {
   const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
   return s - Math.floor(s);
 }
+function flakeKind(i) {
+  if (i < FLAKES.near) return 0;
+  if (i < FLAKES.near + FLAKES.mid) return 1;
+  if (i < FLAKES.near + FLAKES.mid + FLAKES.far) return 2;
+  if (i < FLAKE_SNOW) return 3;
+  return 4;
+}
+function camBox() {
+  const bp = [live.x, floorH(live.x, live.z), live.z];
+  const { eye, cf, cr } = followEye(bp, live.cam, floorH, 0);
+  return { eye, cf, cr };
+}
+function curlAt(x, y, z) {
+  const t = simClock;
+  const a = Math.sin(x * 0.23 + t * 0.7);
+  const b = Math.sin(y * 0.31 + t * 0.53 + 2.1);
+  const c = Math.sin(z * 0.19 - t * 0.41 + 1.1);
+  const d = Math.sin((x + z) * 0.17 + y * 0.13 + t * 0.93);
+  const e = Math.sin(x * 0.47 - y * 0.29 + t * 1.3);
+  return [b * 0.9 - d * 0.6 + e * 0.4, c * 0.7 + a * 0.55 - d * 0.3, a * 0.8 - b * 0.45 + d * 0.7];
+}
+function seedFlake(i, cam) {
+  const kind = flakeKind(i);
+  const o = i * 8;
+  if (kind === 4) {
+    flakes[o + 3] = 0;
+    flakes[o + 4] = 0.12;
+    flakes[o + 5] = 2;
+    flakes[o + 6] = 1;
+    flakes[o + 7] = 0;
+    return;
+  }
+  const h = hash(i * 1.7 + simClock * 0.17, 4.2);
+  const h2 = hash(i * 3.1, simClock * 0.13 + 9.4);
+  const h3 = hash(i * 5.3, 2.2);
+  let depth;
+  let layer;
+  let v;
+  let px;
+  if (kind === 0) {
+    depth = 0.9 + h * 4.2;
+    layer = 0;
+    v = h3 * 2 - 1;
+    px = 2.2 + h2 * 3.6;
+  } else if (kind === 1) {
+    depth = 4.2 + h * 9.5;
+    layer = 0.4;
+    v = h3 * 2 - 1;
+    px = 2.4 + h2 * 4.2;
+  } else if (kind === 2) {
+    depth = 12 + h * 20;
+    layer = 1;
+    v = h3 * 2 - 1;
+    px = 2.0 + h2 * 3.2;
+  } else {
+    depth = 1.6 + h * 7;
+    layer = 3;
+    v = -0.15 - h3 * 0.75;
+    px = 2.6 + h2 * 3.8;
+  }
+  const focal = 640 / Math.tan(HALF_H);
+  const size = (px / focal) * Math.max(depth, 0.5);
+  const u = h2 * 2 - 1;
+  const span = kind === 3 ? 1.05 : 1.22;
+  const halfW = Math.tan(HALF_W) * depth * span;
+  const halfH = Math.tan(HALF_H) * depth * span;
+  const x = cam.eye[0] + cam.cf[0] * depth + cam.cr[0] * u * halfW;
+  const z = cam.eye[2] + cam.cf[2] * depth + cam.cr[2] * u * halfW;
+  let y = cam.eye[1] + v * halfH;
+  const ground = floorH(x, z);
+  if (kind === 3) y = ground + 0.12 + h * 1.15;
+  else if (y < ground + 0.08) y = ground + 0.08 + h * 0.4;
+  flakes[o] = x;
+  flakes[o + 1] = y;
+  flakes[o + 2] = z;
+  flakes[o + 3] = 0.02;
+  flakes[o + 4] = size;
+  flakes[o + 5] = layer;
+  flakes[o + 6] = 0;
+  flakes[o + 7] = h3;
+}
+function flakeInside(i, cam) {
+  const o = i * 8;
+  const dx = flakes[o] - cam.eye[0];
+  const dy = flakes[o + 1] - cam.eye[1];
+  const dz = flakes[o + 2] - cam.eye[2];
+  const depth = dx * cam.cf[0] + dz * cam.cf[2];
+  const kind = flakeKind(i);
+  const far = kind === 2 ? 36 : (kind === 0 ? 7.5 : 16);
+  if (depth < 0.35 || depth > far) return false;
+  const rx = dx * cam.cr[0] + dz * cam.cr[2];
+  const halfW = Math.tan(HALF_W) * depth * 1.35;
+  const halfH = Math.tan(HALF_H) * depth * 1.35;
+  return Math.abs(rx) < halfW && Math.abs(dy) < halfH;
+}
 function stepFlakes(dt) {
+  const cam = camBox();
   if (flakes[4] === 0) {
-    for (let i = 0; i < FLAKE_N; i++) seedFlake(i, false);
+    for (let i = 0; i < FLAKE_N; i++) seedFlake(i, cam);
   }
   const strike = Math.floor(live.phase * 2);
-  if (strike !== puffArm) {
+  if (simClock > 1.15 && strike !== puffArm) {
     puffArm = strike;
-    const slot = FLAKES.near + FLAKES.far + (Math.abs(strike) % FLAKES.puff);
-    const side = strike % 2 === 0 ? 0.12 : -0.12;
-    flakes[slot * 8] = live.x + side;
-    flakes[slot * 8 + 1] = world.heightAt(live.x, live.z) + 0.12;
-    flakes[slot * 8 + 2] = live.z;
-    flakes[slot * 8 + 3] = 0.001;
-    flakes[slot * 8 + 6] = 1;
+    const side0 = strike % 2 === 0 ? 0.48 : -0.48;
+    for (let k = 0; k < 3; k++) {
+      const slot = FLAKE_SNOW + (Math.abs(strike) * 3 + k) % FLAKES.puff;
+      const side = side0 + (k - 1) * 0.26;
+      flakes[slot * 8] = live.x + side;
+      flakes[slot * 8 + 1] = floorH(live.x, live.z) + 0.22;
+      flakes[slot * 8 + 2] = live.z - 0.45 - k * 0.16;
+      flakes[slot * 8 + 3] = 0.04;
+      flakes[slot * 8 + 4] = 0.12 + k * 0.04;
+      flakes[slot * 8 + 5] = 2;
+      flakes[slot * 8 + 6] = 1;
+      flakes[slot * 8 + 7] = side > 0 ? 1 : -1;
+    }
   }
+  const g1 = Math.sin(simClock * 0.31);
+  const g2 = Math.sin(simClock * 0.17 + 1.4);
+  const wind = [1.7 + g1 * 1.45, -0.22 + g2 * 0.55, 0.45 + g1 * 0.7];
   for (let i = 0; i < FLAKE_N; i++) {
     const o = i * 8;
     const puff = flakes[o + 6] > 0.5;
-    const far = flakes[o + 5] > 0.5;
-    const life = flakes[o + 3];
     if (puff) {
-      flakes[o + 3] = life + dt / 0.7;
-      flakes[o] += dt * 0.35;
-      flakes[o + 1] += dt * 0.45;
-      flakes[o + 2] += dt * 0.8;
-      if (flakes[o + 3] >= 1) flakes[o + 3] = 0;
+      const age = flakes[o + 3] + dt / 1.15;
+      flakes[o + 3] = age >= 1 ? 0 : age;
+      if (age < 1 && flakes[o + 7] !== 0) {
+        const dir = flakes[o + 7] < 0 ? -1 : 1;
+        flakes[o] = live.x + dir * (0.34 + age * 0.22);
+        flakes[o + 1] = floorH(live.x, live.z) + 0.06 + age * 0.45;
+        flakes[o + 2] = live.z + 0.05;
+      }
       continue;
     }
-    const wind = far ? 0.55 : 1.15;
-    flakes[o] += dt * wind * 0.35;
-    flakes[o + 1] += dt * (far ? 0.08 : -0.12);
-    flakes[o + 2] += dt * wind;
-    flakes[o + 3] = life + dt / (far ? 9 : 6);
-    const dz = flakes[o + 2] - live.z;
-    if (flakes[o + 3] >= 1 || dz > 6 || dz < -28) seedFlake(i, true);
+    if (flakes[o + 3] < 1) flakes[o + 3] = Math.min(1, flakes[o + 3] + dt / 0.4);
+    const curl = curlAt(flakes[o], flakes[o + 1], flakes[o + 2]);
+    const flutter = Math.sin(simClock * 5.5 + i * 0.37) * 0.45;
+    const lift = flakes[o + 7] - 0.42;
+    const blow = flakeKind(i) === 3;
+    const speed = blow ? 1.65 + Math.max(0, g1) * 1.4 : (flakeKind(i) === 2 ? 0.55 : 1);
+    const vx = (wind[0] + curl[0] * 1.7 + flutter) * speed;
+    const vy = (wind[1] + curl[1] * 1.15 + lift * 0.7) * (blow ? 1.3 : speed) + (blow ? 0.55 : 0);
+    const vz = (wind[2] + curl[2] * 1.5) * speed;
+    flakeVel[i * 3] = vx;
+    flakeVel[i * 3 + 1] = vy;
+    flakeVel[i * 3 + 2] = vz;
+    flakes[o] += vx * dt;
+    flakes[o + 1] += vy * dt;
+    flakes[o + 2] += vz * dt;
+    const depthNow = Math.max(0.5, (flakes[o] - cam.eye[0]) * cam.cf[0] + (flakes[o + 2] - cam.eye[2]) * cam.cf[2]);
+    const px = 2.1 + flakes[o + 7] * 4.4;
+    flakes[o + 4] = (px / (640 / Math.tan(HALF_H))) * depthNow;
+    if (flakes[o + 1] < 4) {
+      const ground = floorH(flakes[o], flakes[o + 2]);
+      if (flakes[o + 1] < ground + 0.05) flakes[o + 1] = ground + 0.05;
+    }
+    if (!flakeInside(i, cam) || (blow && flakes[o + 1] - floorH(flakes[o], flakes[o + 2]) > 2.4)) seedFlake(i, cam);
   }
 }
 function pawGround() {
@@ -300,18 +407,18 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
     kind = 1.0;
   } else {
     let n = f32(which - 2u);
-    let sway = select(-0.1, 0.1, (which & 1u) == 0u);
-    let dist = 0.45 + n * 0.36;
-    w = vec3f(b.x - fwd.x * dist + right.x * (c.x * 0.07 + sway), b.y + 0.02, b.z - fwd.y * dist + right.y * (c.x * 0.07 + sway));
+    let sway = select(-0.12, 0.12, (which & 1u) == 0u);
+    let dist = 0.65 + n * 0.28;
+    w = vec3f(b.x - fwd.x * dist + right.x * (c.x * 0.16 + sway), b.y + 0.1, b.z - fwd.y * dist + right.y * (c.x * 0.16 + sway));
     kind = 2.0;
   }
   var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; return o;
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
   let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
-  let paw = (1.0 - smoothstep(0.2, 0.72, r2)) * 0.7;
-  let shade = (1.0 - smoothstep(0.15, 0.7, r2)) * 0.62;
-  let print = (1.0 - smoothstep(0.2, 0.85, r2)) * 0.08;
+  let paw = (1.0 - smoothstep(0.05, 1.0, r2)) * 0.62;
+  let shade = (1.0 - smoothstep(0.05, 1.0, r2)) * 0.55;
+  let print = (1.0 - smoothstep(0.08, 0.95, r2)) * 0.7;
   let blob = mix(paw, shade, step(0.5, v.k));
   let a = select(blob, print, v.k > 1.5);
   return vec4f(0.02, 0.025, 0.04, a);
@@ -324,7 +431,12 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   let to = normalize(toC);
   let right = normalize(cross(vec3f(0.0, 1.0, 0.0), to));
   let up = cross(to, right);
-  let wpos = a.xyz + right * c.x * b.x + up * c.y * b.x;
+  let ang = b.w * 6.28318 + u.cam.w * (1.4 + b.w * 3.2);
+  let ca = cos(ang);
+  let sa = sin(ang);
+  let rx = c.x * ca - c.y * sa;
+  let ry = c.x * sa + c.y * ca;
+  let wpos = a.xyz + right * rx * b.x + up * ry * b.x;
   var o: FO;
   o.p = u.vp * vec4f(wpos, 1.0);
   o.uv = c;
@@ -336,14 +448,22 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
 @fragment fn fsFlake(v: FO) -> @location(0) vec4f {
   let r = length(v.uv);
   if (r > 1.0) { discard; }
-  let soft = 1.0 - smoothstep(0.35, 1.0, r);
+  let puff = v.layer > 1.5 && v.layer < 2.5;
+  let soft = 1.0 - smoothstep(select(0.62, 0.35, puff), 1.0, r);
   let uv = vec2f(v.seed, 0.41) + v.uv * select(0.12, 0.06, v.layer > 0.5);
   let tex = textureSampleLevel(snowArr, samp, uv, 0, 1.0);
   let sun = normalize(u.sun.xyz);
   let lit = 0.62 + 0.38 * clamp(dot(sun, vec3f(0.15, 0.95, 0.2)), 0.0, 1.0);
   var col = mix(vec3f(0.9, 0.94, 1.0), tex.rgb, 0.22) * lit;
   col = min(col, vec3f(0.9));
-  let a = soft * v.fade * select(0.82, 0.4, v.layer > 0.5);
+  var gain = 0.82;
+  if (v.layer > 2.5) { gain = 0.62; }
+  else if (v.layer > 1.5) {
+    col = min(vec3f(0.72, 0.8, 0.9) * lit, vec3f(0.9));
+    gain = 0.5;
+  } else if (v.layer > 0.7) { gain = 0.64; }
+  else if (v.layer > 0.2) { gain = 0.74; }
+  let a = soft * v.fade * gain;
   return vec4f(col, a);
 }
 `;
@@ -579,7 +699,7 @@ async function main() {
     const f1 = (f0 + 1) % 32;
     const pawFrac = Math.min(PAW_FRAC[f0], PAW_FRAC[f1]);
     const pawLy = (pawFrac - 6 / 652) * 1.15 - 0.095;
-    U[56] = pawLy + 0.04;
+    U[56] = pawLy + 0.02;
     U.set([0.70, 0.78, 0.88, 0], 44);
     U.set([sunDir[0], sunDir[1], sunDir[2], 0], 48);
     IDLE.writeUniforms(U, IDLE.sample());
@@ -609,7 +729,9 @@ async function main() {
         flakeGpu[o + 2] = flakes[o + 2];
         flakeGpu[o + 3] = 0;
         flakeGpu[o + 4] = flakes[o + 4];
-        flakeGpu[o + 5] = Math.sin(Math.min(1, Math.max(0, flakes[o + 3])) * Math.PI);
+        const life = Math.min(1, Math.max(0, flakes[o + 3]));
+        const puff = flakes[o + 6] > 0.5;
+        flakeGpu[o + 5] = Math.sin(life * Math.PI * (puff ? 1 : 0.5));
         flakeGpu[o + 6] = flakes[o + 5];
         const seed = flakes[o] * 0.17 + flakes[o + 2] * 0.09;
         flakeGpu[o + 7] = seed - Math.floor(seed);
@@ -674,6 +796,78 @@ async function main() {
     const w = U[3] * p[0] + U[7] * p[1] + U[11] * p[2] + U[15];
     if (!(w > 0)) return null;
     return [(x / w * 0.5 + 0.5) * W, (1 - (y / w * 0.5 + 0.5)) * H];
+  }
+  function flakeCoverage() {
+    const q = { tl: 0, tr: 0, bl: 0, br: 0, center: 0, onScreen: 0 };
+    let n = 0;
+    let mx = 0;
+    let my = 0;
+    let mz = 0;
+    for (let i = 0; i < FLAKE_SNOW; i++) {
+      const o = i * 8;
+      if (flakes[o + 3] < 0.2) continue;
+      const p = projectPixel([flakes[o], flakes[o + 1], flakes[o + 2]]);
+      if (p && p[0] >= 0 && p[0] < W && p[1] >= 0 && p[1] < H) {
+        q.onScreen++;
+        if (p[0] < W * 0.5 && p[1] < H * 0.5) q.tl++;
+        else if (p[1] < H * 0.5) q.tr++;
+        else if (p[0] < W * 0.5) q.bl++;
+        else q.br++;
+        if (p[0] > W * 0.3 && p[0] < W * 0.7 && p[1] > H * 0.35 && p[1] < H * 0.65) q.center++;
+      }
+      mx += flakeVel[i * 3];
+      my += flakeVel[i * 3 + 1];
+      mz += flakeVel[i * 3 + 2];
+      n++;
+    }
+    mx /= n || 1;
+    my /= n || 1;
+    mz /= n || 1;
+    let vvx = 0;
+    let vvy = 0;
+    let vvz = 0;
+    let align = 0;
+    const ml = Math.hypot(mx, my, mz) || 1;
+    let headings = 0;
+    let headingN = 0;
+    for (let i = 0; i < FLAKE_SNOW; i++) {
+      if (flakes[i * 8 + 3] < 0.2) continue;
+      const vx = flakeVel[i * 3];
+      const vy = flakeVel[i * 3 + 1];
+      const vz = flakeVel[i * 3 + 2];
+      vvx += (vx - mx) ** 2;
+      vvy += (vy - my) ** 2;
+      vvz += (vz - mz) ** 2;
+      const s = Math.hypot(vx, vy, vz) || 1;
+      align += (vx * mx + vy * my + vz * mz) / (s * ml);
+      headings += Math.atan2(vx, vz);
+      headingN++;
+    }
+    let headMean = headings / (headingN || 1);
+    let headVar = 0;
+    let up = 0;
+    let hi = 0;
+    for (let i = 0; i < FLAKE_SNOW; i++) {
+      if (flakes[i * 8 + 3] < 0.2) continue;
+      hi++;
+      const vx = flakeVel[i * 3];
+      const vz = flakeVel[i * 3 + 2];
+      let d = Math.atan2(vx, vz) - headMean;
+      while (d > Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      headVar += d * d;
+      if (flakeVel[i * 3 + 1] > 0.15) up++;
+    }
+    n = n || 1;
+    return {
+      quadrants: q,
+      velMean: [+mx.toFixed(3), +my.toFixed(3), +mz.toFixed(3)],
+      velVar: [+(vvx / n).toFixed(3), +(vvy / n).toFixed(3), +(vvz / n).toFixed(3)],
+      velVarSum: +((vvx + vvy + vvz) / n).toFixed(3),
+      align: +(align / n).toFixed(3),
+      headingVar: +(headVar / (headingN || 1)).toFixed(3),
+      upwardFrac: +(up / (hi || 1)).toFixed(3),
+    };
   }
   function cropRead(src, cx, cy, rad) {
     const out = [];
@@ -742,7 +936,8 @@ async function main() {
         x: live.x, z: live.z, psi: live.psi, cam: live.cam, phase: live.phase,
         v: live.v, y: bp[1], eye: lastEye,
         boltPx: pix, W, H,
-        tris: world.budget.totalTris, draws: DRAWS.length,
+        tris: world.budget.totalTris, particleTris: world.budget.particleTris, draws: DRAWS.length,
+        flakes: flakeCoverage(),
         gpuErr: frame.gpuErr,
       },
     };

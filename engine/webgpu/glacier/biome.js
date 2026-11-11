@@ -22,8 +22,9 @@ export const LIMITS = {
 
 export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'contact', 'flake', 'bolt'];
 
-// Two drifting layers plus paw puffs. Each particle is one camera-facing quad.
-export const FLAKES = { near: 240, far: 160, puff: 12 };
+// One instanced draw. Near, mid, and far fill the camera frustum. Blow is
+// snow lifted off the sastrugi. Puffs stay a small paw burst.
+export const FLAKES = { near: 1100, mid: 1000, far: 700, blow: 220, puff: 18 };
 
 export const PLANET = {
   dir: [0.04, 0.30, -0.95],
