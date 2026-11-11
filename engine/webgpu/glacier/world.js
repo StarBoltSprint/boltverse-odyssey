@@ -59,14 +59,16 @@ export function floorH(x, z) {
   // The route is a smooth band wider than the chase view. Sastrugi start
   // outside it, so no near facet rises between the camera and the paws.
   // Smooth under Bolt (1.4 m). Ripples and sastrugi begin just outside that band.
-  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - 0.7) / 1.3));
+  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - 1.35) / 1.3));
   const wind = fbm2(lat * 0.09, z * 0.018);
   const wind2 = fbm2(lat * 0.16 + 2.2, z * 0.028);
   const ridge = Math.pow(Math.max(0, (wind - 0.36) / 0.64), 1.2);
   const amp = 0.1 + 0.42 * lane;
   const sast = ridge * amp + (wind2 - 0.5) * (0.06 + 0.16 * lane);
-  const band = Math.min(1, Math.max(0, (Math.abs(lat) - 0.7) / 1.1));
-  return routeSmooth(z) + (sast - crev - footDent(x, z, lat)) * band;
+  const band = Math.min(1, Math.max(0, (Math.abs(lat) - 1.35) / 1.1));
+  // Wind ripples stay a few centimetres, so the pads still meet the snow.
+  const ripple = Math.sin(z * 0.72 + lat * 1.1) * 0.016 + Math.sin(z * 0.31) * 0.012;
+  return routeSmooth(z) + ripple + (sast - crev - footDent(x, z, lat)) * band;
 }
 
 function footDent(x, z, lat) {
@@ -143,12 +145,12 @@ export function plateauH(x, z) {
 }
 
 function stepZ(z) {
-  if (z > -45) return 0.42;
-  if (z > -90) return 0.8;
-  if (z > -260) return 2.2;
-  if (z > -900) return 11;
-  if (z > -1800) return 20;
-  return 28;
+  const d = Math.max(0, -z);
+  if (d < 40) return 0.5;
+  if (d < 320) return 0.7 + (d - 40) * 0.006;
+  if (d < 900) return 10;
+  if (d < 1800) return 18;
+  return 26;
 }
 
 function columns(z0, z1) {
@@ -305,12 +307,12 @@ function addArch(mesh, z0, index) {
 
 // A sheet hung in the portrait view, left of the path, so the chase reads a fall.
 function addCurtain(mesh, z0) {
-  const cols = 10;
-  const rows = 18;
-  const x0 = pathX(z0) - 7.4;
-  const x1 = pathX(z0) - 2.6;
-  const yTop = 12.2;
-  const yBot = routeSmooth(z0) + 0.4;
+  const cols = 14;
+  const rows = 24;
+  const x0 = pathX(z0) - 5.2;
+  const x1 = pathX(z0) - 1.5;
+  const yTop = 26;
+  const yBot = routeSmooth(z0) + 0.3;
   const grid = [];
   for (let j = 0; j <= rows; j++) {
     const row = [];
@@ -734,7 +736,8 @@ export function buildWorld() {
   let guardG = 0;
   while (groundZs[groundZs.length - 1] > GLACIER.z1 + 1e-3 && guardG++ < 8000) {
     const z = groundZs[groundZs.length - 1];
-    const base = z > -55 ? 0.18 : z > -180 ? 0.45 : z > -450 ? 0.95 : z > -800 ? 4.8 : z > -2000 ? 18 : 40;
+    const d = Math.max(0, -z);
+    const base = d < 55 ? 0.2 : d < 450 ? 0.55 + (d - 55) * 0.0018 : d < 800 ? 6 : d < 2000 ? 22 : 40;
     const step = base * (0.4 + hash(z * 17.3, 2.8) * 1.35);
     groundZs.push(Math.max(GLACIER.z1, z - step));
   }
@@ -759,7 +762,7 @@ export function buildWorld() {
   const arches = [-24, -70, -160, -480, -1200, -2200];
   arches.forEach((z, i) => addArch(mesh, z, i));
   [-40, -110, -260, -640, -1600].forEach((z) => addFall(mesh, z, -1));
-  addCurtain(mesh, -70);
+  addCurtain(mesh, -120);
   addPlateau(mesh, -1);
   addPlateau(mesh, 1);
   addFarFloor(mesh);
@@ -834,7 +837,7 @@ export function buildWorld() {
   for (let n = 0; n < 32; n++) {
     const z = 16 - n * 11;
     const side = n % 2 === 0 ? 1 : -1;
-    const lat = side * (1.2 + hash(n, 6.2) * 1.3);
+    const lat = side * (2.2 + hash(n, 6.2) * 2.4);
     const x = pathX(z) + lat;
     const s = 0.16 + hash(n, 7.4) * 0.32;
     pushInst(chunks, x, floorH(x, z) + s * 0.15, z, hash(n, 8) * 5, s, s * 0.45, s * 0.75, 0);

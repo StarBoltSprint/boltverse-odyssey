@@ -54,16 +54,16 @@ function seedFlake(i, ahead) {
   const far = !puff && i >= FLAKES.near;
   const h = hash(i * 1.7, 4.2);
   const h2 = hash(i * 3.1, 9.4);
-  const rad = puff ? 0.2 : (far ? 6 + h * 22 : 0.8 + h * 5.5);
+  const rad = puff ? 0.15 : (far ? 8 + h * 18 : 0.25 + h * 2.6);
   const ang = h2 * Math.PI * 2;
-  const y0 = puff ? 0.15 : (far ? 5 + h * 9 : 1.5 + h2 * 2.2);
+  const y0 = puff ? 0.25 : (far ? 8 + h * 12 : 3.2 + h2 * 4.5);
   const x = live.x + Math.sin(ang) * rad;
   const z = live.z - Math.cos(ang) * rad - (ahead ? 4 + h * 8 : 0);
   flakes[i * 8] = x;
   flakes[i * 8 + 1] = world.heightAt(x, z) + y0;
   flakes[i * 8 + 2] = z;
   flakes[i * 8 + 3] = puff ? 0 : h;
-  flakes[i * 8 + 4] = puff ? 0.22 : (far ? 0.035 + h2 * 0.03 : 0.06 + h * 0.07);
+  flakes[i * 8 + 4] = puff ? 0.28 : (far ? 0.04 + h2 * 0.05 : 0.1 + h * 0.16);
   flakes[i * 8 + 5] = far ? 1 : 0;
   flakes[i * 8 + 6] = puff ? 1 : 0;
   flakes[i * 8 + 7] = 0;
@@ -108,6 +108,14 @@ function stepFlakes(dt) {
     const dz = flakes[o + 2] - live.z;
     if (flakes[o + 3] >= 1 || dz > 6 || dz < -28) seedFlake(i, true);
   }
+}
+function pawGround() {
+  const yaw = live.psi;
+  const rx = -Math.cos(yaw);
+  const rz = Math.sin(yaw);
+  const left = world.heightAt(live.x - rx * 0.11, live.z - rz * 0.11);
+  const right = world.heightAt(live.x + rx * 0.11, live.z + rz * 0.11);
+  return Math.min(left, right);
 }
 function stepLive(dt) {
   const input = DEMO ? chaseInput(simClock, live) : playerInput();
@@ -215,6 +223,12 @@ fn darken15(c: vec3f) -> vec3f {
     col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
     col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7;
   }
+  // Distant walls and arches fade by dither, not by fog. Inside 80 m they stay solid.
+  if ((m > 1.5 && m < 2.5) || (m > 5.5 && m < 6.5)) {
+    let cover = smoothstep(320.0, 170.0, dist);
+    let n = fract(sin(dot(v.p.xy, vec2f(12.9898, 78.233))) * 43758.5453);
+    if (cover < n) { discard; }
+  }
   let aerial = smoothstep(280.0, 6200.0, dist);
   let horizon = skyColour(normalize(v.w - u.cam.xyz));
   col = mix(col, horizon, aerial * 0.62);
@@ -280,9 +294,9 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   var w: vec3f;
   var kind = 0.0;
   if (which == 0u) {
-    w = vec3f(b.x + right.x * c.x * 0.36, b.y + 0.03, b.z + fwd.y * c.y * 0.22);
+    w = vec3f(b.x + right.x * (c.x * 0.09 - 0.11) + fwd.x * c.y * 0.05, b.y + 0.02, b.z + right.y * (c.x * 0.09 - 0.11) + fwd.y * c.y * 0.06);
   } else if (which == 1u) {
-    w = vec3f(b.x + right.x * c.x * 0.5 + fwd.x * c.y * 0.16, b.y + 0.025, b.z + right.y * c.x * 0.5 + fwd.y * c.y * 0.34);
+    w = vec3f(b.x + right.x * (c.x * 0.09 + 0.11) + fwd.x * c.y * 0.05, b.y + 0.02, b.z + right.y * (c.x * 0.09 + 0.11) + fwd.y * c.y * 0.06);
     kind = 1.0;
   } else {
     let n = f32(which - 2u);
@@ -295,14 +309,14 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
   let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
-  let paw = (1.0 - smoothstep(0.05, 1.0, r2)) * 0.55;
-  let shade = (1.0 - smoothstep(0.0, 1.0, r2)) * 0.42;
-  let print = (1.0 - smoothstep(0.12, 1.0, r2)) * 0.22;
+  let paw = (1.0 - smoothstep(0.2, 0.72, r2)) * 0.7;
+  let shade = (1.0 - smoothstep(0.15, 0.7, r2)) * 0.62;
+  let print = (1.0 - smoothstep(0.2, 0.85, r2)) * 0.08;
   let blob = mix(paw, shade, step(0.5, v.k));
   let a = select(blob, print, v.k > 1.5);
   return vec4f(0.02, 0.025, 0.04, a);
 }
-struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fade: f32, @location(2) layer: f32 };
+struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fade: f32, @location(2) layer: f32, @location(3) seed: f32 };
 @vertex fn vsFlake(@builtin(vertex_index) vi: u32, @location(0) a: vec4f, @location(1) b: vec4f) -> FO {
   var q = array<vec2f, 6>(vec2f(-1, -1), vec2f(1, -1), vec2f(1, 1), vec2f(-1, -1), vec2f(1, 1), vec2f(-1, 1));
   let c = q[vi % 6u];
@@ -316,17 +330,20 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   o.uv = c;
   o.fade = b.y;
   o.layer = b.z;
+  o.seed = b.w;
   return o;
 }
 @fragment fn fsFlake(v: FO) -> @location(0) vec4f {
   let r = length(v.uv);
   if (r > 1.0) { discard; }
-  let soft = (1.0 - smoothstep(0.2, 1.0, r)) * (1.0 - smoothstep(0.0, 0.15, r) * 0.35);
-  let uv = vec2f(0.37, 0.62) + v.uv * select(0.08, 0.04, v.layer > 0.5);
-  let tex = textureSampleLevel(iceArr, samp, uv, 1, 2.0);
-  var col = tex.rgb * vec3f(0.45, 0.55, 0.68);
-  col = min(col, vec3f(0.38));
-  let a = soft * v.fade * select(0.42, 0.28, v.layer > 0.5);
+  let soft = 1.0 - smoothstep(0.35, 1.0, r);
+  let uv = vec2f(v.seed, 0.41) + v.uv * select(0.12, 0.06, v.layer > 0.5);
+  let tex = textureSampleLevel(snowArr, samp, uv, 0, 1.0);
+  let sun = normalize(u.sun.xyz);
+  let lit = 0.62 + 0.38 * clamp(dot(sun, vec3f(0.15, 0.95, 0.2)), 0.0, 1.0);
+  var col = mix(vec3f(0.9, 0.94, 1.0), tex.rgb, 0.22) * lit;
+  col = min(col, vec3f(0.9));
+  let a = soft * v.fade * select(0.82, 0.4, v.layer > 0.5);
   return vec4f(col, a);
 }
 `;
@@ -536,7 +553,7 @@ async function main() {
   ];
 
   function fillU(t) {
-    const bp = [live.x, world.heightAt(live.x, live.z), live.z];
+    const bp = [live.x, pawGround(), live.z];
     let { eye, tgt } = followEye(bp, live.cam, world.heightAt, 0);
     if (SHOT === 'establish') {
       const est = establishEye();
@@ -562,7 +579,7 @@ async function main() {
     const f1 = (f0 + 1) % 32;
     const pawFrac = Math.min(PAW_FRAC[f0], PAW_FRAC[f1]);
     const pawLy = (pawFrac - 6 / 652) * 1.15 - 0.095;
-    U[56] = pawLy - 0.008;
+    U[56] = pawLy + 0.04;
     U.set([0.70, 0.78, 0.88, 0], 44);
     U.set([sunDir[0], sunDir[1], sunDir[2], 0], 48);
     IDLE.writeUniforms(U, IDLE.sample());
@@ -594,7 +611,8 @@ async function main() {
         flakeGpu[o + 4] = flakes[o + 4];
         flakeGpu[o + 5] = Math.sin(Math.min(1, Math.max(0, flakes[o + 3])) * Math.PI);
         flakeGpu[o + 6] = flakes[o + 5];
-        flakeGpu[o + 7] = 0;
+        const seed = flakes[o] * 0.17 + flakes[o + 2] * 0.09;
+        flakeGpu[o + 7] = seed - Math.floor(seed);
       }
       dev.queue.writeBuffer(flakeBuf, 0, flakeGpu);
     }
@@ -715,7 +733,7 @@ async function main() {
     renderBoltMask();
     const maskSrc = await readback();
     const mask = await blobOf(maskSrc, 'image/png');
-    const bp = [live.x, world.heightAt(live.x, live.z), live.z];
+    const bp = [live.x, pawGround(), live.z];
     const pix = projectPixel(bp);
     return {
       png,

@@ -85,6 +85,8 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     var g = snow * (1.38 + 0.32 * tone + 0.14 * tone2);
     let spark = step(0.994, skyNoise(p * 11.0));
     g = g + ${v3([0.07, 0.1, 0.13])} * spark;
+    let crack = smoothstep(0.78, 0.93, skyNoise(vec3f(p.x * 0.42, 2.2, p.z * 0.42)));
+    g = mix(g, g * vec3f(0.62, 0.7, 0.82), crack * 0.28);
     return mix(g, g * ${v3(C.crevasse)} * 1.35, crev);
   }
   if (m < 3.5) {
