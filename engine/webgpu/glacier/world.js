@@ -1,6 +1,6 @@
 // Frozen rift. Noise-displaced sheets, arches, and peaks. No box primitives.
 import { createMesh } from '../engine/bricks/facet-mesh.js';
-import { MAT, GLACIER, planetCenter, PLANET, DRAWS } from './biome.js';
+import { MAT, GLACIER, planetCenter, PLANET, DRAWS, FLAKES } from './biome.js';
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
@@ -44,24 +44,29 @@ export function floorHalf(z) {
   return 20 + 6 * Math.sin(z * 0.00105) + 2.2 * Math.sin(z * 0.0034 + 0.8);
 }
 
+// Long waves only. A 2 m step stays above the relief floor, and the bulge of
+// a 4.5 m mesh chord stays under a couple of centimetres, so no ridge sits
+// between the camera and the paws.
+export function routeSmooth(z) {
+  return 0.66 * Math.sin(z * 0.115) + 0.22 * Math.sin(z * 0.009 + 0.4);
+}
+
 export function floorH(x, z) {
   const lat = x - pathX(z);
   const crevLat = 6.4 + 1.8 * Math.sin(z * 0.0047);
   const crevW = 0.42 + 0.35 * fbm2(z * 0.031, 2.2);
   const crev = Math.exp(-((lat - crevLat) ** 2) / crevW) * (2.4 + 1.1 * fbm2(z * 0.017, 4.1));
-  // Wind runs down the rift. Ridges are long in z and short across, and they
-  // stay off the narrow slot under Bolt so the card is not cut.
-  // Flat only under the paws. The lane beside them carries metre-scale
-  // sastrugi so dawn light has a slope to catch.
-  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - 0.42) / 1.15));
+  // The route is a smooth band wider than the chase view. Sastrugi start
+  // outside it, so no near facet rises between the camera and the paws.
+  // Smooth under Bolt (1.4 m). Ripples and sastrugi begin just outside that band.
+  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - 0.7) / 1.3));
   const wind = fbm2(lat * 0.09, z * 0.018);
   const wind2 = fbm2(lat * 0.16 + 2.2, z * 0.028);
   const ridge = Math.pow(Math.max(0, (wind - 0.36) / 0.64), 1.2);
-  const amp = 0.28 + 1.25 * lane;
-  const sast = ridge * amp + (wind2 - 0.5) * (0.18 + 0.5 * lane);
-  const broad = 0.42 * Math.sin(z * 0.009) + 0.3 * Math.sin(z * (Math.PI * 2 / 12.6) + lat * 0.04);
-  const swell = 0.11 * Math.sin(z * 0.085 + lat * 0.15);
-  return broad + swell + sast - crev - footDent(x, z, lat);
+  const amp = 0.1 + 0.42 * lane;
+  const sast = ridge * amp + (wind2 - 0.5) * (0.06 + 0.16 * lane);
+  const band = Math.min(1, Math.max(0, (Math.abs(lat) - 0.7) / 1.1));
+  return routeSmooth(z) + (sast - crev - footDent(x, z, lat)) * band;
 }
 
 function footDent(x, z, lat) {
@@ -141,9 +146,9 @@ function stepZ(z) {
   if (z > -45) return 0.42;
   if (z > -90) return 0.8;
   if (z > -260) return 2.2;
-  if (z > -900) return 8;
-  if (z > -1800) return 16;
-  return 26;
+  if (z > -900) return 11;
+  if (z > -1800) return 20;
+  return 28;
 }
 
 function columns(z0, z1) {
@@ -294,6 +299,36 @@ function addArch(mesh, z0, index) {
       const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
       const axis = [(c0.x + c1.x) / 2, (c0.y + c1.y) / 2, (c0.z + c1.z) / 2];
       face(mesh, a, b, c, d, MAT.arch, sub(mid, axis));
+    }
+  }
+}
+
+// A sheet hung in the portrait view, left of the path, so the chase reads a fall.
+function addCurtain(mesh, z0) {
+  const cols = 10;
+  const rows = 18;
+  const x0 = pathX(z0) - 7.4;
+  const x1 = pathX(z0) - 2.6;
+  const yTop = 12.2;
+  const yBot = routeSmooth(z0) + 0.4;
+  const grid = [];
+  for (let j = 0; j <= rows; j++) {
+    const row = [];
+    const t = j / rows;
+    for (let i = 0; i <= cols; i++) {
+      const u = i / cols;
+      const drape = Math.sin(u * Math.PI) * 0.55 * (1 - t);
+      row.push([
+        x0 + (x1 - x0) * u,
+        yTop + (yBot - yTop) * t + drape,
+        z0 + 0.8 + Math.sin(t * Math.PI) * 0.9 + (u - 0.5) * 1.6,
+      ]);
+    }
+    grid.push(row);
+  }
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.fall, [0, 0.15, 1]);
     }
   }
 }
@@ -556,6 +591,15 @@ function addWall(mesh, side) {
   return zs.length;
 }
 
+function pinRouteBand(verts) {
+  for (let i = 0; i < verts.length; i += 8) {
+    if (Math.round(verts[i + 3]) !== 0) continue;
+    const lat = verts[i] - pathX(verts[i + 2]);
+    if (Math.abs(lat) > 0.62) continue;
+    verts[i + 1] = routeSmooth(verts[i + 2]);
+  }
+}
+
 function weldKey(x, y, z) {
   return `${Math.round(x * 50)}_${Math.round(y * 50)}_${Math.round(z * 50)}`;
 }
@@ -690,21 +734,23 @@ export function buildWorld() {
   let guardG = 0;
   while (groundZs[groundZs.length - 1] > GLACIER.z1 + 1e-3 && guardG++ < 8000) {
     const z = groundZs[groundZs.length - 1];
-    const base = z > -55 ? 0.18 : z > -180 ? 0.5 : z > -800 ? 2.6 : z > -2000 ? 9 : 24;
+    const base = z > -55 ? 0.18 : z > -180 ? 0.45 : z > -450 ? 0.95 : z > -800 ? 4.8 : z > -2000 ? 18 : 40;
     const step = base * (0.4 + hash(z * 17.3, 2.8) * 1.35);
     groundZs.push(Math.max(GLACIER.z1, z - step));
   }
   let prev = null;
   for (const z of groundZs) {
     const half = floorHalf(z) + 2.8;
-    const row = fracs.map((f) => {
-      const lat = -half + f * 2 * half;
+    const lats = fracs.map((f) => -half + f * 2 * half);
+    lats.push(-0.6, 0.6);
+    lats.sort((a, b) => a - b);
+    const row = lats.map((lat) => {
       const x = pathX(z) + lat;
-      const tuck = f < 0.06 || f > 0.94 ? 0.35 : 0;
+      const tuck = Math.abs(lat) > half - 1.2 ? 0.35 : 0;
       return [x, floorH(x, z) - tuck, z];
     });
     if (prev) {
-      for (let i = 0; i < nx; i++) face(mesh, prev[i], prev[i + 1], row[i + 1], row[i], MAT.snow, [0, 1, 0]);
+      for (let i = 0; i < row.length - 1; i++) face(mesh, prev[i], prev[i + 1], row[i + 1], row[i], MAT.snow, [0, 1, 0]);
     }
     prev = row;
   }
@@ -713,6 +759,7 @@ export function buildWorld() {
   const arches = [-24, -70, -160, -480, -1200, -2200];
   arches.forEach((z, i) => addArch(mesh, z, i));
   [-40, -110, -260, -640, -1600].forEach((z) => addFall(mesh, z, -1));
+  addCurtain(mesh, -70);
   addPlateau(mesh, -1);
   addPlateau(mesh, 1);
   addFarFloor(mesh);
@@ -759,6 +806,14 @@ export function buildWorld() {
       );
     }
   });
+  for (let n = 0; n < 40; n++) {
+    const z = 10 - n * 8.5;
+    const side = n % 2 === 0 ? -1 : 1;
+    const p = wallPoint(z, side, 0.38 + hash(n, 1.7) * 0.4);
+    const len = 0.55 + hash(n, 2.3) * 1.5;
+    const thick = 0.45 + hash(n, 3.1) * 0.5;
+    pushInst(icicles, p[0] - side * 0.3, p[1] - 0.2, p[2], hash(n, 4), thick, len, thick * 0.75, (hash(n, 5) - 0.5) * 0.25);
+  }
 
   const drifts = [];
   const chunks = [];
@@ -776,6 +831,14 @@ export function buildWorld() {
       pushInst(drifts, x, y, z, hash(n, 12) * 6, s, 0.35 + hash(n, 13) * 0.45, s * 0.55, 0);
     }
   }
+  for (let n = 0; n < 32; n++) {
+    const z = 16 - n * 11;
+    const side = n % 2 === 0 ? 1 : -1;
+    const lat = side * (1.2 + hash(n, 6.2) * 1.3);
+    const x = pathX(z) + lat;
+    const s = 0.16 + hash(n, 7.4) * 0.32;
+    pushInst(chunks, x, floorH(x, z) + s * 0.15, z, hash(n, 8) * 5, s, s * 0.45, s * 0.75, 0);
+  }
 
   const icicleProto = makeIcicle();
   const driftProto = makeDrift();
@@ -783,6 +846,8 @@ export function buildWorld() {
   const planet = makePlanet();
   const verts = mesh.finish();
   relaxOffAxis(verts);
+  pinRouteBand(verts);
+  stampFaceNormals(verts);
   stampFaceNormals(icicleProto);
   stampFaceNormals(driftProto);
   stampFaceNormals(chunkProto);
@@ -799,7 +864,10 @@ export function buildWorld() {
     draws: DRAWS.length,
     drawNames: DRAWS,
   };
-  budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris;
+  budget.particleTris = (FLAKES.near + FLAKES.far + FLAKES.puff) * 2;
+  budget.particles = FLAKES.near + FLAKES.far;
+  budget.puffs = FLAKES.puff;
+  budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris + budget.particleTris;
   return {
     verts,
     shadeNormals,

@@ -20,10 +20,13 @@ export const LIMITS = {
   draws: 12,
 };
 
-export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'contact', 'bolt'];
+export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'contact', 'flake', 'bolt'];
+
+// Two drifting layers plus paw puffs. Each particle is one camera-facing quad.
+export const FLAKES = { near: 240, far: 160, puff: 12 };
 
 export const PLANET = {
-  dir: [0.22, 0.33, -0.92],
+  dir: [0.04, 0.30, -0.95],
   distance: 5200,
   radius: 756,
 };

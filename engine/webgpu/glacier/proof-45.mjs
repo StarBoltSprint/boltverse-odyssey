@@ -54,6 +54,13 @@ for (let i = 1; i < telem.length; i++) {
   cycles += dt * 1.95 * (telem[i].v / 7);
 }
 const mPerCycle = travel / cycles;
+let maxBoltJump = 0;
+for (let i = 1; i < telem.length; i++) {
+  const a = telem[i - 1].boltPx;
+  const b = telem[i].boltPx;
+  if (!a || !b) continue;
+  maxBoltJump = Math.max(maxBoltJump, Math.hypot(b[0] - a[0], b[1] - a[1]));
+}
 let meshAbove = 0;
 let meshBelow = 0;
 for (const row of telem) {
@@ -80,6 +87,50 @@ const seen = marks.map((m) => {
 let maxGap = -1e9;
 let minGap = 1e9;
 let gapAt = null;
+let maxHidden = 0;
+let hiddenAt = null;
+let hiddenN = 0;
+let negHidden = null;
+
+function pawHidden(rgb, mask, paint) {
+  const solid = new Uint8Array(W * H);
+  let minY = H;
+  let maxY = 0;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      const lum = mask[i] * 0.3 + mask[i + 1] * 0.59 + mask[i + 2] * 0.11;
+      if (mask[i + 3] >= 200 && lum >= 12) {
+        solid[y * W + x] = 1;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxY <= minY) return { n: 0, frac: 0 };
+  const y0 = maxY - 0.1 * (maxY - minY);
+  let n = 0;
+  let occ = 0;
+  for (let y = Math.ceil(y0); y <= maxY; y++) {
+    for (let x = 3; x < W - 3; x++) {
+      let ok = true;
+      for (let dy = -2; dy <= 2 && ok; dy++) {
+        for (let dx = -2; dx <= 2; dx++) if (!solid[(y + dy) * W + x + dx]) ok = false;
+      }
+      if (!ok) continue;
+      n++;
+      const p = y * W + x;
+      const c = p * 3;
+      const m = p * 4;
+      const cr = paint ? 90 : rgb[c];
+      const cg = paint ? 100 : rgb[c + 1];
+      const cb = paint ? 120 : rgb[c + 2];
+      const d = Math.max(Math.abs(cr - mask[m]), Math.abs(cg - mask[m + 1]), Math.abs(cb - mask[m + 2]));
+      if (d > 40) occ++;
+    }
+  }
+  return { n, frac: n ? occ / n : 0 };
+}
 const gaps = [];
 const diffs = [];
 let prevSmall = null;
@@ -114,6 +165,13 @@ for (let i = 0; i < telem.length; i++) {
     if (tip >= 0) break;
   }
   const gap = tip < 0 ? null : groundY - tip;
+  const hidden = pawHidden(rgb, mask, false);
+  hiddenN++;
+  if (hidden.frac > maxHidden) {
+    maxHidden = hidden.frac;
+    hiddenAt = { frame: telem[i].i, frac: +hidden.frac.toFixed(4), n: hidden.n };
+  }
+  if (i === 0) negHidden = pawHidden(rgb, mask, true);
   if (gap !== null) {
     gaps.push(+gap.toFixed(2));
     if (gap > maxGap) { maxGap = gap; gapAt = { frame: telem[i].i, t: telem[i].t, gap: +gap.toFixed(2), groundY: +groundY.toFixed(1), tip, z: +telem[i].z.toFixed(1) }; }
@@ -194,6 +252,7 @@ const proof = {
     minBoltM: Math.min(...perSecond.map((p) => p.boltM)),
     minCamM: Math.min(...perSecond.map((p) => p.camM)),
     maxAbsYawDegPerSec: Math.max(...perSecond.map((p) => Math.abs(p.dyawDeg))),
+    maxBoltScreenStepPx: +maxBoltJump.toFixed(2),
   },
   contact: {
     pawAlpha: 'luminance >= 12',
@@ -203,6 +262,13 @@ const proof = {
     worst: gapAt,
     meshAboveFunctionM: +meshAbove.toFixed(3),
     meshBelowFunctionM: +meshBelow.toFixed(3),
+  },
+  pawVisibility: {
+    meaning: 'Fraction of the solid bottom 10% of the dog that the terrain replaced. 0 means the paws are in front of the snow.',
+    maxFrac: +maxHidden.toFixed(4),
+    frames: hiddenN,
+    worst: hiddenAt,
+    negativeControl: negHidden ? { frac: +negHidden.frac.toFixed(4), n: negHidden.n, paint: 'snow rgb 90,100,120 over the same pixels' } : null,
   },
   stride: {
     strideHz: 1.95,

@@ -119,9 +119,12 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let band = skyNoise(vec3f(1.7, p.y * 0.028, 4.2));
     let dirty = skyNoise(vec3f(p.z * 0.004, p.y * 0.012, 8.0));
     var wall = ice;
-    wall = mix(wall, wall * vec3f(0.9, 0.94, 1.0), smoothstep(0.28, 0.72, band) * 0.28);
-    wall = mix(wall, wall * vec3f(0.72, 0.66, 0.58), smoothstep(0.78, 0.94, dirty) * 0.28);
-    wall = mix(wall, wall * ${v3(C.wallBlue)}, clamp(recess, 0.0, 1.0) * 0.32);
+    let crack = smoothstep(0.55, 0.82, band);
+    wall = mix(wall, wall * vec3f(0.55, 0.68, 0.92), crack * 0.55);
+    wall = mix(wall, wall * vec3f(0.62, 0.58, 0.52), smoothstep(0.72, 0.93, dirty) * 0.4);
+    wall = mix(wall, wall * ${v3(C.wallBlue)}, clamp(recess, 0.0, 1.0) * 0.45);
+    let frost = smoothstep(0.55, 0.92, nrm.y) * (1.0 - crack);
+    wall = mix(wall, wall * vec3f(0.9, 0.95, 1.0), frost * 0.35);
     return mix(wall, snow, cap);
   }
   let face = smoothstep(0.22, 0.62, nrm.y);
