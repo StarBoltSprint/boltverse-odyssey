@@ -1,0 +1,20 @@
+{
+  "frames": 1350,
+  "limit": 1.8,
+  "mask": "bolt-alpha",
+  "dilatePx": 8,
+  "maskFrames": 1350,
+  "min": 0.925,
+  "max": 1.608,
+  "mean": 0.947,
+  "over": 0,
+  "overFrames": [],
+  "controls": {
+    "worldGrid": 12.438,
+    "besideGrid": 2.018,
+    "besidePainted": 36708
+  },
+  "blackFail": 0,
+  "worstBlack": 0,
+  "blackLimit": 0.0003
+}

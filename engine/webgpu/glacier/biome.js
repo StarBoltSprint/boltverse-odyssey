@@ -20,12 +20,16 @@ export const LIMITS = {
   draws: 12,
 };
 
-export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'contact', 'bolt'];
+export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'contact', 'flake', 'bolt'];
+
+// One instanced draw. Near, mid, and far fill the camera frustum. Blow is
+// snow lifted off the sastrugi. Puffs stay a small paw burst.
+export const FLAKES = { near: 1100, mid: 1000, far: 700, blow: 220, puff: 18 };
 
 export const PLANET = {
-  dir: [0.22, 0.33, -0.92],
+  dir: [0.04, 0.30, -0.95],
   distance: 5200,
-  radius: 1180,
+  radius: 756,
 };
 
 export const GLACIER = {

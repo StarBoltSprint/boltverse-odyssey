@@ -1,0 +1,444 @@
+{
+  "frames": 1350,
+  "seconds": 44.967,
+  "motion": {
+    "perSecond": [
+      {
+        "s": 0,
+        "boltM": 7,
+        "camM": 7.008,
+        "dyawDeg": 0.018,
+        "v": 7
+      },
+      {
+        "s": 1,
+        "boltM": 7,
+        "camM": 7.013,
+        "dyawDeg": 0.024,
+        "v": 7
+      },
+      {
+        "s": 2,
+        "boltM": 7,
+        "camM": 7.006,
+        "dyawDeg": 0.023,
+        "v": 7
+      },
+      {
+        "s": 3,
+        "boltM": 7,
+        "camM": 7.002,
+        "dyawDeg": 0.023,
+        "v": 7
+      },
+      {
+        "s": 4,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": 0.023,
+        "v": 7
+      },
+      {
+        "s": 5,
+        "boltM": 7,
+        "camM": 7.003,
+        "dyawDeg": 0.022,
+        "v": 7
+      },
+      {
+        "s": 6,
+        "boltM": 7,
+        "camM": 7.004,
+        "dyawDeg": 0.021,
+        "v": 7
+      },
+      {
+        "s": 7,
+        "boltM": 7,
+        "camM": 7.004,
+        "dyawDeg": 0.021,
+        "v": 7
+      },
+      {
+        "s": 8,
+        "boltM": 7,
+        "camM": 7.017,
+        "dyawDeg": 0.02,
+        "v": 7
+      },
+      {
+        "s": 9,
+        "boltM": 7,
+        "camM": 7.008,
+        "dyawDeg": 0.019,
+        "v": 7
+      },
+      {
+        "s": 10,
+        "boltM": 7,
+        "camM": 7.01,
+        "dyawDeg": 0.019,
+        "v": 7
+      },
+      {
+        "s": 11,
+        "boltM": 7,
+        "camM": 7.009,
+        "dyawDeg": 0.018,
+        "v": 7
+      },
+      {
+        "s": 12,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": 0.017,
+        "v": 7
+      },
+      {
+        "s": 13,
+        "boltM": 7,
+        "camM": 7.002,
+        "dyawDeg": 0.016,
+        "v": 7
+      },
+      {
+        "s": 14,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": 0.016,
+        "v": 7
+      },
+      {
+        "s": 15,
+        "boltM": 7,
+        "camM": 7.002,
+        "dyawDeg": 0.015,
+        "v": 7
+      },
+      {
+        "s": 16,
+        "boltM": 7,
+        "camM": 7.004,
+        "dyawDeg": 0.014,
+        "v": 7
+      },
+      {
+        "s": 17,
+        "boltM": 7,
+        "camM": 7.015,
+        "dyawDeg": 0.013,
+        "v": 7
+      },
+      {
+        "s": 18,
+        "boltM": 7,
+        "camM": 7.008,
+        "dyawDeg": 0.013,
+        "v": 7
+      },
+      {
+        "s": 19,
+        "boltM": 7,
+        "camM": 7.014,
+        "dyawDeg": 0.012,
+        "v": 7
+      },
+      {
+        "s": 20,
+        "boltM": 7,
+        "camM": 7.007,
+        "dyawDeg": 0.011,
+        "v": 7
+      },
+      {
+        "s": 21,
+        "boltM": 7,
+        "camM": 7.01,
+        "dyawDeg": 0.01,
+        "v": 7
+      },
+      {
+        "s": 22,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": 0.01,
+        "v": 7
+      },
+      {
+        "s": 23,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": 0.009,
+        "v": 7
+      },
+      {
+        "s": 24,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": 0.008,
+        "v": 7
+      },
+      {
+        "s": 25,
+        "boltM": 7,
+        "camM": 7.007,
+        "dyawDeg": 0.007,
+        "v": 7
+      },
+      {
+        "s": 26,
+        "boltM": 7,
+        "camM": 7.003,
+        "dyawDeg": 0.007,
+        "v": 7
+      },
+      {
+        "s": 27,
+        "boltM": 7,
+        "camM": 7.01,
+        "dyawDeg": 0.006,
+        "v": 7
+      },
+      {
+        "s": 28,
+        "boltM": 7,
+        "camM": 7.004,
+        "dyawDeg": 0.005,
+        "v": 7
+      },
+      {
+        "s": 29,
+        "boltM": 7,
+        "camM": 7.007,
+        "dyawDeg": 0.004,
+        "v": 7
+      },
+      {
+        "s": 30,
+        "boltM": 7,
+        "camM": 7.003,
+        "dyawDeg": 0.004,
+        "v": 7
+      },
+      {
+        "s": 31,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": 0.003,
+        "v": 7
+      },
+      {
+        "s": 32,
+        "boltM": 7,
+        "camM": 7.003,
+        "dyawDeg": 0.002,
+        "v": 7
+      },
+      {
+        "s": 33,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": 0.001,
+        "v": 7
+      },
+      {
+        "s": 34,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": 0.001,
+        "v": 7
+      },
+      {
+        "s": 35,
+        "boltM": 7,
+        "camM": 7.004,
+        "dyawDeg": 0,
+        "v": 7
+      },
+      {
+        "s": 36,
+        "boltM": 7,
+        "camM": 7.011,
+        "dyawDeg": -0.001,
+        "v": 7
+      },
+      {
+        "s": 37,
+        "boltM": 7,
+        "camM": 7.006,
+        "dyawDeg": -0.002,
+        "v": 7
+      },
+      {
+        "s": 38,
+        "boltM": 7,
+        "camM": 7.012,
+        "dyawDeg": -0.003,
+        "v": 7
+      },
+      {
+        "s": 39,
+        "boltM": 7,
+        "camM": 7.003,
+        "dyawDeg": -0.003,
+        "v": 7
+      },
+      {
+        "s": 40,
+        "boltM": 7,
+        "camM": 7.004,
+        "dyawDeg": -0.004,
+        "v": 7
+      },
+      {
+        "s": 41,
+        "boltM": 7,
+        "camM": 7.005,
+        "dyawDeg": -0.005,
+        "v": 7
+      },
+      {
+        "s": 42,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": -0.006,
+        "v": 7
+      },
+      {
+        "s": 43,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": -0.006,
+        "v": 7
+      }
+    ],
+    "minBoltM": 7,
+    "minCamM": 7,
+    "maxAbsYawDegPerSec": 0.024,
+    "lastPartial": {
+      "fromFrame": 1320,
+      "toFrame": 1349,
+      "seconds": 0.967,
+      "boltM": 6.767,
+      "camM": 6.768
+    }
+  },
+  "contact": {
+    "pawAlpha": "mask luminance >= 12, the same cut as the grid mask, so the dark pads count",
+    "gapPx": "projected rendered-mesh row minus the lowest dog pixel. Positive would be air. Zero frames are positive.",
+    "maxGapPx": -4.17,
+    "minGapPx": -79.33,
+    "framesAboveGround": 0,
+    "worst": {
+      "frame": 794,
+      "t": 27.4667,
+      "gap": -4.17,
+      "groundY": 1012.8,
+      "tip": 1017,
+      "z": -188.3,
+      "phase": 0.818
+    },
+    "meshAboveFunctionM": 0.267,
+    "meshBelowFunctionM": 0.095
+  },
+  "stride": {
+    "strideHz": 1.95,
+    "speed": 7,
+    "designM": 3.59,
+    "travelM": 314.77,
+    "cycles": 87.69,
+    "distancePerCycleM": 3.59
+  },
+  "pops": {
+    "medianMad": 2.714,
+    "top5": [
+      {
+        "frame": 86,
+        "mad": 7.26,
+        "overMedian": 2.67
+      },
+      {
+        "frame": 51,
+        "mad": 6.589,
+        "overMedian": 2.43
+      },
+      {
+        "frame": 571,
+        "mad": 6.243,
+        "overMedian": 2.3
+      },
+      {
+        "frame": 1278,
+        "mad": 6.056,
+        "overMedian": 2.23
+      },
+      {
+        "frame": 464,
+        "mad": 5.996,
+        "overMedian": 2.21
+      }
+    ],
+    "look": "The five spikes are the arch and the near wall sliding through the frame. Nothing appears or disappears."
+  },
+  "walls": {
+    "region": {
+      "x0": 8,
+      "x1": 70,
+      "y0": 300,
+      "y1": 640
+    },
+    "meanAbsLuma": 3.762,
+    "meanHighPassLuma": 3.501,
+    "pairs": 1349
+  },
+  "route": [
+    {
+      "name": "arch",
+      "z": -24,
+      "t": 3.83,
+      "frame": 85
+    },
+    {
+      "name": "waterfall",
+      "z": -40,
+      "t": 6.13,
+      "frame": 154
+    },
+    {
+      "name": "arch",
+      "z": -70,
+      "t": 10.47,
+      "frame": 284
+    },
+    {
+      "name": "waterfall",
+      "z": -110,
+      "t": 16.2,
+      "frame": 456
+    },
+    {
+      "name": "arch",
+      "z": -160,
+      "t": 23.4,
+      "frame": 672
+    },
+    {
+      "name": "waterfall",
+      "z": -260,
+      "t": 37.8,
+      "frame": 1104
+    }
+  ],
+  "sha256": "2e7c499291d831d2252ad3af61d4e3e9813f482ca67c81d140c2244bef54222d",
+  "file": {
+    "bytes": 22923368,
+    "crf": 20,
+    "codec": "h264",
+    "pix_fmt": "yuv420p",
+    "width": 720,
+    "height": 1280,
+    "fps": 30,
+    "frames": 1350,
+    "duration": 45
+  }
+}

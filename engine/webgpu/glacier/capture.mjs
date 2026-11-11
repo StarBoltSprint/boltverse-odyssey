@@ -30,8 +30,9 @@ try {
         const t = 1 + i / fps;
         const payload = await evalJson(`window.__glacierFrame(${t}).then(r => JSON.stringify(r))`);
         if (payload.info.gpuErr) throw new Error(payload.info.gpuErr);
-        const name = path.join(dir, `f_${String(i).padStart(4, '0')}.jpg`);
-        fs.writeFileSync(name, Buffer.from(payload.jpg, 'base64'));
+        const id = String(i).padStart(4, '0');
+        fs.writeFileSync(path.join(dir, `f_${id}.png`), Buffer.from(payload.png, 'base64'));
+        if (payload.mask) fs.writeFileSync(path.join(dir, `m_${id}.png`), Buffer.from(payload.mask, 'base64'));
         if (payload.info.boltPx) centers.push(payload.info.boltPx[0]);
         if (i % 30 === 0) {
           const px = payload.info.boltPx ? payload.info.boltPx.map((n) => Math.round(n)).join(',') : 'off';
@@ -49,10 +50,15 @@ try {
   });
   const stills = [40, 135, 195, 258];
   stills.forEach((i, n) => {
-    fs.copyFileSync(path.join(dir, `f_${String(i).padStart(4, '0')}.jpg`), path.join(outDir, `glacier-still-${n + 1}.jpg`));
+    const id = String(i).padStart(4, '0');
+    const src = path.join(dir, `f_${id}.png`);
+    fs.copyFileSync(src, path.join(outDir, `glacier-still-${n + 1}.png`));
+    spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', src, '-q:v', '2', path.join(outDir, `glacier-still-${n + 1}.jpg`)]);
+    const mask = path.join(dir, `m_${id}.png`);
+    if (fs.existsSync(mask)) fs.copyFileSync(mask, path.join(outDir, `glacier-still-${n + 1}-mask.png`));
   });
   const enc = spawnSync('ffmpeg', [
-    '-y', '-framerate', String(fps), '-i', path.join(dir, 'f_%04d.jpg'),
+    '-y', '-framerate', String(fps), '-i', path.join(dir, 'f_%04d.png'),
     '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart',
     path.join(outDir, 'glacier-chase.mp4'),
   ], { encoding: 'utf8' });
@@ -67,7 +73,9 @@ try {
     fn: async ({ evalJson }) => {
       const payload = await evalJson('window.__glacierFrame(1.2).then(r => JSON.stringify(r))');
       if (payload.info.gpuErr) throw new Error(payload.info.gpuErr);
-      fs.writeFileSync(path.join(outDir, 'glacier-still-establish.jpg'), Buffer.from(payload.jpg, 'base64'));
+      const wide = path.join(outDir, 'glacier-still-establish.png');
+      fs.writeFileSync(wide, Buffer.from(payload.png, 'base64'));
+      spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', wide, '-q:v', '2', path.join(outDir, 'glacier-still-establish.jpg')]);
     },
   });
   console.log('CAPTURE_DONE', outDir, ((Date.now() - t0) / 1000).toFixed(1) + 's');

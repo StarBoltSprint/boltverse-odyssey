@@ -1,0 +1,438 @@
+{
+  "frames": 1350,
+  "seconds": 44.967,
+  "motion": {
+    "perSecond": [
+      {
+        "s": 0,
+        "boltM": 7,
+        "camM": 7.013,
+        "dyawDeg": 0.018,
+        "v": 7
+      },
+      {
+        "s": 1,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": 0.024,
+        "v": 7
+      },
+      {
+        "s": 2,
+        "boltM": 7,
+        "camM": 7.011,
+        "dyawDeg": 0.023,
+        "v": 7
+      },
+      {
+        "s": 3,
+        "boltM": 7,
+        "camM": 7.017,
+        "dyawDeg": 0.023,
+        "v": 7
+      },
+      {
+        "s": 4,
+        "boltM": 7,
+        "camM": 7.006,
+        "dyawDeg": 0.023,
+        "v": 7
+      },
+      {
+        "s": 5,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": 0.022,
+        "v": 7
+      },
+      {
+        "s": 6,
+        "boltM": 7,
+        "camM": 7.009,
+        "dyawDeg": 0.021,
+        "v": 7
+      },
+      {
+        "s": 7,
+        "boltM": 7,
+        "camM": 7.02,
+        "dyawDeg": 0.021,
+        "v": 7
+      },
+      {
+        "s": 8,
+        "boltM": 7,
+        "camM": 7.01,
+        "dyawDeg": 0.02,
+        "v": 7
+      },
+      {
+        "s": 9,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": 0.019,
+        "v": 7
+      },
+      {
+        "s": 10,
+        "boltM": 7,
+        "camM": 7.013,
+        "dyawDeg": 0.019,
+        "v": 7
+      },
+      {
+        "s": 11,
+        "boltM": 7,
+        "camM": 7.016,
+        "dyawDeg": 0.018,
+        "v": 7
+      },
+      {
+        "s": 12,
+        "boltM": 7,
+        "camM": 7.004,
+        "dyawDeg": 0.017,
+        "v": 7
+      },
+      {
+        "s": 13,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": 0.016,
+        "v": 7
+      },
+      {
+        "s": 14,
+        "boltM": 7,
+        "camM": 7.011,
+        "dyawDeg": 0.016,
+        "v": 7
+      },
+      {
+        "s": 15,
+        "boltM": 7,
+        "camM": 7.02,
+        "dyawDeg": 0.015,
+        "v": 7
+      },
+      {
+        "s": 16,
+        "boltM": 7,
+        "camM": 7.006,
+        "dyawDeg": 0.014,
+        "v": 7
+      },
+      {
+        "s": 17,
+        "boltM": 7,
+        "camM": 7.002,
+        "dyawDeg": 0.013,
+        "v": 7
+      },
+      {
+        "s": 18,
+        "boltM": 7,
+        "camM": 7.015,
+        "dyawDeg": 0.013,
+        "v": 7
+      },
+      {
+        "s": 19,
+        "boltM": 7,
+        "camM": 7.015,
+        "dyawDeg": 0.012,
+        "v": 7
+      },
+      {
+        "s": 20,
+        "boltM": 7,
+        "camM": 7.002,
+        "dyawDeg": 0.011,
+        "v": 7
+      },
+      {
+        "s": 21,
+        "boltM": 7,
+        "camM": 7.002,
+        "dyawDeg": 0.01,
+        "v": 7
+      },
+      {
+        "s": 22,
+        "boltM": 7,
+        "camM": 7.013,
+        "dyawDeg": 0.01,
+        "v": 7
+      },
+      {
+        "s": 23,
+        "boltM": 7,
+        "camM": 7.019,
+        "dyawDeg": 0.009,
+        "v": 7
+      },
+      {
+        "s": 24,
+        "boltM": 7,
+        "camM": 7.004,
+        "dyawDeg": 0.008,
+        "v": 7
+      },
+      {
+        "s": 25,
+        "boltM": 7,
+        "camM": 7.003,
+        "dyawDeg": 0.007,
+        "v": 7
+      },
+      {
+        "s": 26,
+        "boltM": 7,
+        "camM": 7.016,
+        "dyawDeg": 0.007,
+        "v": 7
+      },
+      {
+        "s": 27,
+        "boltM": 7,
+        "camM": 7.014,
+        "dyawDeg": 0.006,
+        "v": 7
+      },
+      {
+        "s": 28,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": 0.005,
+        "v": 7
+      },
+      {
+        "s": 29,
+        "boltM": 7,
+        "camM": 7.003,
+        "dyawDeg": 0.004,
+        "v": 7
+      },
+      {
+        "s": 30,
+        "boltM": 7,
+        "camM": 7.014,
+        "dyawDeg": 0.004,
+        "v": 7
+      },
+      {
+        "s": 31,
+        "boltM": 7,
+        "camM": 7.017,
+        "dyawDeg": 0.003,
+        "v": 7
+      },
+      {
+        "s": 32,
+        "boltM": 7,
+        "camM": 7.002,
+        "dyawDeg": 0.002,
+        "v": 7
+      },
+      {
+        "s": 33,
+        "boltM": 7,
+        "camM": 7.005,
+        "dyawDeg": 0.001,
+        "v": 7
+      },
+      {
+        "s": 34,
+        "boltM": 7,
+        "camM": 7.018,
+        "dyawDeg": 0.001,
+        "v": 7
+      },
+      {
+        "s": 35,
+        "boltM": 7,
+        "camM": 7.013,
+        "dyawDeg": 0,
+        "v": 7
+      },
+      {
+        "s": 36,
+        "boltM": 7,
+        "camM": 7.001,
+        "dyawDeg": -0.001,
+        "v": 7
+      },
+      {
+        "s": 37,
+        "boltM": 7,
+        "camM": 7.003,
+        "dyawDeg": -0.002,
+        "v": 7
+      },
+      {
+        "s": 38,
+        "boltM": 7,
+        "camM": 7.015,
+        "dyawDeg": -0.003,
+        "v": 7
+      },
+      {
+        "s": 39,
+        "boltM": 7,
+        "camM": 7.016,
+        "dyawDeg": -0.003,
+        "v": 7
+      },
+      {
+        "s": 40,
+        "boltM": 7,
+        "camM": 7,
+        "dyawDeg": -0.004,
+        "v": 7
+      },
+      {
+        "s": 41,
+        "boltM": 7,
+        "camM": 7.008,
+        "dyawDeg": -0.005,
+        "v": 7
+      },
+      {
+        "s": 42,
+        "boltM": 7,
+        "camM": 7.019,
+        "dyawDeg": -0.006,
+        "v": 7
+      },
+      {
+        "s": 43,
+        "boltM": 7,
+        "camM": 7.011,
+        "dyawDeg": -0.006,
+        "v": 7
+      }
+    ],
+    "minBoltM": 7,
+    "minCamM": 7,
+    "maxAbsYawDegPerSec": 0.024,
+    "maxBoltScreenStepPx": 0.67
+  },
+  "contact": {
+    "pawAlpha": "luminance >= 12",
+    "gapPx": "projected rendered-mesh row minus lowest paw pixel. Positive is air.",
+    "maxGapPx": 39.72,
+    "minGapPx": 4.25,
+    "worst": {
+      "frame": 378,
+      "t": 13.6,
+      "gap": 39.72,
+      "groundY": 1023.7,
+      "tip": 984,
+      "z": -91.9
+    },
+    "meshAboveFunctionM": 0.002,
+    "meshBelowFunctionM": 0.003
+  },
+  "pawVisibility": {
+    "meaning": "Fraction of the solid bottom 10% of the dog that the terrain replaced. 0 means the paws are in front of the snow.",
+    "maxFrac": 0.9966,
+    "frames": 1350,
+    "worst": {
+      "frame": 1097,
+      "frac": 0.9966,
+      "n": 586
+    },
+    "negativeControl": {
+      "frac": 0.7469,
+      "n": 1229,
+      "paint": "snow rgb 90,100,120 over the same pixels"
+    }
+  },
+  "stride": {
+    "strideHz": 1.95,
+    "speed": 7,
+    "designM": 3.59,
+    "travelM": 314.77,
+    "cycles": 87.69,
+    "distancePerCycleM": 3.59
+  },
+  "pops": {
+    "medianMad": 2.569,
+    "top5": [
+      {
+        "frame": 1105,
+        "mad": 4.933,
+        "overMedian": 1.92
+      },
+      {
+        "frame": 1106,
+        "mad": 4.468,
+        "overMedian": 1.74
+      },
+      {
+        "frame": 1109,
+        "mad": 4.399,
+        "overMedian": 1.71
+      },
+      {
+        "frame": 1098,
+        "mad": 4.35,
+        "overMedian": 1.69
+      },
+      {
+        "frame": 732,
+        "mad": 4.275,
+        "overMedian": 1.66
+      }
+    ]
+  },
+  "walls": {
+    "region": {
+      "x0": 8,
+      "x1": 70,
+      "y0": 300,
+      "y1": 640
+    },
+    "meanAbsLuma": 2.308,
+    "meanHighPassLuma": 2.688,
+    "pairs": 1349
+  },
+  "route": [
+    {
+      "name": "arch",
+      "z": -24,
+      "t": 3.83,
+      "frame": 85
+    },
+    {
+      "name": "waterfall",
+      "z": -40,
+      "t": 6.13,
+      "frame": 154
+    },
+    {
+      "name": "arch",
+      "z": -70,
+      "t": 10.47,
+      "frame": 284
+    },
+    {
+      "name": "waterfall",
+      "z": -110,
+      "t": 16.2,
+      "frame": 456
+    },
+    {
+      "name": "arch",
+      "z": -160,
+      "t": 23.4,
+      "frame": 672
+    },
+    {
+      "name": "waterfall",
+      "z": -260,
+      "t": 37.8,
+      "frame": 1104
+    }
+  ]
+}
