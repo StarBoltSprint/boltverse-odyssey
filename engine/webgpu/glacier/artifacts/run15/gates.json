@@ -1,0 +1,38 @@
+{
+  "film": "not committed",
+  "reason": "column grid stays above 1.8",
+  "resolution": "720x1280",
+  "anisotropyRequested": 16,
+  "anisotropyDevice": 1,
+  "gridSamples": [
+    { "t": 1, "grid": 2.395, "beside": 1.793 },
+    { "t": 1.8, "grid": 3.757, "beside": 2.213 },
+    { "t": 8, "grid": 1.841, "beside": 1.646 }
+  ],
+  "gridLimit": 1.8,
+  "worstMeasured": { "t": 1.8, "grid": 3.757 },
+  "texelPxPerM": 2048,
+  "stretchP99": { "crust": 1.02, "glacier-ice": 1.25, "serac": 1.27, "fall-ice": 1.25, "arch-ice": 1.26 },
+  "planetMagnification": 0.95,
+  "tris": 193258,
+  "draws": 9,
+  "bodyPenM": 0.0025,
+  "cardH": 1.15,
+  "cie76": { "snow": 0.12, "waterfall": 0.15, "arch": 0.12, "wall": 0.15, "negativeWall": 15.09 },
+  "skyWorst": 0,
+  "skyNegative": 0.04635,
+  "holes": 0,
+  "stability": {
+    "staticLumaStd": 0,
+    "chaseLumaStd": 6.544,
+    "run11ChaseLumaStd": 6.156,
+    "temporalRatio": 1.063,
+    "temporalLimit": 1.5,
+    "nyquist": 3.673,
+    "mid": 4.818,
+    "speckleRatio": 0.762,
+    "run11SpeckleRatio": 0.322,
+    "run13WallCropSpeckleRatio": 3.982,
+    "speckleLimit": 1
+  }
+}

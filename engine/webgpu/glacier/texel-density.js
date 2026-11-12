@@ -11,11 +11,11 @@ export const REPEATS_PER_M = 1 / TILE_M;
 
 export const IMAGINE = [
   {
-    id: 'snow',
+    id: 'crust',
     role: 'snow',
     surfaceClass: 'snow',
     tileMetres: TILE_M,
-    files: ['tex/snow/v1.jpg', 'tex/snow/v2.jpg', 'tex/snow/v3.jpg', 'tex/snow/v4.jpg'],
+    files: ['tex/crust/v1.jpg', 'tex/crust/v2.jpg', 'tex/crust/v3.jpg', 'tex/crust/v4.jpg'],
     worldMats: [MAT.snow, MAT.drift],
     instances: ['drift', 'chunk'],
   },

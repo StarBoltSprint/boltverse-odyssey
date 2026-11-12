@@ -176,7 +176,7 @@ function groupStretch(mats) {
   return worst;
 }
 const stretchById = new Map([
-  ['snow', groupStretch([MAT.snow, MAT.drift])],
+  ['crust', groupStretch([MAT.snow, MAT.drift])],
   ['glacier-ice', groupStretch([MAT.wall, MAT.icicle, MAT.drift])],
   ['serac', groupStretch([MAT.mountain])],
   ['fall-ice', groupStretch([MAT.fall])],

@@ -29,32 +29,23 @@ function v3(a) { return `vec3f(${a[0]}, ${a[1]}, ${a[2]})`; }
 export function albedoWgsl() {
   const C = ICE;
   const repeats = REPEATS_PER_M;
-  // Ground crust is high-contrast wind ridges. `gk` keeps that Imagine detail
-  // and fades only the part that would print as a column grid. Default is full.
-  let D = 1.7;
-  let K = 1;
-  // 65° puts the wind-crust ridges across the lane. At 0° they line up with
-  // the camera columns and the grid gate reads them as a repeating band.
-  let A = 65 * Math.PI / 180;
-  try {
-    const q = new URLSearchParams(globalThis.location?.search || '');
-    if (q.get('gd')) D = Number(q.get('gd'));
-    if (q.get('gk')) K = Number(q.get('gk'));
-    if (q.get('ga')) A = Number(q.get('ga')) * Math.PI / 180;
-  } catch { /* node tests do not load the page */ }
   return `
 fn hash21(p: vec2f) -> f32 { return fract(sin(dot(p, vec2f(127.1, 311.7))) * 43758.5453); }
-fn addPick(w: vec4f, h: f32, m: f32) -> vec4f {
-  let k = i32(floor(h * 4.0)) % 4;
-  return w + vec4f(
-    select(0.0, m, k == 0),
-    select(0.0, m, k == 1),
-    select(0.0, m, k == 2),
-    select(0.0, m, k == 3)
+fn rot2(v: vec2f, ang: f32) -> vec2f {
+  let c = cos(ang);
+  let s = sin(ang);
+  return vec2f(v.x * c - v.y * s, v.x * s + v.y * c);
+}
+// One lead still, a little of the other three. The pick is the hex cell, not the pixel.
+fn variantW(id: vec2f) -> vec4f {
+  let lead = i32(floor(hash21(id + vec2f(8.0, 1.0)) * 4.0)) % 4;
+  return vec4f(
+    select(0.05, 0.85, lead == 0),
+    select(0.05, 0.85, lead == 1),
+    select(0.05, 0.85, lead == 2),
+    select(0.05, 0.85, lead == 3)
   );
 }
-// Fine grain stays on the 0.5 m tile. Which of the four stills leads changes
-// over about 22 m, so a cell edge is not a band across the frame.
 fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f, gain: vec4f) -> vec3f {
   let s0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb * gain.x;
   let s1 = textureSampleGrad(arr, samp, uv, 1, du, dv).rgb * gain.y;
@@ -62,51 +53,68 @@ fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f,
   let s3 = textureSampleGrad(arr, samp, uv, 3, du, dv).rgb * gain.w;
   return s0 * w.x + s1 * w.y + s2 * w.z + s3 * w.w;
 }
-fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f, reps: f32, blur: f32, detail: f32, keep: f32, ang: f32) -> vec3f {
+fn cellMean(arr: texture_2d_array<f32>, uv: vec2f, id: vec2f, gain: vec4f) -> vec3f {
+  let lead = i32(floor(hash21(id + vec2f(8.0, 1.0)) * 4.0)) % 4;
+  let gv = dot(gain, vec4f(select(0.0, 1.0, lead == 0), select(0.0, 1.0, lead == 1), select(0.0, 1.0, lead == 2), select(0.0, 1.0, lead == 3)));
+  return textureSampleLevel(arr, samp, uv, lead, 5.0).rgb * gv;
+}
+// Hex lattice, 0.5 m cells. Each cell rotates and shifts its own still.
+// Weights are the triangle inside the hex, so a cell edge is a blend, not a hash flicker.
+// Contrast is put back with 1/sqrt(sum w^2) so the blend does not wash the still out.
+fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f, cells: f32) -> vec3f {
   let n = normalize(nrm);
   let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(n.y) < 0.9);
   let tng = normalize(cross(helper, n));
   let btg = normalize(cross(n, tng));
-  let ca = cos(ang);
-  let sa = sin(ang);
-  let m0 = vec2f(dot(p, tng), dot(p, btg));
-  let metres = vec2f(m0.x * ca - m0.y * sa, m0.x * sa + m0.y * ca);
-  let du0 = vec2f(dot(px, tng), dot(px, btg)) * ${repeats} * reps * blur;
-  let dv0 = vec2f(dot(py, tng), dot(py, btg)) * ${repeats} * reps * blur;
-  let du = vec2f(du0.x * ca - du0.y * sa, du0.x * sa + du0.y * ca);
-  let dv = vec2f(dv0.x * ca - dv0.y * sa, dv0.x * sa + dv0.y * ca);
-  let uv = metres * ${repeats} * reps;
-  let cell = metres * 2.0 * reps;
-  let skew = vec2f(cell.x + cell.y * 0.5, cell.y * 0.8660254);
+  let metres = vec2f(dot(p, tng), dot(p, btg));
+  let dmu = vec2f(dot(px, tng), dot(px, btg));
+  let dmv = vec2f(dot(py, tng), dot(py, btg));
+  let skew = vec2f(metres.x + metres.y * 0.5, metres.y * 0.8660254) * cells;
   let i = floor(skew);
   let f = fract(skew);
   let lower = f.x > f.y;
   let w0 = select(1.0 - f.y, 1.0 - f.x, lower);
   let w1 = select(f.y - f.x, f.x - f.y, lower);
   let w2 = select(f.x, f.y, lower);
-  let wSoft = pow(max(vec3f(w0, w1, w2), vec3f(0.0)), vec3f(0.45)) + vec3f(0.7);
-  let w = wSoft / (wSoft.x + wSoft.y + wSoft.z);
+  let ws = vec3f(w0, w1, w2);
+  let sm = ws * ws * (3.0 - 2.0 * ws);
+  let w = sm / max(sm.x + sm.y + sm.z, 1e-4);
   let id1 = i + select(vec2f(0.0, 1.0), vec2f(1.0, 0.0), lower);
   let id2 = i + vec2f(1.0, 1.0);
-  let c0 = blend4(arr, uv + vec2f(hash21(i), hash21(i + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(i + vec2f(8.0, 1.0)), 1.0), gain);
-  let c1 = blend4(arr, uv + vec2f(hash21(id1), hash21(id1 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id1 + vec2f(8.0, 1.0)), 1.0), gain);
-  let c2 = blend4(arr, uv + vec2f(hash21(id2), hash21(id2 + vec2f(2.2, 5.1))), du, dv, addPick(vec4f(0.0), hash21(id2 + vec2f(8.0, 1.0)), 1.0), gain);
-  let soft = c0 * w.x + c1 * w.y + c2 * w.z;
-  // One still's grain on top of the even blend, so the lane keeps the photo
-  // and does not turn into a flat average. The coarse mip keeps the mean.
-  let k = i32(floor(hash21(i + vec2f(8.0, 1.0)) * 4.0)) % 4;
-  let gv = dot(gain, vec4f(select(0.0, 1.0, k == 0), select(0.0, 1.0, k == 1), select(0.0, 1.0, k == 2), select(0.0, 1.0, k == 3)));
-  let fine = textureSampleGrad(arr, samp, uv, k, du, dv).rgb * gv;
-  let coarse = textureSampleLevel(arr, samp, uv, k, 4.5).rgb * gv;
-  let raw = soft + (fine - coarse) * detail;
-  return mix(coarse, raw, keep);
+  let a0 = hash21(i + vec2f(3.7, 9.1)) * 6.2831853;
+  let a1 = hash21(id1 + vec2f(3.7, 9.1)) * 6.2831853;
+  let a2 = hash21(id2 + vec2f(3.7, 9.1)) * 6.2831853;
+  let o0 = vec2f(hash21(i + vec2f(2.2, 5.1)), hash21(i + vec2f(4.4, 1.3)));
+  let o1 = vec2f(hash21(id1 + vec2f(2.2, 5.1)), hash21(id1 + vec2f(4.4, 1.3)));
+  let o2 = vec2f(hash21(id2 + vec2f(2.2, 5.1)), hash21(id2 + vec2f(4.4, 1.3)));
+  let m0 = rot2(metres, a0) + o0 * 0.5;
+  let m1 = rot2(metres, a1) + o1 * 0.5;
+  let m2 = rot2(metres, a2) + o2 * 0.5;
+  // One extra mip. The device anisotropy tops out at 1 here, and the ice
+  // bubbles would otherwise sit on the pixel grid.
+  let bias = 2.0;
+  let du0 = rot2(dmu, a0) * ${repeats} * bias;
+  let dv0 = rot2(dmv, a0) * ${repeats} * bias;
+  let du1 = rot2(dmu, a1) * ${repeats} * bias;
+  let dv1 = rot2(dmv, a1) * ${repeats} * bias;
+  let du2 = rot2(dmu, a2) * ${repeats} * bias;
+  let dv2 = rot2(dmv, a2) * ${repeats} * bias;
+  let uv0 = m0 * ${repeats};
+  let uv1 = m1 * ${repeats};
+  let uv2 = m2 * ${repeats};
+  let c0 = blend4(arr, uv0, du0, dv0, variantW(i), gain);
+  let c1 = blend4(arr, uv1, du1, dv1, variantW(id1), gain);
+  let c2 = blend4(arr, uv2, du2, dv2, variantW(id2), gain);
+  let hi = c0 * w.x + c1 * w.y + c2 * w.z;
+  let lo = cellMean(arr, uv0, i, gain) * w.x + cellMean(arr, uv1, id1, gain) * w.y + cellMean(arr, uv2, id2, gain) * w.z;
+  let restore = min(inverseSqrt(max(dot(w, w), 0.45)), 1.2);
+  return lo + (hi - lo) * restore;
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
-    let snowGain = vec4f(0.825, 1.189, 0.983, 1.0);
-    // Planar mapping. A tilted face normal turns the snow still into lanes
-    // that the column gate reads as a band.
-    let snow = sampleArr(snowArr, p, vec3f(0.0, 1.0, 0.0), px, py, snowGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+    let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
+    // Planar so a tilted triangle does not shear the crust into lanes.
+    let snow = sampleArr(snowArr, p, vec3f(0.0, 1.0, 0.0), px, py, snowGain, 8.0);
     let crev = smoothstep(1.1, -1.6, p.y - 0.3);
     let tone = skyNoise(vec3f(p.x * 0.011, 3.1, p.z * 0.0055));
     let tone2 = skyNoise(vec3f(p.x * 0.041, 1.4, p.z * 0.022));
@@ -121,24 +129,24 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     if (m < 1.5) {
-      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0);
       let lip = smoothstep(0.35, 0.75, nrm.y);
       return mix(fall, snow, lip * 0.85);
     }
     if (m < 2.5) {
-      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 2.0);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0);
       let cap = smoothstep(0.28, 0.62, nrm.y);
       return mix(arch, snow, cap);
     }
-    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0);
     return ice * vec3f(0.92, 0.96, 1.0);
   }
   let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
   let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
-  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 1.0, 1.0, 1.7, 1.0, 0.0);
-  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0);
+  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0);
   if (m < 4.5) {
     let chunk = skyNoise(p * 0.17);
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
@@ -148,7 +156,7 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     return mix(ice, snow, cap);
   }
   let face = smoothstep(0.22, 0.62, nrm.y);
-  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0);
   return mix(serac, snow, face);
 }
 fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {

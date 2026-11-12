@@ -328,13 +328,6 @@ fn darken15(c: vec3f) -> vec3f {
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
   let alb = albedoOf(m, v.w, nUv, gx, gy);
-  let lum = dot(alb, vec3f(0.3, 0.59, 0.11));
-  let hx = dpdx(lum);
-  let hy = dpdy(lum);
-  let tx = normalize(gx);
-  let ty = normalize(gy);
-  let onIce = select(0.0, 1.0, m > 1.5);
-  n = normalize(n + (tx * clamp(-hx, -0.12, 0.12) + ty * clamp(-hy, -0.12, 0.12)) * 4.0 * onIce);
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
@@ -534,20 +527,73 @@ async function main() {
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
   });
   dev.queue.copyExternalImageToTexture({ source: bmp }, { texture: atlas }, [bmp.width, bmp.height]);
+  function srgbToLin(u) {
+    const x = u / 255;
+    return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+  }
+  function linToSrgb(x) {
+    const y = x <= 0.0031308 ? x * 12.92 : 1.055 * (x ** (1 / 2.4)) - 0.055;
+    return Math.max(0, Math.min(255, Math.round(y * 255)));
+  }
+  // Box-filter in linear light. A bitmap resize of the original aliases the
+  // fine bubbles into salt at the mip the wall actually samples.
+  async function mipCanvases(bitmap) {
+    const base = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const bctx = base.getContext('2d', { willReadFrequently: true });
+    bctx.drawImage(bitmap, 0, 0);
+    const out = [base];
+    let w = bitmap.width;
+    let h = bitmap.height;
+    let ctx = bctx;
+    while (w > 1 || h > 1) {
+      const src = ctx.getImageData(0, 0, w, h).data;
+      const nw = Math.max(1, w >> 1);
+      const nh = Math.max(1, h >> 1);
+      const dst = new Uint8ClampedArray(nw * nh * 4);
+      for (let y = 0; y < nh; y++) {
+        for (let x = 0; x < nw; x++) {
+          let r = 0, g = 0, b = 0, a = 0, n = 0;
+          for (let dy = 0; dy < 2; dy++) {
+            for (let dx = 0; dx < 2; dx++) {
+              const sx = Math.min(w - 1, x * 2 + dx);
+              const sy = Math.min(h - 1, y * 2 + dy);
+              const i = (sy * w + sx) * 4;
+              r += srgbToLin(src[i]);
+              g += srgbToLin(src[i + 1]);
+              b += srgbToLin(src[i + 2]);
+              a += src[i + 3];
+              n++;
+            }
+          }
+          const o = (y * nw + x) * 4;
+          dst[o] = linToSrgb(r / n);
+          dst[o + 1] = linToSrgb(g / n);
+          dst[o + 2] = linToSrgb(b / n);
+          dst[o + 3] = a / n;
+        }
+      }
+      const next = new OffscreenCanvas(nw, nh);
+      const nctx = next.getContext('2d', { willReadFrequently: true });
+      nctx.putImageData(new ImageData(dst, nw, nh), 0, 0);
+      out.push(next);
+      ctx = nctx;
+      w = nw;
+      h = nh;
+    }
+    return out;
+  }
   async function loadAlbedo(file) {
     const res = await fetch(new URL(file, import.meta.url).href);
     if (!res.ok) throw new Error('albedo missing ' + file);
     const img = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none' });
-    const levels = Math.floor(Math.log2(Math.max(img.width, img.height))) + 1;
+    const mips = await mipCanvases(img);
     const tex = dev.createTexture({
-      size: [img.width, img.height], mipLevelCount: levels, format: 'rgba8unorm-srgb',
+      size: [img.width, img.height], mipLevelCount: mips.length, format: 'rgba8unorm-srgb',
       usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
     });
-    for (let level = 0; level < levels; level++) {
-      const w = Math.max(1, img.width >> level);
-      const h = Math.max(1, img.height >> level);
-      const src = level === 0 ? img : await createImageBitmap(img, { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' });
-      dev.queue.copyExternalImageToTexture({ source: src }, { texture: tex, mipLevel: level }, [w, h]);
+    for (let level = 0; level < mips.length; level++) {
+      const src = mips[level];
+      dev.queue.copyExternalImageToTexture({ source: src }, { texture: tex, mipLevel: level }, [src.width, src.height]);
     }
     return tex;
   }
@@ -560,22 +606,22 @@ async function main() {
     }
     const w0 = imgs[0].width;
     const h0 = imgs[0].height;
-    const levels = Math.floor(Math.log2(Math.max(w0, h0))) + 1;
+    const chains = [];
+    for (const img of imgs) chains.push(await mipCanvases(img));
+    const levels = chains[0].length;
     const tex = dev.createTexture({
       size: [w0, h0, imgs.length], mipLevelCount: levels, format: 'rgba8unorm-srgb',
       usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
     });
-    for (let layer = 0; layer < imgs.length; layer++) {
+    for (let layer = 0; layer < chains.length; layer++) {
       for (let level = 0; level < levels; level++) {
-        const w = Math.max(1, w0 >> level);
-        const h = Math.max(1, h0 >> level);
-        const src = level === 0 ? imgs[layer] : await createImageBitmap(imgs[layer], { resizeWidth: w, resizeHeight: h, resizeQuality: 'high' });
-        dev.queue.copyExternalImageToTexture({ source: src }, { texture: tex, mipLevel: level, origin: [0, 0, layer] }, [w, h]);
+        const src = chains[layer][level];
+        dev.queue.copyExternalImageToTexture({ source: src }, { texture: tex, mipLevel: level, origin: [0, 0, layer] }, [src.width, src.height]);
       }
     }
     return tex;
   }
-  const snowTex = await loadArray(['./tex/snow/v1.jpg', './tex/snow/v2.jpg', './tex/snow/v3.jpg', './tex/snow/v4.jpg']);
+  const snowTex = await loadArray(['./tex/crust/v1.jpg', './tex/crust/v2.jpg', './tex/crust/v3.jpg', './tex/crust/v4.jpg']);
   const wallTex = await loadArray(['./tex/glacier-ice/v1.jpg', './tex/glacier-ice/v2.jpg', './tex/glacier-ice/v3.jpg', './tex/glacier-ice/v4.jpg']);
   const fallTex = await loadArray(['./tex/fall-ice/v1.jpg', './tex/fall-ice/v2.jpg', './tex/fall-ice/v3.jpg', './tex/fall-ice/v4.jpg']);
   const archTex = await loadArray(['./tex/arch-ice/v1.jpg', './tex/arch-ice/v2.jpg', './tex/arch-ice/v3.jpg', './tex/arch-ice/v4.jpg']);
@@ -603,7 +649,8 @@ async function main() {
   const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
   const planetVerts = world.planet.length / 8;
   const ub = dev.createBuffer({ size: 256, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const aniso = Math.min(8, ad.limits.maxSamplerAnisotropy || 1);
+  const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
+  window.__glacierAniso = aniso;
   const samp = dev.createSampler({
     magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
     addressModeU: 'repeat', addressModeV: 'repeat',
