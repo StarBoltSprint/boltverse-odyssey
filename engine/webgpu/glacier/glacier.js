@@ -1025,7 +1025,10 @@ async function main() {
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;
     while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const showMat = window.__glacierShowMat === true;
+    if (showMat) gateMode = 1;
     const frame = await readFrame();
+    if (showMat) gateMode = 0;
     const png = await blobOf(frame.src, 'image/png');
     renderBoltMask();
     const maskSrc = await readback();

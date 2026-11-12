@@ -36,6 +36,12 @@ fn rot2(v: vec2f, ang: f32) -> vec2f {
   let s = sin(ang);
   return vec2f(v.x * c - v.y * s, v.x * s + v.y * c);
 }
+fn cover(d: vec2f) -> vec2f {
+  let len = length(d);
+  let floor = 3.0 / 1024.0;
+  if (len > 1e-6 && len < floor) { return d * (floor / len); }
+  return d;
+}
 // One lead still, a little of the other three. The pick is the hex cell, not the pixel.
 fn variantW(id: vec2f) -> vec4f {
   let lead = i32(floor(hash21(id + vec2f(8.0, 1.0)) * 4.0)) % 4;
@@ -61,7 +67,7 @@ fn cellMean(arr: texture_2d_array<f32>, uv: vec2f, id: vec2f, gain: vec4f) -> ve
 // Hex lattice, 0.5 m cells. Each cell rotates and shifts its own still.
 // Weights are the triangle inside the hex, so a cell edge is a blend, not a hash flicker.
 // Contrast is put back with 1/sqrt(sum w^2) so the blend does not wash the still out.
-fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f, cells: f32) -> vec3f {
+fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f, cells: f32, bias: f32) -> vec3f {
   let n = normalize(nrm);
   let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(n.y) < 0.9);
   let tng = normalize(cross(helper, n));
@@ -90,15 +96,14 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let m0 = rot2(metres, a0) + o0 * 0.5;
   let m1 = rot2(metres, a1) + o1 * 0.5;
   let m2 = rot2(metres, a2) + o2 * 0.5;
-  // One extra mip. The device anisotropy tops out at 1 here, and the ice
-  // bubbles would otherwise sit on the pixel grid.
-  let bias = 2.0;
-  let du0 = rot2(dmu, a0) * ${repeats} * bias;
-  let dv0 = rot2(dmv, a0) * ${repeats} * bias;
-  let du1 = rot2(dmu, a1) * ${repeats} * bias;
-  let dv1 = rot2(dmv, a1) * ${repeats} * bias;
-  let du2 = rot2(dmu, a2) * ${repeats} * bias;
-  let dv2 = rot2(dmv, a2) * ${repeats} * bias;
+  // A face that under-reports its derivative was sampling the raw still
+  // and reading as glitter. Three texels per pixel is the floor.
+  let du0 = cover(rot2(dmu, a0) * ${repeats} * bias);
+  let dv0 = cover(rot2(dmv, a0) * ${repeats} * bias);
+  let du1 = cover(rot2(dmu, a1) * ${repeats} * bias);
+  let dv1 = cover(rot2(dmv, a1) * ${repeats} * bias);
+  let du2 = cover(rot2(dmu, a2) * ${repeats} * bias);
+  let dv2 = cover(rot2(dmv, a2) * ${repeats} * bias);
   let uv0 = m0 * ${repeats};
   let uv1 = m1 * ${repeats};
   let uv2 = m2 * ${repeats};
@@ -114,7 +119,7 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     // Planar so a tilted triangle does not shear the crust into lanes.
-    let snow = sampleArr(snowArr, p, vec3f(0.0, 1.0, 0.0), px, py, snowGain, 8.0);
+    let snow = sampleArr(snowArr, p, vec3f(0.0, 1.0, 0.0), px, py, snowGain, 8.0, 2.0);
     let crev = smoothstep(1.1, -1.6, p.y - 0.3);
     let tone = skyNoise(vec3f(p.x * 0.011, 3.1, p.z * 0.0055));
     let tone2 = skyNoise(vec3f(p.x * 0.041, 1.4, p.z * 0.022));
@@ -129,24 +134,24 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     if (m < 1.5) {
-      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0);
+      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0, 2.0);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
       let lip = smoothstep(0.35, 0.75, nrm.y);
       return mix(fall, snow, lip * 0.85);
     }
     if (m < 2.5) {
-      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 2.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0);
+      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
       let cap = smoothstep(0.28, 0.62, nrm.y);
       return mix(arch, snow, cap);
     }
-    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0);
+    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 2.0);
     return ice * vec3f(0.92, 0.96, 1.0);
   }
   let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
   let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
-  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0);
-  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0);
+  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 2.0);
   if (m < 4.5) {
     let chunk = skyNoise(p * 0.17);
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
@@ -156,7 +161,7 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     return mix(ice, snow, cap);
   }
   let face = smoothstep(0.22, 0.62, nrm.y);
-  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0);
+  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 2.0);
   return mix(serac, snow, face);
 }
 fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {

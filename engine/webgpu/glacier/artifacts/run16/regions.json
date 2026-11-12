@@ -1,0 +1,56 @@
+{
+  "film": "not committed",
+  "reason": "column grid stays above 1.8 and the energy is the snow, not the seracs",
+  "gridLimit": 1.8,
+  "band": "y 0.55-0.96, Bolt masked",
+  "regions": [
+    {
+      "t": 1,
+      "full": 2.413,
+      "snow": 2.498,
+      "laneCenter": 3.276,
+      "snowLeft": 1.809,
+      "snowRight": 2.789,
+      "walls": 0,
+      "seracs": 0,
+      "arch": 0,
+      "sky": 0,
+      "bolt": 0
+    },
+    {
+      "t": 1.8,
+      "full": 3.757,
+      "snow": 3.731,
+      "laneCenter": 1.536,
+      "snowLeft": 1.77,
+      "snowRight": 1.692,
+      "walls": 0,
+      "seracs": 0,
+      "arch": 0,
+      "sky": 0,
+      "bolt": 0
+    },
+    {
+      "t": 8,
+      "full": 1.841,
+      "snow": 1.863,
+      "laneCenter": 1.596,
+      "snowLeft": 1.893,
+      "snowRight": 1.498,
+      "walls": 0,
+      "seracs": 0,
+      "arch": 0,
+      "sky": 0,
+      "bolt": 0
+    }
+  ],
+  "note": "Walls, seracs, the arch, the sky, and Bolt have no pixels in the gate band, so their isolated score is 0. The column energy is the snow.",
+  "archSpeckle": { "nyquist": 4.872, "mid": 6.699, "ratio": 0.727, "limit": 1 },
+  "wallSpeckle": { "nyquist": 3.673, "mid": 4.818, "ratio": 0.762, "run13Ratio": 3.982 },
+  "texelPxPerM": 2048,
+  "tris": 194602,
+  "draws": 9,
+  "bodyPenM": 0.0025,
+  "anisotropyRequested": 16,
+  "anisotropyDevice": 1
+}

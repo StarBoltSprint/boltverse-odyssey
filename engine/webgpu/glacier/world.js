@@ -101,9 +101,18 @@ function placeWall(z, side, u, lateral) {
   const near = Math.max(0, 1 - Math.max(0, -z) / 360);
   const meso = (fbm2(z * 0.022 + uu * 0.4, side * 2.4) - 0.5) * (2.6 + near * 7.5);
   const billow = (fbm2(z * 0.007, uu * 2.1 + side) - 0.5) * 11.0;
-  const y = y0 + Math.pow(uu, 0.92) * h + meso;
-  const corridor = half - 1.4;
-  const out = Math.max(corridor, half + 1.1 + lateral + billow);
+  // Unequal teeth and a chamfered crown. A level crest reads as a rectangle
+  // from the lane, and the gap between the two faces reads as a slit.
+  const tooth = Math.pow(Math.abs(Math.sin(z * 0.037 + side * 1.7)), 0.4);
+  const nick = 0.32 + 0.68 * Math.abs(Math.sin(z * 0.093 + side * 3.1));
+  const crest = 0.34 + 0.66 * tooth * nick;
+  const chamfer = uu > 0.8 ? (uu - 0.8) / 0.2 : 0;
+  const crown = crest * (1 - chamfer * 0.46);
+  const y = y0 + Math.pow(uu, 0.76) * h * crown + meso * crown;
+  const lean = (uu - 0.22) * (hash(Math.floor(z * 0.02 + side), side * 9 + 3) - 0.4) * 16;
+  const pinch = 0.7 + 0.6 * Math.abs(Math.sin(z * 0.017 + side * 0.8));
+  const corridor = (half - 1.4) * pinch;
+  const out = Math.max(corridor, half + 1.1 + lateral + billow + lean);
   return [pathX(z) + side * out, y, z];
 }
 
@@ -115,10 +124,11 @@ function wallSample(z, side, row) {
     const u1 = (b + 1) / LEDGES;
     if (u + 1e-6 < u0 || u > u1 + 1e-6) continue;
     const along = 0.4 + fbm2(z * 0.006 + b * 0.41, side * 1.7);
-    const jut = (hash(b * 3.7, side * 2.4 + 0.6) - 0.22) * 8.4 * along;
+    // Outward only. A shelf aimed at the lane reads as a flat blade on the snow.
+    const jut = Math.max(0, hash(b * 3.7, side * 2.4 + 0.6) - 0.55) * 4.2 * along;
     const local = (u - u0) / (u1 - u0);
-    const lip = local > 0.72 ? (local - 0.72) / 0.28 : 0;
-    off = jut + lip * (3.2 + hash(b * 1.9, side + 5) * 4.4);
+    const lip = local > 0.82 ? (local - 0.82) / 0.18 : 0;
+    off = jut + lip * (1.2 + hash(b * 1.9, side + 5) * 1.6);
     break;
   }
   const col = Math.floor(z * 0.028 + fbm2(z * 0.002, side) * 1.2);
@@ -238,10 +248,10 @@ function addRibbon(mesh, zs, rowFn, mat, towardFn) {
 
 function archFrame(z0, index) {
   return {
-    half: floorHalf(z0) * 0.9,
-    foot: 8 + (index % 3) * 1.4,
+    half: floorHalf(z0) * 0.72,
+    foot: 16 + (index % 3) * 2.2,
     crown: index > 3 ? 28 : 15 + index * 1.6,
-    thick: index > 3 ? 8.2 : 6.4,
+    thick: index > 3 ? 5.2 : 2.6,
   };
 }
 
@@ -260,8 +270,8 @@ function archCenter(z0, u, frame) {
 function addArch(mesh, z0, index) {
   const frame = archFrame(z0, index);
   const near = index < 3;
-  const segs = near ? 24 : 16;
-  const sides = near ? 12 : 8;
+  const segs = near ? 22 : 14;
+  const sides = near ? 20 : 12;
   const rings = [];
   for (let s = 0; s <= segs; s++) {
     const u = s / segs;
@@ -274,8 +284,8 @@ function addArch(mesh, z0, index) {
       let rx;
       let ry;
       if (up > 0.45) {
-        rx = frame.thick * (0.62 + 0.22 * chip);
-        ry = frame.thick * 0.2;
+        rx = frame.thick * (0.42 + 0.12 * chip);
+        ry = frame.thick * 0.55;
       } else if (up < -0.15) {
         rx = frame.thick * (0.26 + 0.28 * chip);
         ry = frame.thick * (0.48 + 0.42 * chip);
@@ -384,12 +394,11 @@ function addChaseFall(mesh, z0) {
   for (let i = 0; i < cols; i++) face(mesh, lipA[i], lipA[i + 1], lipB[i + 1], lipB[i], MAT.fall, [0, 1, 0]);
 }
 
-// A vertical sheet across the canyon gap. Same z on every vertex, so the
-// face stays axis-aligned for the texel gate, and the centre is the tallest
-// so the chase cannot see ground meeting sky.
+// A broken serac skyline across the canyon gap. Z stays constant so the
+// face does not stretch, but the crest and the width are teeth, not a box.
 function addHorizonRidge(mesh, z0, height, half) {
-  const cols = 32;
-  const rows = 6;
+  const cols = 36;
+  const rows = 8;
   const base = routeSmooth(z0);
   const grid = [];
   for (let j = 0; j <= rows; j++) {
@@ -397,10 +406,14 @@ function addHorizonRidge(mesh, z0, height, half) {
     const t = j / rows;
     for (let i = 0; i <= cols; i++) {
       const u = i / cols;
-      const lat = -half + u * 2 * half;
-      const mid = Math.exp(-((u - 0.5) ** 2) / 0.06);
-      const crest = 0.9 + 0.1 * mid;
-      row.push([pathX(z0) + lat, base + t * height * crest, z0]);
+      const inset = Math.min(1, Math.min(u, 1 - u) / 0.22);
+      const tooth = Math.pow(Math.abs(Math.sin(u * 11.0 + z0 * 0.0017)), 0.55);
+      const nick = 0.25 + 0.75 * Math.abs(Math.sin(u * 5.2 + z0 * 0.0009));
+      const mid = Math.exp(-((u - 0.5) ** 2) / 0.045);
+      const crest = Math.max(inset * tooth * nick * 0.85, mid * 0.48);
+      const span = half * (0.28 + 0.72 * inset);
+      const jag = (hash(i * 5, z0 * 0.01) - 0.5) * half * 0.05 * inset;
+      row.push([pathX(z0) + (u - 0.5) * 2 * span + jag, base + t * height * crest, z0]);
     }
     grid.push(row);
   }
@@ -610,11 +623,12 @@ function makeChunk() {
     ring.push([Math.cos(a) * rad, 0.08, Math.sin(a) * rad * 0.8]);
   }
   const top = [0.05, 0.72, -0.04];
+  const keel = [0.02, -0.38, 0.03];
   for (let i = 0; i < sides; i++) {
     const a = ring[i];
     const b = ring[(i + 1) % sides];
     m.tri(a, b, top, [0, 0], [1, 0], [0.5, 1], MAT.drift);
-    m.tri([0, 0, 0], b, a, [0.5, 0], [1, 0], [0, 0], MAT.drift);
+    m.tri(keel, b, a, [0.5, 0], [1, 0], [0, 0], MAT.drift);
   }
   return m.finish();
 }
@@ -843,7 +857,7 @@ export function buildWorld() {
   }
   const columnsN = addWall(mesh, -1) + addWall(mesh, 1);
 
-  const arches = [-24, -70, -160, -480, -1200, -2200];
+  const arches = [-24, -70, -480, -1200, -2200];
   arches.forEach((z, i) => addArch(mesh, z, i));
   [-40, -110, -260, -640, -1600].forEach((z) => addFall(mesh, z, -1));
   addCurtain(mesh, -120);
@@ -933,15 +947,6 @@ export function buildWorld() {
       pushInst(drifts, x, y, z, hash(n, 12) * 6, s, 0.35 + hash(n, 13) * 0.45, s * 0.55, 0);
     }
   }
-  for (let n = 0; n < 32; n++) {
-    const z = 16 - n * 11;
-    const side = n % 2 === 0 ? 1 : -1;
-    const lat = side * (1.25 + hash(n, 6.2) * 0.5);
-    const x = pathX(z) + lat;
-    const s = 0.1 + hash(n, 7.4) * 0.12;
-    pushInst(chunks, x, floorH(x, z) + s * 0.15, z, hash(n, 8) * 5, s, s * 0.45, s * 0.75, 0);
-  }
-
   const icicleProto = makeIcicle();
   const driftProto = makeDrift();
   const chunkProto = makeChunk();
