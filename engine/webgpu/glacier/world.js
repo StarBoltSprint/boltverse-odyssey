@@ -101,11 +101,16 @@ function placeWall(z, side, u, lateral) {
   const near = Math.max(0, 1 - Math.max(0, -z) / 360);
   const meso = (fbm2(z * 0.022 + uu * 0.4, side * 2.4) - 0.5) * (2.6 + near * 7.5);
   const billow = (fbm2(z * 0.007, uu * 2.1 + side) - 0.5) * 11.0;
-  // Unequal teeth and a chamfered crown. A level crest reads as a rectangle
-  // from the lane, and the gap between the two faces reads as a slit.
-  const tooth = Math.pow(Math.abs(Math.sin(z * 0.037 + side * 1.7)), 0.4);
-  const nick = 0.32 + 0.68 * Math.abs(Math.sin(z * 0.093 + side * 3.1));
-  const crest = 0.34 + 0.66 * tooth * nick;
+  // Narrow unequal seracs. A full-height run reads as a rectangle, and one
+  // even gap between two faces reads as a slit. wallHeight() stays 60-200.
+  const k = Math.floor(z * 0.07 + side * 3.0);
+  const along = z * 0.07 + side * 3.0 - k;
+  const width = 0.16 + hash(k, side * 4.2) * 0.2;
+  const center = 0.22 + hash(k + 2, side * 1.3) * 0.56;
+  const d = Math.abs(along - center) / width;
+  const tooth = d < 1 ? Math.pow(1 - d, 0.65) : 0;
+  const nick = 0.45 + 0.55 * hash(k, side * 9 + 1);
+  const crest = 0.06 + 0.94 * tooth * nick;
   const chamfer = uu > 0.8 ? (uu - 0.8) / 0.2 : 0;
   const crown = crest * (1 - chamfer * 0.46);
   const y = y0 + Math.pow(uu, 0.76) * h * crown + meso * crown;
@@ -318,6 +323,7 @@ function addArch(mesh, z0, index) {
 }
 
 // A sheet hung in the portrait view, left of the path, so the chase reads a fall.
+// The crown is teeth, not a level rectangle.
 function addCurtain(mesh, z0) {
   const cols = 14;
   const rows = 24;
@@ -331,10 +337,14 @@ function addCurtain(mesh, z0) {
     const t = j / rows;
     for (let i = 0; i <= cols; i++) {
       const u = i / cols;
-      const drape = Math.sin(u * Math.PI) * 0.55 * (1 - t);
+      const edge = Math.min(1, Math.min(u, 1 - u) / 0.16);
+      const tooth = Math.pow(Math.abs(Math.sin(u * 8.0 + z0 * 0.01)), 0.5);
+      const nick = 0.3 + 0.7 * hash(i * 3, z0 * 0.02);
+      const crest = edge * (0.2 + 0.8 * tooth * nick);
+      const drape = Math.sin(u * Math.PI) * 0.35 * (1 - t);
       row.push([
-        x0 + (x1 - x0) * u,
-        yTop + (yBot - yTop) * t + drape,
+        x0 + (x1 - x0) * u + (hash(i, z0) - 0.5) * 0.35,
+        yBot + (yTop - yBot) * crest * (1 - t) + drape,
         z0 + 0.8 + Math.sin(t * Math.PI) * 0.9 + (u - 0.5) * 1.6,
       ]);
     }
@@ -347,11 +357,27 @@ function addCurtain(mesh, z0) {
   }
 }
 
-// A frozen fall on the lane shoulder. The foot sits on the snow and the
-// sheet faces the chase, so it stays in the portrait frame for several seconds.
-function addStream(mesh, z0, lat0, lat1, yTop, yBot) {
+// One frozen fall. Each column has its own height, the sides drop to the
+// snow, and the sheet is not a flat rectangle facing the chase.
+function addStream(mesh, z0, lat0, lat1, yBot, seed) {
   const cols = 8;
-  const rows = 24;
+  const rows = 16;
+  const heights = [];
+  for (let i = 0; i <= cols; i++) {
+    const u = i / cols;
+    const edge = Math.min(1, Math.min(u, 1 - u) / 0.2);
+    const tooth = Math.pow(Math.abs(Math.sin(u * 5.5 + seed * 1.7)), 0.45);
+    const nick = 0.25 + 0.75 * hash(i * 2.3, seed);
+    heights.push(edge * (5 + 18 * tooth * nick));
+  }
+  for (let i = 1; i < heights.length; i++) {
+    const cap = heights[i - 1] + 3.5;
+    if (heights[i] > cap) heights[i] = cap;
+  }
+  for (let i = heights.length - 2; i >= 0; i--) {
+    const cap = heights[i + 1] + 3.5;
+    if (heights[i] > cap) heights[i] = cap;
+  }
   const grid = [];
   for (let j = 0; j <= rows; j++) {
     const row = [];
@@ -359,11 +385,11 @@ function addStream(mesh, z0, lat0, lat1, yTop, yBot) {
     for (let i = 0; i <= cols; i++) {
       const u = i / cols;
       const lat = lat0 + (lat1 - lat0) * u;
-      const rib = Math.sin(u * Math.PI * 3) * 0.45 * Math.sin(Math.min(1, t) * Math.PI);
+      const jag = (hash(i * 1.4, seed + 3) - 0.5) * 1.1 * (0.35 + 0.65 * (1 - t));
       row.push([
-        pathX(z0) + lat,
-        yTop + (yBot - yTop) * t + (hash(i, j + z0) - 0.5) * 0.35,
-        z0 + rib,
+        pathX(z0) + lat + jag,
+        yBot + heights[i] * (1 - t),
+        z0 + (hash(i, seed + 9) - 0.5) * 3.2 * (1 - t),
       ]);
     }
     grid.push(row);
@@ -375,23 +401,12 @@ function addStream(mesh, z0, lat0, lat1, yTop, yBot) {
   }
 }
 
-// Two frozen streams with a gap on the lane, joined by a lip, so the chase
-// looks at a fall for several seconds and Bolt runs between them.
+// Two falls, staggered down the lane, with no lip between them. A shared
+// top bar over a constant gap reads as a slit between two rectangles.
 function addChaseFall(mesh, z0) {
-  const yTop = routeSmooth(z0) + 32;
-  const yBot = routeSmooth(z0) + 0.2;
-  addStream(mesh, z0, -9.2, -1.7, yTop, yBot);
-  addStream(mesh, z0, 1.7, 9.2, yTop, yBot);
-  const cols = 16;
-  const lipA = [];
-  const lipB = [];
-  for (let i = 0; i <= cols; i++) {
-    const lat = -9.2 + (i / cols) * 18.4;
-    const x = pathX(z0) + lat;
-    lipA.push([x, yTop + 0.2, z0 - 1.3]);
-    lipB.push([x, yTop + 0.7, z0 + 0.5]);
-  }
-  for (let i = 0; i < cols; i++) face(mesh, lipA[i], lipA[i + 1], lipB[i + 1], lipB[i], MAT.fall, [0, 1, 0]);
+  const yBot = routeSmooth(z0) + 0.15;
+  addStream(mesh, z0, -11.2, -3.4, yBot, z0 * 0.01 + 1.3);
+  addStream(mesh, z0 - 16, 2.8, 12.6, yBot, z0 * 0.01 + 4.7);
 }
 
 // A broken serac skyline across the canyon gap. Z stays constant so the
@@ -406,14 +421,18 @@ function addHorizonRidge(mesh, z0, height, half) {
     const t = j / rows;
     for (let i = 0; i <= cols; i++) {
       const u = i / cols;
-      const inset = Math.min(1, Math.min(u, 1 - u) / 0.22);
-      const tooth = Math.pow(Math.abs(Math.sin(u * 11.0 + z0 * 0.0017)), 0.55);
-      const nick = 0.25 + 0.75 * Math.abs(Math.sin(u * 5.2 + z0 * 0.0009));
-      const mid = Math.exp(-((u - 0.5) ** 2) / 0.045);
-      const crest = Math.max(inset * tooth * nick * 0.85, mid * 0.48);
-      const span = half * (0.28 + 0.72 * inset);
-      const jag = (hash(i * 5, z0 * 0.01) - 0.5) * half * 0.05 * inset;
-      row.push([pathX(z0) + (u - 0.5) * 2 * span + jag, base + t * height * crest, z0]);
+      const humpN = 4 + Math.floor(hash(z0 * 0.01, 2.2) * 3);
+      const phase = u * humpN;
+      const hk = Math.floor(phase);
+      const hu = phase - hk;
+      const width = 0.28 + hash(hk + z0 * 0.001, 6.1) * 0.34;
+      const center = 0.2 + hash(hk, z0 * 0.002) * 0.6;
+      const dd = Math.abs(hu - center) / width;
+      const tooth = dd < 1 ? Math.pow(1 - dd, 0.55) : 0;
+      const nick = 0.4 + 0.6 * hash(hk * 3, z0 * 0.003);
+      const crest = tooth * nick;
+      const jag = (hash(i * 5, z0 * 0.01) - 0.5) * 8 * tooth;
+      row.push([pathX(z0) + (u - 0.5) * 2 * half + jag, base + t * height * crest, z0]);
     }
     grid.push(row);
   }
@@ -435,13 +454,17 @@ function addFall(mesh, z0, side) {
     for (let i = 0; i <= cols; i++) {
       const u = i / cols;
       const z = z0 + (u - 0.5) * width;
-      const wall = wallPoint(z, side, 0.78 * (1 - t) + 0.02);
+      const wall = wallPoint(z, side, 0.55 * (1 - t) + 0.02);
       const lip = 1.4 + t * 2.2;
       const n = fbm2(z * 0.2, t * 6 + side);
+      const floor = floorH(wall[0], wall[2]);
+      // Stay on the lower face. Climbing a serac tooth makes a diagonal
+      // sheet whose UV stretch fails the gate.
+      const y = Math.min(wall[1], floor + 14) - t * 1.2 + (n - 0.5) * 1.1;
       row.push([
-        wall[0] - side * lip + (n - 0.5) * 0.8,
-        wall[1] - t * 1.2 + (n - 0.5) * 1.6,
-        wall[2] + (n - 0.5) * 0.6,
+        wall[0] - side * lip + (n - 0.5) * 0.6,
+        y,
+        wall[2] + (n - 0.5) * 0.4,
       ]);
     }
     grid.push(row);
@@ -936,15 +959,17 @@ export function buildWorld() {
   for (let n = 0; n < 48; n++) {
     const z = 24 - n * 6.5;
     const side = n % 2 === 0 ? 1 : -1;
-    const lat = side * (2.4 + hash(n, 8) * 8);
+    // Shoulder only. A wide flat drift at |lat| ~ 2.5 fills the left of the
+    // frame as a pale wedge, and its inner facet reads as a shard.
+    const lat = side * (10.5 + hash(n, 8) * 6);
     const x = pathX(z) + lat;
     const y = floorH(x, z);
     if (n % 3 === 0) {
-      const s = 0.35 + hash(n, 11) * 0.7;
-      pushInst(chunks, x, y, z, hash(n, 12) * 6, s, s * (0.7 + hash(n, 13)), s * 0.85, 0);
+      const s = 0.32 + hash(n, 11) * 0.28;
+      pushInst(chunks, x, y, z, hash(n, 12) * 6, s, s * (0.85 + hash(n, 13) * 0.3), s * 0.9, 0);
     } else {
-      const s = 1.4 + hash(n, 11) * 2.8;
-      pushInst(drifts, x, y, z, hash(n, 12) * 6, s, 0.35 + hash(n, 13) * 0.45, s * 0.55, 0);
+      const s = 0.7 + hash(n, 11) * 0.55;
+      pushInst(drifts, x, y, z, hash(n, 12) * 6, s, 0.4 + hash(n, 13) * 0.25, s * 0.85, 0);
     }
   }
   const icicleProto = makeIcicle();

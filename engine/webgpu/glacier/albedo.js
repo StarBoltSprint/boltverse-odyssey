@@ -64,9 +64,8 @@ fn cellMean(arr: texture_2d_array<f32>, uv: vec2f, id: vec2f, gain: vec4f) -> ve
   let gv = dot(gain, vec4f(select(0.0, 1.0, lead == 0), select(0.0, 1.0, lead == 1), select(0.0, 1.0, lead == 2), select(0.0, 1.0, lead == 3)));
   return textureSampleLevel(arr, samp, uv, lead, 5.0).rgb * gv;
 }
-// Hex lattice, 0.5 m cells. Each cell rotates and shifts its own still.
+// Hex lattice for ice. Each cell rotates and shifts its own still.
 // Weights are the triangle inside the hex, so a cell edge is a blend, not a hash flicker.
-// Contrast is put back with 1/sqrt(sum w^2) so the blend does not wash the still out.
 fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f, cells: f32, bias: f32) -> vec3f {
   let n = normalize(nrm);
   let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(n.y) < 0.9);
@@ -115,20 +114,42 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let restore = min(inverseSqrt(max(dot(w, w), 0.45)), 1.2);
   return lo + (hi - lo) * restore;
 }
+fn vnoise(p: vec2f) -> f32 {
+  let i = floor(p);
+  let f = fract(p);
+  let u = f * f * (3.0 - 2.0 * f);
+  let a = hash21(i);
+  let b = hash21(i + vec2f(1.0, 0.0));
+  let c = hash21(i + vec2f(0.0, 1.0));
+  let d = hash21(i + vec2f(1.0, 1.0));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+// One heading for all four stills. Weights drift over several metres.
+// A cell lattice, and a blue crevasse painted down the lane, both read as columns.
+fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: vec4f) -> vec3f {
+  let metres = vec2f(p.x, p.z);
+  let dmu = vec2f(px.x, px.z);
+  let dmv = vec2f(py.x, py.z);
+  let ang = 0.41;
+  let uv = rot2(metres, ang);
+  let du = cover(rot2(dmu, ang) * ${repeats} * 2.0);
+  let dv = cover(rot2(dmv, ang) * ${repeats} * 2.0);
+  let s = uv * 0.11;
+  let n = vec4f(
+    vnoise(s),
+    vnoise(s + vec2f(5.2, 1.7)),
+    vnoise(s + vec2f(2.4, 8.1)),
+    vnoise(s + vec2f(9.0, 3.4))
+  );
+  let ww = n * n;
+  let wt = ww / max(dot(ww, vec4f(1.0)), 1e-4);
+  return blend4(arr, uv * ${repeats}, du, dv, wt, gain);
+}
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
-    // Planar so a tilted triangle does not shear the crust into lanes.
-    let snow = sampleArr(snowArr, p, vec3f(0.0, 1.0, 0.0), px, py, snowGain, 8.0, 2.0);
-    let crev = smoothstep(1.1, -1.6, p.y - 0.3);
-    let tone = skyNoise(vec3f(p.x * 0.011, 3.1, p.z * 0.0055));
-    let tone2 = skyNoise(vec3f(p.x * 0.041, 1.4, p.z * 0.022));
-    var g = snow * (1.38 + 0.32 * tone + 0.14 * tone2);
-    let spark = step(0.994, skyNoise(p * 11.0));
-    g = g + ${v3([0.07, 0.1, 0.13])} * spark;
-    let crack = smoothstep(0.78, 0.93, skyNoise(vec3f(p.x * 0.42, 2.2, p.z * 0.42)));
-    g = mix(g, g * vec3f(0.62, 0.7, 0.82), crack * 0.28);
-    return mix(g, g * ${v3(C.crevasse)} * 1.35, crev);
+    // Planar world xz so a tilted triangle does not shear the crust into lanes.
+    return sampleSnow(snowArr, p, px, py, snowGain);
   }
   if (m < 3.5) {
     let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
