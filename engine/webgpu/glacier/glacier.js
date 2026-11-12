@@ -1021,7 +1021,95 @@ async function main() {
     return btoa(s);
   }
 
+  function snowGrid(src, maskSrc) {
+    const bin = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = y * bpr + x * 4;
+        const lum = maskSrc[i] * 0.3 + maskSrc[i + 1] * 0.59 + maskSrc[i + 2] * 0.11;
+        if (lum > 12) bin[y * W + x] = 1;
+      }
+    }
+    let minX = W, minY = H, maxX = -1, maxY = -1;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (bin[y * W + x]) {
+      if (x < minX) minX = x; if (y < minY) minY = y; if (x > maxX) maxX = x; if (y > maxY) maxY = y;
+    }
+    const mask = new Uint8Array(W * H);
+    if (maxX >= 0) {
+      const rad = 8;
+      const x0 = Math.max(0, minX - rad), y0 = Math.max(0, minY - rad);
+      const x1 = Math.min(W - 1, maxX + rad), y1 = Math.min(H - 1, maxY + rad);
+      const tmp = new Uint8Array(W * H);
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const a = Math.max(0, x - rad), b = Math.min(W - 1, x + rad);
+        const row = y * W;
+        for (let k = a; k <= b; k++) if (bin[row + k]) { tmp[row + x] = 1; break; }
+      }
+      for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) {
+        const a = Math.max(0, y - rad), b = Math.min(H - 1, y + rad);
+        for (let k = a; k <= b; k++) if (tmp[k * W + x]) { mask[y * W + x] = 1; break; }
+      }
+    }
+    const y0 = Math.floor(H * 0.55), y1 = Math.floor(H * 0.96);
+    const sig = new Float64Array(W);
+    let rows = 0;
+    for (let y = y0; y < y1; y += 2) {
+      rows++;
+      const row = new Float64Array(W);
+      const known = new Uint8Array(W);
+      for (let x = 0; x < W; x++) {
+        if (mask[y * W + x]) continue;
+        const i = y * bpr + x * 4;
+        row[x] = src[i] * 0.3 + src[i + 1] * 0.59 + src[i + 2] * 0.11;
+        known[x] = 1;
+      }
+      for (let x = 0; x < W; x++) {
+        if (known[x]) continue;
+        let left = x - 1, right = x + 1;
+        while (left >= 0 && !known[left]) left--;
+        while (right < W && !known[right]) right++;
+        const a = left >= 0 ? row[left] : (right < W ? row[right] : 0);
+        const b = right < W ? row[right] : a;
+        const u = left >= 0 && right > left ? (x - left) / (right - left) : 0;
+        row[x] = a + (b - a) * u;
+      }
+      for (let x = 0; x < W; x++) sig[x] += row[x];
+    }
+    for (let x = 0; x < W; x++) sig[x] /= rows || 1;
+    const hp = new Float64Array(W);
+    for (let i = 0; i < W; i++) hp[i] = sig[i] - sig[Math.max(0, i - 24)];
+    let mean = 0;
+    for (let i = 0; i < W; i++) mean += hp[i];
+    mean /= W;
+    let v = 0;
+    for (let i = 0; i < W; i++) v += (hp[i] - mean) ** 2;
+    v /= W;
+    if (v < 1e-6) return 0;
+    const ac = (lag) => {
+      let c = 0;
+      const m = W - lag;
+      for (let i = 0; i < m; i++) c += (hp[i] - mean) * (hp[i + lag] - mean);
+      return c / (m * v);
+    };
+    const peak = Math.max(ac(8), ac(16), ac(24));
+    const beside = (ac(11) + ac(13) + ac(19) + ac(21)) / 4;
+    return peak / (Math.abs(beside) + 0.08);
+  }
+
   let sim = 0;
+  window.__glacierPeak = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const frame = await readFrame();
+    renderBoltMask();
+    const maskSrc = await readback();
+    return {
+      peak: snowGrid(frame.src, maskSrc),
+      z: live.z, x: live.x, psi: live.psi,
+      eye: lastEye,
+      gpuErr: frame.gpuErr,
+    };
+  };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;
     while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }

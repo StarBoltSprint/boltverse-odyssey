@@ -1,0 +1,36 @@
+{
+  "film": "not committed",
+  "reason": "Every 3rd frame of the 45 s chase was scored. Three frames are still over 1.8, so there is no film.",
+  "scan": "every 3rd frame, t = 1 + i/30, 450 samples. Every frame was then scored from t=4.80-5.60 and t=11.20-12.20.",
+  "limit": 1.8,
+  "over": [
+    { "t": 5.1, "peak": 1.855, "z": -32.8 },
+    { "t": 5.567, "peak": 1.874, "z": -36.1 },
+    { "t": 11.7, "peak": 1.927, "z": -78.7 }
+  ],
+  "max": { "t": 11.7, "peak": 1.932 },
+  "diagnosis": {
+    "heading": "steady, about 6.5 degrees, yaw rate 0 at the old spikes",
+    "pitch": "-5 to -8 degrees. At t=11 and t=26 the eye drops (0.54 m, 0.27 m) because the ground under the camera is low.",
+    "bolt": "centred, lat 0. The shadow and the paw puffs sit inside the mask. Flat albedo passes the old spikes, so flakes and the shadow are not the column.",
+    "mix": "Weights are world position, not time. At t=11 one still reached 0.67 on the shoulder. At t=26 the mix was even (max 0.42) and the old spike was 1.894, so a single still was not the only cause. The gate band is the snow inside about 4 m, where a 0.5 m tile is 80-140 px, and that tile was in phase across the lane."
+  },
+  "fix": "Kept the one heading. Added a second slow mix axis across the lane, a floor so one still stays under about 0.45, a few centimetres of shift per still, and a 6 m macro from the same stills.",
+  "snowColour": {
+    "before": { "renderLab": [55.74, 4.25, -0.89], "stillLab": [73.03, 0.06, -7.1], "cie76": 18.84 },
+    "after": {
+      "t1": { "lab": [68.65, 5.01, -4.94], "cie76": 6.95 },
+      "t10": { "lab": [67.57, 4.99, -4.95], "cie76": 7.67 },
+      "t25": { "lab": [69.41, 4.88, -4.52], "cie76": 6.56 }
+    },
+    "lift": "snow albedo response vec3(1.64, 1.74, 1.90). Ice and the sky keep the dawn rig. No fog."
+  },
+  "colourGate": { "snow": 8.49, "waterfall": 0.04, "arch": 0.2, "wall": 0.08, "negativeWall": 14.72 },
+  "skyWorst": 0,
+  "stability": { "speckleRatio": 0.461, "temporalRatio": 1.171, "staticLumaStd": 0 },
+  "texelPxPerM": 2048,
+  "stretchP99": { "crust": 1.02, "glacier-ice": 1.29, "serac": 1.27, "fall-ice": 1.3, "arch-ice": 1.25 },
+  "tris": 193690,
+  "draws": 9,
+  "cardH": 1.15
+}

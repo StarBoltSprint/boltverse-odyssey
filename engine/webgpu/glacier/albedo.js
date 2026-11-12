@@ -124,26 +124,40 @@ fn vnoise(p: vec2f) -> f32 {
   let d = hash21(i + vec2f(1.0, 1.0));
   return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
-// One heading for all four stills. Weights drift over several metres.
-// A cell lattice, and a blue crevasse painted down the lane, both read as columns.
+// One heading. Weights drift over several metres on two world axes, and they
+// are not squared, so one still cannot take the lane. Each still is shifted
+// a few centimetres inside the tile so a shared streak cannot line up.
+// A slow macro from the same stills keeps the lane from being one flat repeat.
 fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: vec4f) -> vec3f {
   let metres = vec2f(p.x, p.z);
   let dmu = vec2f(px.x, px.z);
   let dmv = vec2f(py.x, py.z);
   let ang = 0.41;
-  let uv = rot2(metres, ang);
+  let base = rot2(metres, ang);
   let du = cover(rot2(dmu, ang) * ${repeats} * 2.0);
   let dv = cover(rot2(dmv, ang) * ${repeats} * 2.0);
-  let s = uv * 0.11;
-  let n = vec4f(
+  let s = vec2f(base.y * 0.07, base.x * 0.05 + metres.x * 0.04);
+  var wt = vec4f(
     vnoise(s),
     vnoise(s + vec2f(5.2, 1.7)),
     vnoise(s + vec2f(2.4, 8.1)),
     vnoise(s + vec2f(9.0, 3.4))
-  );
-  let ww = n * n;
-  let wt = ww / max(dot(ww, vec4f(1.0)), 1e-4);
-  return blend4(arr, uv * ${repeats}, du, dv, wt, gain);
+  ) + vec4f(1.15);
+  wt = wt / max(dot(wt, vec4f(1.0)), 1e-4);
+  let r = f32(${repeats});
+  let c0 = textureSampleGrad(arr, samp, base * r, 0, du, dv).rgb * gain.x;
+  let c1 = textureSampleGrad(arr, samp, (base + vec2f(0.13, 0.08)) * r, 1, du, dv).rgb * gain.y;
+  let c2 = textureSampleGrad(arr, samp, (base + vec2f(0.05, 0.17)) * r, 2, du, dv).rgb * gain.z;
+  let c3 = textureSampleGrad(arr, samp, (base + vec2f(0.19, 0.11)) * r, 3, du, dv).rgb * gain.w;
+  let detail = c0 * wt.x + c1 * wt.y + c2 * wt.z + c3 * wt.w;
+  let macroUv = base * r * 0.16;
+  let duM = cover(du * 0.16);
+  let dvM = cover(dv * 0.16);
+  let m0 = textureSampleGrad(arr, samp, macroUv, 0, duM, dvM).rgb * gain.x;
+  let m1 = textureSampleGrad(arr, samp, macroUv + vec2f(0.23, 0.11), 2, duM, dvM).rgb * gain.z;
+  // The crust stills sit near L 73. The dawn rig leaves the lane near L 56.
+  // A snow-only response lifts it. Ice and the sky keep the rig.
+  return (detail * 0.84 + (m0 * 0.62 + m1 * 0.38) * 0.16) * vec3f(1.64, 1.74, 1.90);
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
