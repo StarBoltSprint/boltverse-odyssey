@@ -124,6 +124,12 @@ fn vnoise(p: vec2f) -> f32 {
   let d = hash21(i + vec2f(1.0, 1.0));
   return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
+// Across the lane only, wavelength 2.5 m. Nothing along the road, so the
+// phase does not walk as the chase advances. 0.05 m is 0.10 of a tile.
+fn snowWarp(p: vec2f, seed: vec2f) -> vec2f {
+  let n = vnoise(vec2f(p.x * 0.40 + seed.x, seed.y));
+  return vec2f((n - 0.5) * 0.05, (vnoise(vec2f(p.x * 0.40 + seed.y, seed.x + 3.7)) - 0.5) * 0.05);
+}
 // One heading. Weights drift over several metres on two world axes, and they
 // are not squared, so one still cannot take the lane. Each still is shifted
 // a few centimetres inside the tile so a shared streak cannot line up.
@@ -145,10 +151,14 @@ fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: 
   ) + vec4f(1.15);
   wt = wt / max(dot(wt, vec4f(1.0)), 1e-4);
   let r = f32(${repeats});
-  let c0 = textureSampleGrad(arr, samp, base * r, 0, du, dv).rgb * gain.x;
-  let c1 = textureSampleGrad(arr, samp, (base + vec2f(0.13, 0.08)) * r, 1, du, dv).rgb * gain.y;
-  let c2 = textureSampleGrad(arr, samp, (base + vec2f(0.05, 0.17)) * r, 2, du, dv).rgb * gain.z;
-  let c3 = textureSampleGrad(arr, samp, (base + vec2f(0.19, 0.11)) * r, 3, du, dv).rgb * gain.w;
+  // 1.06 keeps the warped density at or above 2048 px/m.
+  let firm = base * 1.06;
+  let du0 = du;
+  let dv0 = dv;
+  let c0 = textureSampleGrad(arr, samp, (firm + snowWarp(metres, vec2f(1.7, 4.2))) * r, 0, du0, dv0).rgb * gain.x;
+  let c1 = textureSampleGrad(arr, samp, (firm + vec2f(0.13, 0.08) + snowWarp(metres, vec2f(8.4, 1.3))) * r, 1, du0, dv0).rgb * gain.y;
+  let c2 = textureSampleGrad(arr, samp, (firm + vec2f(0.05, 0.17) + snowWarp(metres, vec2f(3.1, 9.6))) * r, 2, du0, dv0).rgb * gain.z;
+  let c3 = textureSampleGrad(arr, samp, (firm + vec2f(0.19, 0.11) + snowWarp(metres, vec2f(6.8, 5.5))) * r, 3, du0, dv0).rgb * gain.w;
   let detail = c0 * wt.x + c1 * wt.y + c2 * wt.z + c3 * wt.w;
   let macroUv = base * r * 0.16;
   let duM = cover(du * 0.16);
