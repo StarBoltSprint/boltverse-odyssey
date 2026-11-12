@@ -56,19 +56,19 @@ export function floorH(x, z) {
   const crevLat = 6.4 + 1.8 * Math.sin(z * 0.0047);
   const crevW = 0.42 + 0.35 * fbm2(z * 0.031, 2.2);
   const crev = Math.exp(-((lat - crevLat) ** 2) / crevW) * (2.4 + 1.1 * fbm2(z * 0.017, 4.1));
-  // The route is a smooth band wider than the chase view. Sastrugi start
-  // outside it, so no near facet rises between the camera and the paws.
-  // Flat only under the paws. Sastrugi start at the lane edge so the chase
-  // camera sees them, and they stay off the raycast under the pads.
-  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - 0.8) / 0.7));
+  // The lane the body runs on stays the smooth route. Sastrugi start outside
+  // that band, so no ridge triangle can cross the paws or the torso.
+  const edge = 1.8;
+  const lane = Math.min(1, Math.max(0, (Math.abs(lat) - edge) / 0.8));
   const wind = fbm2(lat * 0.11, z * 0.02);
   const wind2 = fbm2(lat * 0.2 + 2.2, z * 0.035);
   const ridge = Math.pow(Math.max(0, (wind - 0.32) / 0.68), 1.15);
-  const amp = 0.45 + 0.7 * lane;
-  const sast = ridge * amp + (wind2 - 0.5) * (0.14 + 0.36 * lane);
-  const band = Math.min(1, Math.max(0, (Math.abs(lat) - 0.8) / 0.4));
-  const ripple = Math.sin(z * 1.15 + lat * 2.2) * 0.035 * band + Math.sin(lat * 3.1 + z * 0.4) * 0.02 * band;
-  return routeSmooth(z) + ripple + (sast - crev - footDent(x, z, lat)) * band;
+  const amp = 0.35 + 0.55 * lane;
+  const sast = ridge * amp + (wind2 - 0.5) * (0.1 + 0.28 * lane);
+  const band = Math.min(1, Math.max(0, (Math.abs(lat) - edge) / 0.5));
+  // No sine ripple on the shoulder. A 5.5 m wave lines up with the column
+  // gate as the lane scrolls. The sastrugi stay.
+  return routeSmooth(z) + (sast - crev - footDent(x, z, lat)) * band;
 }
 
 function footDent(x, z, lat) {
@@ -98,7 +98,8 @@ function placeWall(z, side, u, lateral) {
   const h = wallHeight(z, side);
   const y0 = floorH(pathX(z) + side * (half - 0.4), z);
   const uu = Math.min(1, Math.max(0, u));
-  const meso = (fbm2(z * 0.022 + uu * 0.4, side * 2.4) - 0.5) * 3.2;
+  const near = Math.max(0, 1 - Math.max(0, -z) / 360);
+  const meso = (fbm2(z * 0.022 + uu * 0.4, side * 2.4) - 0.5) * (2.6 + near * 7.5);
   const billow = (fbm2(z * 0.007, uu * 2.1 + side) - 0.5) * 11.0;
   const y = y0 + Math.pow(uu, 0.92) * h + meso;
   const corridor = half - 1.4;
@@ -124,7 +125,8 @@ function wallSample(z, side, row) {
   const colShift = (hash(col, side + 4) - 0.5) * 5.5;
   const crackN = fbm2(z * 0.012, side * 2.6);
   const crevasse = Math.pow(Math.max(0, 1 - Math.abs(crackN - 0.58) / 0.16), 1.5) * 6.2;
-  const chip = (hash(Math.floor(z * 0.45) + row * 3, side * 8 + row) - 0.5) * 1.6;
+  const nearChip = Math.max(0, 1 - Math.max(0, -z) / 360);
+  const chip = (hash(Math.floor(z * 0.45) + row * 3, side * 8 + row) - 0.5) * (1.4 + nearChip * 2.8);
   return placeWall(z, side, u, off + colShift - crevasse + chip);
 }
 
@@ -382,11 +384,12 @@ function addChaseFall(mesh, z0) {
   for (let i = 0; i < cols; i++) face(mesh, lipA[i], lipA[i + 1], lipB[i + 1], lipB[i], MAT.fall, [0, 1, 0]);
 }
 
-// A ridge past the dither range. Mountain material is not discarded, and the
-// sheet is wider than the portrait view so the lane meets ice instead of sky.
+// A vertical sheet across the canyon gap. Same z on every vertex, so the
+// face stays axis-aligned for the texel gate, and the centre is the tallest
+// so the chase cannot see ground meeting sky.
 function addHorizonRidge(mesh, z0, height, half) {
-  const cols = 24;
-  const rows = 5;
+  const cols = 32;
+  const rows = 6;
   const base = routeSmooth(z0);
   const grid = [];
   for (let j = 0; j <= rows; j++) {
@@ -395,19 +398,15 @@ function addHorizonRidge(mesh, z0, height, half) {
     for (let i = 0; i <= cols; i++) {
       const u = i / cols;
       const lat = -half + u * 2 * half;
-      const crest = 0.62 + hash(i * 1.9, z0 * 0.02) * 0.38;
-      const jag = (hash(i * 2.3, z0 * 0.01 + j) - 0.5) * height * 0.08;
-      row.push([
-        pathX(z0) + lat,
-        base + Math.pow(t, 0.72) * height * crest + jag,
-        z0 - t * 28 + (hash(i, j + 4) - 0.5) * 3,
-      ]);
+      const mid = Math.exp(-((u - 0.5) ** 2) / 0.06);
+      const crest = 0.9 + 0.1 * mid;
+      row.push([pathX(z0) + lat, base + t * height * crest, z0]);
     }
     grid.push(row);
   }
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
-      face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.snow, [0, 0.45, 0.9]);
+      face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.snow, [0, 0.05, 1]);
     }
   }
 }
@@ -674,7 +673,7 @@ function pinRouteBand(verts) {
   for (let i = 0; i < verts.length; i += 8) {
     if (Math.round(verts[i + 3]) !== 0) continue;
     const lat = verts[i] - pathX(verts[i + 2]);
-    if (Math.abs(lat) > 0.62) continue;
+    if (Math.abs(lat) > 1.7) continue;
     const route = routeSmooth(verts[i + 2]);
     if (Math.abs(verts[i + 1] - route) > 2.5) continue;
     verts[i + 1] = route;
@@ -740,11 +739,18 @@ function relaxOffAxis(verts) {
   stampFaceNormals(verts);
 }
 
-// Up-facing snow can share a normal. Steep faces keep the face normal so the
-// texel gate does not mix projection axes. Walls stay faceted.
+// Lighting normals blend across a shared vertex when the faces agree on an
+// axis. The geometric normal used for UVs stays one-per-face, so the texel
+// gate does not see a skewed projection.
 function shadeNormalsFor(verts) {
   const nVerts = verts.length / 8;
   const out = new Float32Array(nVerts * 3);
+  const axisOf = (x, y, z) => {
+    const ax = Math.abs(x), ay = Math.abs(y), az = Math.abs(z);
+    if (ay >= ax && ay >= az) return 1;
+    if (ax >= az) return 0;
+    return 2;
+  };
   for (let i = 0; i < nVerts; i++) {
     out[i * 3] = verts[i * 8 + 4];
     out[i * 3 + 1] = verts[i * 8 + 5];
@@ -754,20 +760,19 @@ function shadeNormalsFor(verts) {
   const up = (y, x, z) => y > 0.45 && y >= Math.abs(x) && y >= Math.abs(z);
   for (let i = 0; i < nVerts; i++) {
     const mat = Math.round(verts[i * 8 + 3]);
-    if (mat !== 0) continue;
     const x = out[i * 3], y = out[i * 3 + 1], z = out[i * 3 + 2];
-    if (!up(y, x, z)) continue;
-    const k = weldKey(verts[i * 8], verts[i * 8 + 1], verts[i * 8 + 2]);
+    if (mat === 0 && !up(y, x, z)) continue;
+    const k = weldKey(verts[i * 8], verts[i * 8 + 1], verts[i * 8 + 2]) + ':' + axisOf(x, y, z);
     const a = acc.get(k) || [0, 0, 0];
     a[0] += x; a[1] += y; a[2] += z;
     acc.set(k, a);
   }
   for (let i = 0; i < nVerts; i++) {
     const mat = Math.round(verts[i * 8 + 3]);
-    if (mat !== 0) continue;
     const x = out[i * 3], y = out[i * 3 + 1], z = out[i * 3 + 2];
-    if (!up(y, x, z)) continue;
-    const a = acc.get(weldKey(verts[i * 8], verts[i * 8 + 1], verts[i * 8 + 2]));
+    if (mat === 0 && !up(y, x, z)) continue;
+    const a = acc.get(weldKey(verts[i * 8], verts[i * 8 + 1], verts[i * 8 + 2]) + ':' + axisOf(x, y, z));
+    if (!a) continue;
     const l = Math.hypot(a[0], a[1], a[2]) || 1;
     const sx = a[0] / l, sy = a[1] / l, sz = a[2] / l;
     if (mat === 0 && !up(sy, sx, sz)) continue;
@@ -816,7 +821,7 @@ export function buildWorld() {
   while (groundZs[groundZs.length - 1] > GLACIER.z1 + 1e-3 && guardG++ < 8000) {
     const z = groundZs[groundZs.length - 1];
     const d = Math.max(0, -z);
-    const base = d < 55 ? 0.2 : d < 450 ? 0.55 + (d - 55) * 0.0018 : d < 800 ? 6 : d < 2000 ? 22 : 40;
+    const base = d < 55 ? 0.2 : d < 450 ? 0.55 + (d - 55) * 0.0018 : d < 900 ? 8 : d < 2200 ? 32 : 56;
     const step = base * (0.4 + hash(z * 17.3, 2.8) * 1.35);
     groundZs.push(Math.max(GLACIER.z1, z - step));
   }
@@ -844,8 +849,9 @@ export function buildWorld() {
   addCurtain(mesh, -120);
   addChaseFall(mesh, -115);
   addChaseFall(mesh, -210);
-  addHorizonRidge(mesh, -860, 150, 520);
-  addHorizonRidge(mesh, -2100, 220, 900);
+  addHorizonRidge(mesh, -520, 180, 240);
+  addHorizonRidge(mesh, -980, 240, 360);
+  addHorizonRidge(mesh, -1700, 320, 480);
   addPlateau(mesh, -1);
   addPlateau(mesh, 1);
   addFarFloor(mesh);

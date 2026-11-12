@@ -51,7 +51,7 @@ const FLAKE_SNOW = FLAKE_N - FLAKES.puff;
 const flakes = new Float32Array(FLAKE_N * 8);
 const flakeVel = new Float32Array(FLAKE_N * 3);
 let puffArm = 0;
-const HALF_W = Math.atan(Math.tan(FOV_Y / 2) * (720 / 1280));
+const HALF_W = Math.atan(Math.tan(FOV_Y / 2) * (W / H));
 const HALF_H = FOV_Y / 2;
 function hash(x, y) {
   const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
@@ -71,12 +71,28 @@ function camBox() {
 }
 function curlAt(x, y, z) {
   const t = simClock;
-  const a = Math.sin(x * 0.23 + t * 0.7);
-  const b = Math.sin(y * 0.31 + t * 0.53 + 2.1);
-  const c = Math.sin(z * 0.19 - t * 0.41 + 1.1);
-  const d = Math.sin((x + z) * 0.17 + y * 0.13 + t * 0.93);
-  const e = Math.sin(x * 0.47 - y * 0.29 + t * 1.3);
-  return [b * 0.9 - d * 0.6 + e * 0.4, c * 0.7 + a * 0.55 - d * 0.3, a * 0.8 - b * 0.45 + d * 0.7];
+  const a = Math.sin(x * 0.31 + t * 1.1);
+  const b = Math.sin(y * 0.37 + t * 0.8 + 2.1);
+  const c = Math.sin(z * 0.23 - t * 0.9 + 1.1);
+  const d = Math.sin((x + z) * 0.19 + y * 0.15 + t * 1.4);
+  const e = Math.sin(x * 0.53 - y * 0.41 + t * 1.7);
+  return [b - d * 0.7 + e * 0.6, c * 0.9 + a * 0.8 - d * 0.4, a - b * 0.5 + d];
+}
+function gustAt(t) {
+  const u = (t % 9) / 9;
+  if (u < 0.42) return 0.08;
+  if (u < 0.55) return 0.08 + (u - 0.42) / 0.13 * 0.92;
+  if (u < 0.78) return 1;
+  return Math.max(0.08, 1 - (u - 0.78) / 0.22 * 0.92);
+}
+function screenPx(depth, seed, low) {
+  const focal = (H / 2) / Math.tan(HALF_H);
+  const d = Math.max(0.4, depth);
+  let px;
+  if (d < 2.4) px = low ? 2.4 + seed * 2.2 : 6 + seed * 4;
+  else if (d < 8) px = low ? 1.8 + seed * 2.2 : 3 + seed * 3;
+  else px = 1 + seed * 1.2;
+  return (px / focal) * d;
 }
 function seedFlake(i, cam) {
   const kind = flakeKind(i);
@@ -95,30 +111,24 @@ function seedFlake(i, cam) {
   let depth;
   let layer;
   let v;
-  let px;
   if (kind === 0) {
-    depth = 0.9 + h * 4.2;
+    depth = 0.8 + h * 3.2;
     layer = 0;
     v = h3 * 2 - 1;
-    px = 2.2 + h2 * 3.6;
   } else if (kind === 1) {
-    depth = 4.2 + h * 9.5;
+    depth = 3.5 + h * 8;
     layer = 0.4;
     v = h3 * 2 - 1;
-    px = 2.4 + h2 * 4.2;
   } else if (kind === 2) {
-    depth = 12 + h * 20;
+    depth = 10 + h * 22;
     layer = 1;
     v = h3 * 2 - 1;
-    px = 2.0 + h2 * 3.2;
   } else {
-    depth = 1.6 + h * 7;
+    depth = 1.4 + h * 6;
     layer = 3;
-    v = -0.15 - h3 * 0.75;
-    px = 2.6 + h2 * 3.8;
+    v = -0.2 - h3 * 0.7;
   }
-  const focal = 640 / Math.tan(HALF_H);
-  const size = (px / focal) * Math.max(depth, 0.5);
+  const size = screenPx(depth, h3, v < 0);
   const u = h2 * 2 - 1;
   const span = kind === 3 ? 1.05 : 1.22;
   const halfW = Math.tan(HALF_W) * depth * span;
@@ -160,60 +170,63 @@ function stepFlakes(dt) {
   const strike = Math.floor(live.phase * 2);
   if (simClock > 1.15 && strike !== puffArm) {
     puffArm = strike;
-    const side0 = strike % 2 === 0 ? 0.48 : -0.48;
-    for (let k = 0; k < 3; k++) {
-      const slot = FLAKE_SNOW + (Math.abs(strike) * 3 + k) % FLAKES.puff;
-      const side = side0 + (k - 1) * 0.26;
-      flakes[slot * 8] = live.x + side;
-      flakes[slot * 8 + 1] = floorH(live.x, live.z) + 0.22;
-      flakes[slot * 8 + 2] = live.z - 0.45 - k * 0.16;
-      flakes[slot * 8 + 3] = 0.04;
-      flakes[slot * 8 + 4] = 0.12 + k * 0.04;
+    const yaw = live.psi;
+    const rx = -Math.cos(yaw);
+    const rz = Math.sin(yaw);
+    for (let k = 0; k < 2; k++) {
+      const slot = FLAKE_SNOW + (Math.abs(strike) * 2 + k) % FLAKES.puff;
+      const side = k === 0 ? 0.11 : -0.11;
+      const px = live.x + rx * side;
+      const pz = live.z + rz * side;
+      flakes[slot * 8] = px;
+      flakes[slot * 8 + 1] = floorH(px, pz) + 0.03;
+      flakes[slot * 8 + 2] = pz;
+      flakes[slot * 8 + 3] = 0.02;
+      flakes[slot * 8 + 4] = 0.025;
       flakes[slot * 8 + 5] = 2;
       flakes[slot * 8 + 6] = 1;
-      flakes[slot * 8 + 7] = side > 0 ? 1 : -1;
+      flakes[slot * 8 + 7] = side;
     }
   }
-  const g1 = Math.sin(simClock * 0.31);
-  const g2 = Math.sin(simClock * 0.17 + 1.4);
-  const wind = [1.7 + g1 * 1.45, -0.22 + g2 * 0.55, 0.45 + g1 * 0.7];
+  const g = gustAt(simClock);
+  const wind = [0.2 + g * 2.6, -0.28 + g * 0.1, 0.08 + g * 0.85];
   for (let i = 0; i < FLAKE_N; i++) {
     const o = i * 8;
     const puff = flakes[o + 6] > 0.5;
     if (puff) {
-      const age = flakes[o + 3] + dt / 1.15;
-      flakes[o + 3] = age >= 1 ? 0 : age;
-      if (age < 1 && flakes[o + 7] !== 0) {
-        const dir = flakes[o + 7] < 0 ? -1 : 1;
-        flakes[o] = live.x + dir * (0.34 + age * 0.22);
-        flakes[o + 1] = floorH(live.x, live.z) + 0.06 + age * 0.45;
-        flakes[o + 2] = live.z + 0.05;
-      }
+      if (flakes[o + 7] === 0) { flakes[o + 3] = 0; continue; }
+      const age = flakes[o + 3] + dt / 0.6;
+      if (age >= 1) { flakes[o + 3] = 0; flakes[o + 7] = 0; continue; }
+      flakes[o + 3] = age;
+      const dir = flakes[o + 7] < 0 ? -1 : 1;
+      flakes[o] += dir * dt * 0.16;
+      flakes[o + 1] += dt * (0.7 + age * 0.35);
+      flakes[o + 2] += dt * 0.04;
+      flakes[o + 4] = 0.022 + age * 0.045;
       continue;
     }
-    if (flakes[o + 3] < 1) flakes[o + 3] = Math.min(1, flakes[o + 3] + dt / 0.4);
+    if (flakes[o + 3] < 1) flakes[o + 3] = Math.min(1, flakes[o + 3] + dt / 0.35);
     const curl = curlAt(flakes[o], flakes[o + 1], flakes[o + 2]);
-    const flutter = Math.sin(simClock * 5.5 + i * 0.37) * 0.45;
-    const lift = flakes[o + 7] - 0.42;
+    const flutter = Math.sin(simClock * (5 + (i % 4)) + i * 0.7) * (0.25 + g * 1.1);
     const blow = flakeKind(i) === 3;
-    const speed = blow ? 1.65 + Math.max(0, g1) * 1.4 : (flakeKind(i) === 2 ? 0.55 : 1);
-    const vx = (wind[0] + curl[0] * 1.7 + flutter) * speed;
-    const vy = (wind[1] + curl[1] * 1.15 + lift * 0.7) * (blow ? 1.3 : speed) + (blow ? 0.55 : 0);
-    const vz = (wind[2] + curl[2] * 1.5) * speed;
+    const up = flakes[o + 7] > 0.8 ? 0.55 + g * 1.4 : 0;
+    const speed = blow ? 0.7 + g * 1.8 : (flakeKind(i) === 2 ? 0.45 : 0.75 + g * 0.4);
+    const vx = (wind[0] + curl[0] * (0.9 + g) + flutter) * speed;
+    const vy = wind[1] + curl[1] * (0.7 + g * 0.8) + up + flutter * 0.2;
+    const vz = (wind[2] + curl[2] * (0.8 + g) - flutter * 0.35) * speed;
     flakeVel[i * 3] = vx;
     flakeVel[i * 3 + 1] = vy;
     flakeVel[i * 3 + 2] = vz;
     flakes[o] += vx * dt;
     flakes[o + 1] += vy * dt;
     flakes[o + 2] += vz * dt;
-    const depthNow = Math.max(0.5, (flakes[o] - cam.eye[0]) * cam.cf[0] + (flakes[o + 2] - cam.eye[2]) * cam.cf[2]);
-    const px = 2.1 + flakes[o + 7] * 4.4;
-    flakes[o + 4] = (px / (640 / Math.tan(HALF_H))) * depthNow;
+    const depthNow = Math.max(0.45, (flakes[o] - cam.eye[0]) * cam.cf[0] + (flakes[o + 2] - cam.eye[2]) * cam.cf[2]);
+    flakes[o + 4] = screenPx(depthNow, flakes[o + 7], flakes[o + 1] < cam.eye[1] - 0.15);
     if (flakes[o + 1] < 4) {
       const ground = floorH(flakes[o], flakes[o + 2]);
       if (flakes[o + 1] < ground + 0.05) flakes[o + 1] = ground + 0.05;
     }
-    if (!flakeInside(i, cam) || (blow && flakes[o + 1] - floorH(flakes[o], flakes[o + 2]) > 2.4)) seedFlake(i, cam);
+    if (!flakeInside(i, cam) || (blow && flakes[o + 1] - floorH(flakes[o], flakes[o + 2]) > 2.2)) seedFlake(i, cam);
   }
 }
 function pawGround() {
@@ -243,6 +256,9 @@ struct U {
 @group(0) @binding(3) var snowArr: texture_2d_array<f32>;
 @group(0) @binding(4) var iceArr: texture_2d_array<f32>;
 @group(0) @binding(5) var planetTex: texture_2d<f32>;
+@group(0) @binding(6) var fallArr: texture_2d_array<f32>;
+@group(0) @binding(7) var archArr: texture_2d_array<f32>;
+@group(0) @binding(8) var seracArr: texture_2d_array<f32>;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
@@ -308,10 +324,17 @@ fn darken15(c: vec3f) -> vec3f {
   let gx = dpdx(v.w);
   let gy = dpdy(v.w);
   let nUv = normalize(v.n);
-  let n = normalize(v.lit);
+  var n = normalize(v.lit);
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
   let alb = albedoOf(m, v.w, nUv, gx, gy);
+  let lum = dot(alb, vec3f(0.3, 0.59, 0.11));
+  let hx = dpdx(lum);
+  let hy = dpdy(lum);
+  let tx = normalize(gx);
+  let ty = normalize(gy);
+  let onIce = select(0.0, 1.0, m > 1.5);
+  n = normalize(n + (tx * clamp(-hx, -0.12, 0.12) + ty * clamp(-hy, -0.12, 0.12)) * 4.0 * onIce);
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
@@ -330,9 +353,10 @@ fn darken15(c: vec3f) -> vec3f {
     col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
     col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7;
   }
-  // Distant walls and arches fade by dither, not by fog. Inside 80 m they stay solid.
-  if ((m > 1.5 && m < 2.5) || (m > 5.5 && m < 6.5)) {
-    let cover = smoothstep(320.0, 170.0, dist);
+  // Run 11 dither. Walls, arches, falls, and distant rock fade in by noise.
+  // Snow is not discarded, so the horizon ridge stays solid. No fog.
+  if ((m > 0.5 && m < 2.5) || (m > 5.5 && m < 7.5)) {
+    let cover = smoothstep(460.0, 160.0, dist);
     let n = fract(sin(dot(v.p.xy, vec2f(12.9898, 78.233))) * 43758.5453);
     if (cover < n) { discard; }
   }
@@ -431,12 +455,15 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   let to = normalize(toC);
   let right = normalize(cross(vec3f(0.0, 1.0, 0.0), to));
   let up = cross(to, right);
-  let ang = b.w * 6.28318 + u.cam.w * (1.4 + b.w * 3.2);
+  let ang = b.w * 6.28318 + u.cam.w * (2.2 + b.w * 5.0);
   let ca = cos(ang);
   let sa = sin(ang);
   let rx = c.x * ca - c.y * sa;
   let ry = c.x * sa + c.y * ca;
-  let wpos = a.xyz + right * rx * b.x + up * ry * b.x;
+  let near = b.z < 0.15;
+  let motion = vec3f(sin(a.w), 0.04, cos(a.w));
+  let streak = select(0.0, b.x * 1.15, near && a.y > u.cam.y);
+  let wpos = a.xyz + right * rx * b.x + up * ry * b.x + motion * ry * streak;
   var o: FO;
   o.p = u.vp * vec4f(wpos, 1.0);
   o.uv = c;
@@ -446,10 +473,12 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   return o;
 }
 @fragment fn fsFlake(v: FO) -> @location(0) vec4f {
-  let r = length(v.uv);
-  if (r > 1.0) { discard; }
   let puff = v.layer > 1.5 && v.layer < 2.5;
-  let soft = 1.0 - smoothstep(select(0.62, 0.35, puff), 1.0, r);
+  let near = v.layer < 0.15;
+  let e = v.uv * vec2f(1.0, select(1.0, 0.38, near));
+  let r = length(e);
+  if (r > 1.0) { discard; }
+  let soft = pow(1.0 - smoothstep(0.0, 1.0, r), select(1.35, 1.05, puff));
   let uv = vec2f(v.seed, 0.41) + v.uv * select(0.12, 0.06, v.layer > 0.5);
   let tex = textureSampleLevel(snowArr, samp, uv, 0, 1.0);
   let sun = normalize(u.sun.xyz);
@@ -459,9 +488,9 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   var gain = 0.82;
   if (v.layer > 2.5) { gain = 0.62; }
   else if (v.layer > 1.5) {
-    col = min(vec3f(0.72, 0.8, 0.9) * lit, vec3f(0.9));
-    gain = 0.5;
-  } else if (v.layer > 0.7) { gain = 0.64; }
+    col = min(vec3f(0.9, 0.94, 0.98) * lit, vec3f(0.9));
+    gain = 0.72;
+  } else if (v.layer > 0.7) { gain = 0.55; }
   else if (v.layer > 0.2) { gain = 0.74; }
   let a = soft * v.fade * gain;
   return vec4f(col, a);
@@ -547,7 +576,10 @@ async function main() {
     return tex;
   }
   const snowTex = await loadArray(['./tex/snow/v1.jpg', './tex/snow/v2.jpg', './tex/snow/v3.jpg', './tex/snow/v4.jpg']);
-  const wallTex = await loadArray(['./tex/ice/v1.jpg', './tex/ice/v2.jpg', './tex/ice/v3.jpg', './tex/ice/v4.jpg']);
+  const wallTex = await loadArray(['./tex/glacier-ice/v1.jpg', './tex/glacier-ice/v2.jpg', './tex/glacier-ice/v3.jpg', './tex/glacier-ice/v4.jpg']);
+  const fallTex = await loadArray(['./tex/fall-ice/v1.jpg', './tex/fall-ice/v2.jpg', './tex/fall-ice/v3.jpg', './tex/fall-ice/v4.jpg']);
+  const archTex = await loadArray(['./tex/arch-ice/v1.jpg', './tex/arch-ice/v2.jpg', './tex/arch-ice/v3.jpg', './tex/arch-ice/v4.jpg']);
+  const seracTex = await loadArray(['./tex/serac/v1.jpg', './tex/serac/v2.jpg', './tex/serac/v3.jpg', './tex/serac/v4.jpg']);
   const planetTex = await loadAlbedo('./tex/glacier-planet-surface.jpg');
 
   const mk = (data, usage) => {
@@ -583,6 +615,9 @@ async function main() {
     { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 5, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
   ] });
   const bg = dev.createBindGroup({ layout: bgl, entries: [
     { binding: 0, resource: { buffer: ub } },
@@ -591,6 +626,9 @@ async function main() {
     { binding: 3, resource: snowTex.createView({ dimension: '2d-array' }) },
     { binding: 4, resource: wallTex.createView({ dimension: '2d-array' }) },
     { binding: 5, resource: planetTex.createView() },
+    { binding: 6, resource: fallTex.createView({ dimension: '2d-array' }) },
+    { binding: 7, resource: archTex.createView({ dimension: '2d-array' }) },
+    { binding: 8, resource: seracTex.createView({ dimension: '2d-array' }) },
   ] });
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const mod = dev.createShaderModule({ code: WGSL });
@@ -727,7 +765,7 @@ async function main() {
         flakeGpu[o] = flakes[o];
         flakeGpu[o + 1] = flakes[o + 1];
         flakeGpu[o + 2] = flakes[o + 2];
-        flakeGpu[o + 3] = 0;
+        flakeGpu[o + 3] = Math.atan2(flakeVel[i * 3], flakeVel[i * 3 + 2]);
         flakeGpu[o + 4] = flakes[o + 4];
         const life = Math.min(1, Math.max(0, flakes[o + 3]));
         const puff = flakes[o + 6] > 0.5;
@@ -859,8 +897,26 @@ async function main() {
       if (flakeVel[i * 3 + 1] > 0.15) up++;
     }
     n = n || 1;
+    const focal = (H / 2) / Math.tan(HALF_H);
+    const bins = { near: [], mid: [], far: [] };
+    const heads = [];
+    for (let i = 0; i < FLAKE_SNOW; i += 6) {
+      const o = i * 8;
+      const depthCam = Math.hypot(flakes[o] - lastEye[0], flakes[o + 2] - lastEye[2]);
+      const px = flakes[o + 4] / Math.max(0.4, depthCam) * focal;
+      const bin = depthCam < 2.4 ? bins.near : depthCam < 8 ? bins.mid : bins.far;
+      bin.push(px);
+      heads.push(+Math.atan2(flakeVel[i * 3], flakeVel[i * 3 + 2]).toFixed(3));
+    }
+    const summ = (arr) => {
+      if (!arr.length) return { n: 0, min: 0, mid: 0, max: 0 };
+      const s = arr.slice().sort((a, b) => a - b);
+      return { n: s.length, min: +s[0].toFixed(2), mid: +s[s.length >> 1].toFixed(2), max: +s[s.length - 1].toFixed(2) };
+    };
     return {
       quadrants: q,
+      sizePx: { near: summ(bins.near), mid: summ(bins.mid), far: summ(bins.far) },
+      headings: heads,
       velMean: [+mx.toFixed(3), +my.toFixed(3), +mz.toFixed(3)],
       velVar: [+(vvx / n).toFixed(3), +(vvy / n).toFixed(3), +(vvz / n).toFixed(3)],
       velVarSum: +((vvx + vvy + vvz) / n).toFixed(3),

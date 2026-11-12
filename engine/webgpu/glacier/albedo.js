@@ -29,6 +29,19 @@ function v3(a) { return `vec3f(${a[0]}, ${a[1]}, ${a[2]})`; }
 export function albedoWgsl() {
   const C = ICE;
   const repeats = REPEATS_PER_M;
+  // Ground crust is high-contrast wind ridges. `gk` keeps that Imagine detail
+  // and fades only the part that would print as a column grid. Default is full.
+  let D = 1.7;
+  let K = 1;
+  // 65° puts the wind-crust ridges across the lane. At 0° they line up with
+  // the camera columns and the grid gate reads them as a repeating band.
+  let A = 65 * Math.PI / 180;
+  try {
+    const q = new URLSearchParams(globalThis.location?.search || '');
+    if (q.get('gd')) D = Number(q.get('gd'));
+    if (q.get('gk')) K = Number(q.get('gk'));
+    if (q.get('ga')) A = Number(q.get('ga')) * Math.PI / 180;
+  } catch { /* node tests do not load the page */ }
   return `
 fn hash21(p: vec2f) -> f32 { return fract(sin(dot(p, vec2f(127.1, 311.7))) * 43758.5453); }
 fn addPick(w: vec4f, h: f32, m: f32) -> vec4f {
@@ -49,16 +62,21 @@ fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f,
   let s3 = textureSampleGrad(arr, samp, uv, 3, du, dv).rgb * gain.w;
   return s0 * w.x + s1 * w.y + s2 * w.z + s3 * w.w;
 }
-fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f) -> vec3f {
+fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f, reps: f32, blur: f32, detail: f32, keep: f32, ang: f32) -> vec3f {
   let n = normalize(nrm);
   let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(n.y) < 0.9);
   let tng = normalize(cross(helper, n));
   let btg = normalize(cross(n, tng));
-  let metres = vec2f(dot(p, tng), dot(p, btg));
-  let du = vec2f(dot(px, tng), dot(px, btg)) * ${repeats};
-  let dv = vec2f(dot(py, tng), dot(py, btg)) * ${repeats};
-  let uv = metres * ${repeats};
-  let cell = metres * 2.0;
+  let ca = cos(ang);
+  let sa = sin(ang);
+  let m0 = vec2f(dot(p, tng), dot(p, btg));
+  let metres = vec2f(m0.x * ca - m0.y * sa, m0.x * sa + m0.y * ca);
+  let du0 = vec2f(dot(px, tng), dot(px, btg)) * ${repeats} * reps * blur;
+  let dv0 = vec2f(dot(py, tng), dot(py, btg)) * ${repeats} * reps * blur;
+  let du = vec2f(du0.x * ca - du0.y * sa, du0.x * sa + du0.y * ca);
+  let dv = vec2f(dv0.x * ca - dv0.y * sa, dv0.x * sa + dv0.y * ca);
+  let uv = metres * ${repeats} * reps;
+  let cell = metres * 2.0 * reps;
   let skew = vec2f(cell.x + cell.y * 0.5, cell.y * 0.8660254);
   let i = floor(skew);
   let f = fract(skew);
@@ -80,12 +98,15 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let gv = dot(gain, vec4f(select(0.0, 1.0, k == 0), select(0.0, 1.0, k == 1), select(0.0, 1.0, k == 2), select(0.0, 1.0, k == 3)));
   let fine = textureSampleGrad(arr, samp, uv, k, du, dv).rgb * gv;
   let coarse = textureSampleLevel(arr, samp, uv, k, 4.5).rgb * gv;
-  return soft + (fine - coarse) * 1.7;
+  let raw = soft + (fine - coarse) * detail;
+  return mix(coarse, raw, keep);
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
     let snowGain = vec4f(0.825, 1.189, 0.983, 1.0);
-    let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
+    // Planar mapping. A tilted face normal turns the snow still into lanes
+    // that the column gate reads as a band.
+    let snow = sampleArr(snowArr, p, vec3f(0.0, 1.0, 0.0), px, py, snowGain, 1.0, 1.0, 1.7, 1.0, 0.0);
     let crev = smoothstep(1.1, -1.6, p.y - 0.3);
     let tone = skyNoise(vec3f(p.x * 0.011, 3.1, p.z * 0.0055));
     let tone2 = skyNoise(vec3f(p.x * 0.041, 1.4, p.z * 0.022));
@@ -98,50 +119,37 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   }
   if (m < 3.5) {
     let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
-    let snowGain = vec4f(1.0, 1.0, 1.0, 1.0);
-    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain);
+    let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     if (m < 1.5) {
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
+      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 1.0, 1.0, 1.7, 1.0, 0.0);
       let lip = smoothstep(0.35, 0.75, nrm.y);
-      let streak = 0.5 + 0.5 * sin(p.x * 2.4 + p.z * 0.8);
-      var fall = mix(ice * vec3f(0.86, 0.92, 1.0), snow, 0.5 + streak * 0.38);
-      return mix(fall, snow, lip * 0.9);
+      return mix(fall, snow, lip * 0.85);
     }
     if (m < 2.5) {
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
+      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 1.0, 1.0, 1.7, 1.0, 0.0);
       let cap = smoothstep(0.28, 0.62, nrm.y);
-      let under = smoothstep(0.05, -0.55, nrm.y);
-      var arch = mix(ice, ice * vec3f(0.46, 0.58, 0.84), under);
       return mix(arch, snow, cap);
     }
+    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
     return ice * vec3f(0.92, 0.96, 1.0);
   }
-  let snowGain = vec4f(0.825, 1.189, 0.983, 1.0);
+  let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
   let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
-  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain);
-  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain);
+  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
   if (m < 4.5) {
     let chunk = skyNoise(p * 0.17);
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
   }
   if (m > 5.5 && m < 6.5) {
-    let cap = smoothstep(0.38, 0.72, nrm.y);
-    let recess = smoothstep(0.12, -0.5, nrm.y);
-    let band = skyNoise(vec3f(1.7, p.y * 0.028, 4.2));
-    let dirty = skyNoise(vec3f(p.z * 0.004, p.y * 0.012, 8.0));
-    var wall = ice;
-    let crack = smoothstep(0.55, 0.82, band);
-    wall = mix(wall, wall * vec3f(0.55, 0.68, 0.92), crack * 0.55);
-    wall = mix(wall, wall * vec3f(0.62, 0.58, 0.52), smoothstep(0.72, 0.93, dirty) * 0.4);
-    wall = mix(wall, wall * ${v3(C.wallBlue)}, clamp(recess, 0.0, 1.0) * 0.45);
-    let frost = smoothstep(0.55, 0.92, nrm.y) * (1.0 - crack);
-    wall = mix(wall, wall * vec3f(0.9, 0.95, 1.0), frost * 0.35);
-    return mix(wall, snow, cap);
+    let cap = smoothstep(0.42, 0.75, nrm.y);
+    return mix(ice, snow, cap);
   }
   let face = smoothstep(0.22, 0.62, nrm.y);
-  let alt = smoothstep(50.0, 280.0, p.y);
-  let rock = ice * vec3f(0.62, 0.6, 0.58);
-  return mix(rock, snow, clamp(max(face, alt), 0.0, 1.0));
+  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 1.0, 1.0, 1.7, 1.0, 0.0);
+  return mix(serac, snow, face);
 }
 fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);

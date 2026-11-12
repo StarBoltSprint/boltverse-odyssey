@@ -177,7 +177,10 @@ function groupStretch(mats) {
 }
 const stretchById = new Map([
   ['snow', groupStretch([MAT.snow, MAT.drift])],
-  ['ice', groupStretch([MAT.fall, MAT.arch, MAT.icicle, MAT.wall, MAT.mountain])],
+  ['glacier-ice', groupStretch([MAT.wall, MAT.icicle, MAT.drift])],
+  ['serac', groupStretch([MAT.mountain])],
+  ['fall-ice', groupStretch([MAT.fall])],
+  ['arch-ice', groupStretch([MAT.arch])],
 ]);
 const page = fs.readFileSync(path.join(here, 'glacier.js'), 'utf8') + '\n' + fs.readFileSync(path.join(here, 'albedo.js'), 'utf8');
 const result = gateBiome({ id: 'glacier-abyss', materials }, fileBytes, { pageSource: page, stretchById });

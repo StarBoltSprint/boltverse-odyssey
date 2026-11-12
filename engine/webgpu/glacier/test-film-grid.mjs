@@ -12,12 +12,14 @@ const files = fs.readdirSync(dir).filter((f) => /^f_.*\.png$/.test(f)).sort();
 if (!files.length) { console.error('FAIL no frames'); process.exit(1); }
 
 function load(file) {
-  const raw = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:'], { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 }).stdout;
-  return { raw, w: 720, h: 1280 };
+  const probe = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', file], { encoding: 'utf8' });
+  const [w, h] = probe.stdout.trim().split(',').map(Number);
+  const raw = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:'], { encoding: 'buffer', maxBuffer: 24 * 1024 * 1024 }).stdout;
+  return { raw, w, h };
 }
 
 function loadMask(file, w, h) {
-  const png = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-f', 'rawvideo', '-pix_fmt', 'rgba', 'pipe:'], { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 }).stdout;
+  const png = spawnSync('ffmpeg', ['-v', 'error', '-i', file, '-f', 'rawvideo', '-pix_fmt', 'rgba', 'pipe:'], { encoding: 'buffer', maxBuffer: 24 * 1024 * 1024 }).stdout;
   if (!png || png.length < w * h * 4) return null;
   return dilateMask(maskFromRGBA(png, w, h, w * 4), w, h, MASK_DILATE);
 }

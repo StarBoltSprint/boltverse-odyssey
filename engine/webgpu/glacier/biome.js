@@ -24,7 +24,7 @@ export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'con
 
 // One instanced draw. Near, mid, and far fill the camera frustum. Blow is
 // snow lifted off the sastrugi. Puffs stay a small paw burst.
-export const FLAKES = { near: 1100, mid: 1000, far: 700, blow: 220, puff: 18 };
+export const FLAKES = { near: 1000, mid: 900, far: 500, blow: 180, puff: 18 };
 
 export const PLANET = {
   dir: [0.04, 0.30, -0.95],

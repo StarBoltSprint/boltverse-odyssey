@@ -5,12 +5,12 @@ import { fileURLToPath } from 'url';
 import { DE76_MAX } from '../biome-factory/cie76.mjs';
 import { shadeAt, norm3 } from '../biome-factory/light-rig.js';
 import { skyLinear, skyDelta, dirFrom } from '../biome-factory/procedural-sky.js';
-import { lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
+import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
 import { invertMat4 } from '../biome-factory/mat4.js';
 import { boltIdle } from '../bricks/bolt-idle.js';
 import { ICE, litIce } from './albedo.js';
 import { LIGHT, LIMITS, GLACIER, DRAWS } from './biome.js';
-import { buildWorld, wallHeight, floorH, pathX, wallPoint } from './world.js';
+import { buildWorld, wallHeight, floorH, pathX, wallPoint, spawn, integrate, chaseInput, routeSmooth } from './world.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 let fail = 0;
@@ -121,6 +121,44 @@ for (let i = 0; i < 16; i++) {
 const p = wallPoint(-30, -1, 0.4);
 if (!(p[1] > floorH(p[0], p[2]))) bad('wall point is underground');
 
+// The body column and the ray from the eye to the chest must stay above the
+// snow. A ridge through the lane shows up as metres of penetration.
+const idle = boltIdle();
+const live = spawn();
+let maxPen = 0;
+let maxPenT = 0;
+const dt = 1 / 30;
+for (let i = 0; i < 1350; i++) {
+  const t = i * dt;
+  idle.stepMotion(live, dt, true);
+  integrate(live, dt, chaseInput(t, live));
+  const yaw = live.psi;
+  const fx = -Math.sin(yaw);
+  const fz = -Math.cos(yaw);
+  const rx = -fz;
+  const rz = fx;
+  const y0 = world.heightAt(live.x, live.z);
+  let pen = 0;
+  for (const s of [-0.2, 0, 0.2]) {
+    for (const f of [-0.4, -0.15, 0.1, 0.35]) {
+      const z = live.z + rz * s + fz * f;
+      const h = world.heightAt(live.x + rx * s + fx * f, z);
+      pen = Math.max(pen, h - routeSmooth(z));
+    }
+  }
+  const bp = [live.x, y0, live.z];
+  const cam = followEye(bp, live.cam, world.heightAt, 0);
+  const chest = [live.x, y0 + 0.55, live.z];
+  for (const u of [0.3, 0.5, 0.7]) {
+    const x = cam.eye[0] + (chest[0] - cam.eye[0]) * u;
+    const y = cam.eye[1] + (chest[1] - cam.eye[1]) * u;
+    const z = cam.eye[2] + (chest[2] - cam.eye[2]) * u;
+    pen = Math.max(pen, world.heightAt(x, z) - y);
+  }
+  if (pen > maxPen) { maxPen = pen; maxPenT = t; }
+}
+if (maxPen > 0.02) bad('body occluded by terrain ' + maxPen.toFixed(3) + ' m at t ' + maxPenT.toFixed(1));
+
 if (fail) process.exit(1);
 console.log('PASS cpu', JSON.stringify({
   tris: world.budget.totalTris,
@@ -133,6 +171,8 @@ console.log('PASS cpu', JSON.stringify({
   wallM: [+lo.toFixed(1), +hi.toFixed(1)],
   wallGapM: +gap.toFixed(2),
   groundRmsM: +rms.toFixed(3),
+  bodyPenM: +maxPen.toFixed(4),
+  bodyPenT: +maxPenT.toFixed(1),
   cardH: card.cardH,
   skyMax: +skyMax.toFixed(3),
   de76: DE76_MAX,
