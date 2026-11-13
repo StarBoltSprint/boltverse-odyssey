@@ -1,0 +1,50 @@
+{
+  "baseline": "run 18 fetch. Minor-axis LOD plus 8 major-axis taps is diagnostic. No bias is in the default path.",
+  "lod": "log2(minorTexels) + b, then 8 taps along the major axis. The r term is gone.",
+  "b": [0.5, 0.75, 1.0, 1.25],
+  "accept": "t=8 near-ground Laplacian at least 0.95 of run 18, and all four probes at or under 1.8. Smallest such b would ship.",
+  "probes": [
+    {
+      "t": 5.1,
+      "baseline": { "peak": 1.859, "sharp": 1 },
+      "b0.50": { "peak": 1.860, "sharp": 0.883 },
+      "b0.75": { "peak": 1.857, "sharp": 0.753 },
+      "b1.00": { "peak": 1.860, "sharp": 0.666 },
+      "b1.25": { "peak": 1.842, "sharp": 0.585 }
+    },
+    {
+      "t": 5.567,
+      "baseline": { "peak": 1.865, "sharp": 1 },
+      "b0.50": { "peak": 1.884, "sharp": 0.902 },
+      "b0.75": { "peak": 1.894, "sharp": 0.769 },
+      "b1.00": { "peak": 1.888, "sharp": 0.678 },
+      "b1.25": { "peak": 1.887, "sharp": 0.595 }
+    },
+    {
+      "t": 7.9,
+      "baseline": { "peak": 1.484, "sharp": 1 },
+      "b0.50": { "peak": 1.473, "sharp": 0.990 },
+      "b0.75": { "peak": 1.474, "sharp": 0.855 },
+      "b1.00": { "peak": 1.479, "sharp": 0.753 },
+      "b1.25": { "peak": 1.485, "sharp": 0.659 }
+    },
+    {
+      "t": 8,
+      "baseline": { "peak": 1.441, "sharp": 1 },
+      "b0.50": { "peak": 1.446, "sharp": 0.987 },
+      "b0.75": { "peak": 1.443, "sharp": 0.850 },
+      "b1.00": { "peak": 1.440, "sharp": 0.746 },
+      "b1.25": { "peak": 1.435, "sharp": 0.651 }
+    },
+    {
+      "t": 11.7,
+      "baseline": { "peak": 1.928, "sharp": 1 },
+      "b0.50": { "peak": 1.902, "sharp": 0.878 },
+      "b0.75": { "peak": 1.895, "sharp": 0.755 },
+      "b1.00": { "peak": 1.885, "sharp": 0.670 },
+      "b1.25": { "peak": 1.868, "sharp": 0.589 }
+    }
+  ],
+  "reading": "Only b = 0.5 keeps t=8 sharpness at or above 0.95 of run 18 (0.987). It leaves 5.10 at 1.860, 5.567 at 1.884, and 11.70 at 1.902. The larger biases fall under 0.95 at t=8 and still leave those three probes over 1.8. No b is applied. No chase.",
+  "texel": "PASS on the unchanged stills. 2048 px/m, stretch p99 at or under 1.30, planet magnification 0.950. The gate measures the files and the mesh. No bias is in the default path, so there is nothing extra for it to see."
+}

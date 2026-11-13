@@ -1232,9 +1232,10 @@ async function main() {
   };
   const FOOT = [
     [0, 'baseline'],
-    [10, 'k0.25'],
-    [11, 'k0.50'],
-    [12, 'k0.75'],
+    [20, 'b0.50'],
+    [21, 'b0.75'],
+    [22, 'b1.00'],
+    [23, 'b1.25'],
   ];
   window.__glacierFoot = async (t) => {
     const dt = 1 / 60;

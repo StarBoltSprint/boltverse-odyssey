@@ -160,18 +160,15 @@ fn snowFetch(arr: texture_2d_array<f32>, uv: vec2f, layer: i32, du: vec2f, dv: v
     }
     return acc / 8.0;
   }
-  // 10 / 11 / 12 = footprint LOD, k = 0.25 / 0.5 / 0.75.
-  // LOD follows the minor axis. Bias grows only when the footprint is stretched.
-  if (mode > 9.5 && mode < 12.5) {
-    var k = 0.25;
-    if (mode > 10.5 && mode < 11.5) { k = 0.5; }
-    else if (mode > 11.5) { k = 0.75; }
+  // 20 / 21 / 22 / 23 = minor-axis LOD + 8 major-axis taps, uniform bias 0.5 / 0.75 / 1.0 / 1.25.
+  if (mode > 19.5 && mode < 23.5) {
+    var bias = 0.5;
+    if (mode > 20.5 && mode < 21.5) { bias = 0.75; }
+    else if (mode > 21.5 && mode < 22.5) { bias = 1.0; }
+    else if (mode > 22.5) { bias = 1.25; }
     let lu = length(du);
     let lv = length(dv);
-    let major = max(lu, lv);
     let minor = max(min(lu, lv), 1e-8);
-    let ratio = major / minor;
-    let bias = k * clamp(log2(ratio) - 1.0, 0.0, 2.0);
     let lod = max(log2(max(minor * 1024.0, 1.0)) + bias, 0.0);
     var acc = vec3f(0.0);
     let along = select(dv, du, lu >= lv);
