@@ -9,7 +9,7 @@
       "fileBytes": 22369764,
       "gpuBytes": 22369616,
       "levels": 11,
-      "baseMae": 0.702
+      "baseMae": 0.81
     },
     {
       "seed": 19,
@@ -17,7 +17,7 @@
       "fileBytes": 22369764,
       "gpuBytes": 22369616,
       "levels": 11,
-      "baseMae": 0.713
+      "baseMae": 0.81
     }
   ],
   "snowGpuBytes": 44739232,

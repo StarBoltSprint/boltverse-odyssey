@@ -1,0 +1,54 @@
+{
+  "film": "not committed",
+  "reason": "The offline projection of both atlases stayed at or under 1.8. The chase did not. Every 3rd frame has 88 samples over 1.8, against run 18's 3. Stopped. No film.",
+  "limit": 1.8,
+  "scan": "Every 3rd frame, t = 1 + i/30, 450 samples. A dense pass was not run: this coarse pass is already far past run 18.",
+  "overCount": 88,
+  "max": { "t": 7.9, "peak": 4.343 },
+  "run18": {
+    "overCount": 3,
+    "max": { "t": 11.7, "peak": 1.927 },
+    "frames": [
+      { "t": 5.1, "peak": 1.855 },
+      { "t": 5.567, "peak": 1.874 },
+      { "t": 11.7, "peak": 1.927 }
+    ]
+  },
+  "atlas": {
+    "placement": "Jittered rows, patch 24–38 px, step 0.75 of the patch, random source, random dihedral copy. Not a 512 px lattice.",
+    "seeds": { "atlas-7": 13, "atlas-19": 17 },
+    "sources": { "7": [8283, 8177, 8305, 8277], "19": [8186, 8305, 8270, 8309] },
+    "native": "Center 4×4 of the first patches matched the oriented source pixels. No resample.",
+    "feather": "An 8 px feather on the same seeds pushed views back over 1.8, so the shipped seam is the hard cut.",
+    "period": {
+      "7": { "top3": [[1707, 0.737], [318, 0.729], [1849, 0.692]], "lag512": 0.745, "lag1024": -0.404 },
+      "19": { "top3": [[1679, 0.674], [1842, 0.664], [319, 0.647]], "lag512": -0.258, "lag1024": -0.65 }
+    },
+    "synth": {
+      "views": 78,
+      "scalePxPerHalfMetre": { "near": 145.2, "mid": 74.5 },
+      "atlas7": { "worst": 1.725, "over": 0 },
+      "atlas19": { "worst": 1.541, "over": 0 }
+    }
+  },
+  "memory": {
+    "format": "astc-4x4-unorm-srgb",
+    "snowGpuBytes": 44739232,
+    "snowGpuMiB": 42.67,
+    "budgetMiB": 48,
+    "baseMae": { "7": 0.81, "19": 0.81 }
+  },
+  "texel": { "pxPerM": 2048, "stretchP99": { "crust": 1.02, "glacier-ice": 1.29, "serac": 1.27, "fall-ice": 1.3, "arch-ice": 1.25 }, "planetMagnification": 0.95, "verdict": "PASS" },
+  "snowColour": {
+    "stillLab": [73.03, 0.06, -7.1],
+    "t2": { "lab": [70.45, 4.99, -5.73], "cie76": 5.73 },
+    "t10": { "lab": [68.54, 4.9, -5.82], "cie76": 6.72 },
+    "t25": { "lab": [69.56, 5.0, -5.43], "cie76": 6.26 }
+  },
+  "colourGate": { "snow": 9.47, "waterfall": 0.04, "arch": 0.2, "wall": 0.08, "negativeWall": 14.72 },
+  "skyWorst": 0,
+  "stability": { "speckleRatio": 0.477, "temporalRatio": 1.181, "staticLumaStd": 0 },
+  "tris": 193690,
+  "draws": 9,
+  "boltCenterX": 360
+}

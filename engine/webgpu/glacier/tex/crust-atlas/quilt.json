@@ -1,34 +1,44 @@
 [
   {
-    "seed": 7,
+    "seed": 13,
+    "name": "7",
     "file": "tex/crust-atlas/atlas-7.png",
-    "bytes": 28660688,
-    "sources": [
-      17,
-      18,
-      18,
-      11
+    "bytes": 29380888,
+    "patchPx": [
+      24,
+      38
     ],
-    "ac1024": {
-      "ratio": 0.902,
-      "peak": 0.375,
-      "beside": 0.335
-    }
+    "sources": [
+      8283,
+      8177,
+      8305,
+      8277
+    ],
+    "native": {
+      "checked": 8,
+      "verbatim": 8
+    },
+    "dark": 0
   },
   {
-    "seed": 19,
+    "seed": 17,
+    "name": "19",
     "file": "tex/crust-atlas/atlas-19.png",
-    "bytes": 29065528,
-    "sources": [
-      18,
-      20,
-      20,
-      6
+    "bytes": 29352747,
+    "patchPx": [
+      24,
+      38
     ],
-    "ac1024": {
-      "ratio": 0.845,
-      "peak": 0.253,
-      "beside": 0.219
-    }
+    "sources": [
+      8186,
+      8305,
+      8270,
+      8309
+    ],
+    "native": {
+      "checked": 8,
+      "verbatim": 8
+    },
+    "dark": 0
   }
 ]
