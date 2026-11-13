@@ -694,7 +694,11 @@ async function main() {
     return tex;
   }
   // Run 18 stills. The quilted atlases stay on disk and are not sampled.
-  const snowTex = await loadArray(['./tex/crust/v1.jpg', './tex/crust/v2.jpg', './tex/crust/v3.jpg', './tex/crust/v4.jpg']);
+  // snow=v2 loads the Texture-bot candidates so the column gate can score them.
+  const snowFiles = qs.get('snow') === 'v2'
+    ? ['./tex/snow-v2/snow-v2-0.png', './tex/snow-v2/snow-v2-1.png', './tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png']
+    : ['./tex/crust/v1.jpg', './tex/crust/v2.jpg', './tex/crust/v3.jpg', './tex/crust/v4.jpg'];
+  const snowTex = await loadArray(snowFiles);
   let snowAstc = null;
   try {
     snowAstc = await loadAstcArray(['./tex/crust-diag/v1.astcpack', './tex/crust-diag/v2.astcpack', './tex/crust-diag/v3.astcpack', './tex/crust-diag/v4.astcpack']);

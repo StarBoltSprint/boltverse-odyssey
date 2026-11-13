@@ -18,7 +18,7 @@ try {
   await withChrome({
     debugPort: 9450,
     tries: 160,
-    url: `http://127.0.0.1:8826/glacier/glacier.html?cap=1&w=720&h=1280&candidate=${CANDIDATE}`,
+    url: `http://127.0.0.1:8826/glacier/glacier.html?cap=1&w=720&h=1280&candidate=${CANDIDATE}${process.env.SNOW ? '&snow=' + process.env.SNOW : ''}`,
     fn: async ({ evalJson }) => {
       for (const t of TIMES) {
         const row = await evalJson(`window.__glacierStills(${t}).then(r => JSON.stringify(r))`);

@@ -1,0 +1,14 @@
+{
+  "gate": "test-still-columns.mjs, limit 1.5, not lowered. SNOW=v2 loads snow-v2-0..3.png as the four layers. Native 1024, sha256 matches the README.",
+  "passed": 0,
+  "kept": "old still 3 only. Fewer than 4 passing stills, so no new mix and no chase.",
+  "probes": [
+    { "t": 5.1, "still0": 1.585, "still1": 1.613, "still2": 1.612, "still3": 1.588 },
+    { "t": 5.567, "still0": 1.587, "still1": 1.603, "still2": 1.642, "still3": 1.584 },
+    { "t": 7.9, "still0": 1.575, "still1": 1.575, "still2": 1.577, "still3": 1.576 },
+    { "t": 11.7, "still0": 1.588, "still1": 1.565, "still2": 1.590, "still3": 1.557 }
+  ],
+  "worst": { "still0": 1.588, "still1": 1.613, "still2": 1.642, "still3": 1.588 },
+  "oldStill3": "Already passed on the run 18 crust, worst 1.412. It stays. It is not one of these four layers.",
+  "note": "The four-new-still mix scored 1.509, 1.545, 1.422, and 1.313 at those times. That mix is not used. None of its stills cleared 1.5."
+}

@@ -1,0 +1,21 @@
+t 5.1 mix=1.509 still0=1.585 still1=1.613 still2=1.612 still3=1.588
+FAIL still0 at 5.1 1.585 > 1.5
+FAIL still1 at 5.1 1.613 > 1.5
+FAIL still2 at 5.1 1.612 > 1.5
+FAIL still3 at 5.1 1.588 > 1.5
+t 5.567 mix=1.545 still0=1.587 still1=1.603 still2=1.642 still3=1.584
+FAIL still0 at 5.567 1.587 > 1.5
+FAIL still1 at 5.567 1.603 > 1.5
+FAIL still2 at 5.567 1.642 > 1.5
+FAIL still3 at 5.567 1.584 > 1.5
+t 7.9 mix=1.422 still0=1.575 still1=1.575 still2=1.577 still3=1.576
+FAIL still0 at 7.9 1.575 > 1.5
+FAIL still1 at 7.9 1.575 > 1.5
+FAIL still2 at 7.9 1.577 > 1.5
+FAIL still3 at 7.9 1.576 > 1.5
+t 11.7 mix=1.313 still0=1.588 still1=1.565 still2=1.590 still3=1.557
+FAIL still0 at 11.7 1.588 > 1.5
+FAIL still1 at 11.7 1.565 > 1.5
+FAIL still2 at 11.7 1.590 > 1.5
+FAIL still3 at 11.7 1.557 > 1.5
+FAIL still-columns
