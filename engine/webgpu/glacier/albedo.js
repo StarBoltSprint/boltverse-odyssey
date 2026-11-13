@@ -242,7 +242,8 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
       let cap = smoothstep(0.28, 0.62, nrm.y);
       return mix(arch, snow, cap);
     }
-    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 2.0);
+    // Mip bias 4 calms the spire speckle. The sheen stays the ice value, not chrome.
+    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 4.0);
     return ice * vec3f(0.92, 0.96, 1.0);
   }
   let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
@@ -254,12 +255,13 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
   }
   if (m > 5.5 && m < 6.5) {
+    let wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 4.0);
     let cap = smoothstep(0.42, 0.75, nrm.y);
-    return mix(ice, snow, cap);
+    return mix(wallIce, snow, cap);
   }
   let face = smoothstep(0.22, 0.62, nrm.y);
-  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 2.0);
-  return mix(serac, snow, face);
+  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+  return mix(serac, snow, face * 0.35);
 }
 fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);

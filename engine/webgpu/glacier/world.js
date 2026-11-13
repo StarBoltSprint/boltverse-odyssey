@@ -252,10 +252,13 @@ function addRibbon(mesh, zs, rowFn, mat, towardFn) {
 }
 
 function archFrame(z0, index) {
+  // The first two spans sit on the opening chase. Their bellies clear the
+  // camera by a person-height, so the lens does not enter the ice.
+  const near = index < 2 ? 8 : 0;
   return {
     half: floorHalf(z0) * 0.72,
-    foot: 16 + (index % 3) * 2.2,
-    crown: index > 3 ? 28 : 15 + index * 1.6,
+    foot: 16 + (index % 3) * 2.2 + near,
+    crown: (index > 3 ? 28 : 18 + index * 2.2) + near,
     thick: index > 3 ? 5.2 : 2.6,
   };
 }
@@ -436,10 +439,20 @@ function addHorizonRidge(mesh, z0, height, half) {
     }
     grid.push(row);
   }
+  const depth = 18;
+  const back = grid.map((row) => row.map((p) => [p[0], p[1], p[2] - depth]));
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
       face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.snow, [0, 0.05, 1]);
+      face(mesh, back[j][i + 1], back[j][i], back[j + 1][i], back[j + 1][i + 1], MAT.snow, [0, 0.05, -1]);
     }
+  }
+  for (let i = 0; i < cols; i++) {
+    const a = grid[rows][i];
+    const b = grid[rows][i + 1];
+    const c = back[rows][i + 1];
+    const d = back[rows][i];
+    face(mesh, a, b, c, d, MAT.snow, [0, 1, 0]);
   }
 }
 
@@ -493,7 +506,8 @@ function addPlateau(mesh, side) {
       let y = (i === 0 ? rim[1] : plateauH(x, z)) + 0.3;
       const crackN = fbm2(x * 0.0015, z * 0.00105);
       const crack = Math.exp(-((crackN - 0.57) ** 2) / 0.0014);
-      y -= crack * 16;
+      // A deep cut beside the lane opens a dark gap. Keep the trench off the rim.
+      y -= crack * (i < 2 ? 1.5 : 8);
       row.push([x, y, z]);
     }
     grid.push(row);
@@ -864,7 +878,10 @@ export function buildWorld() {
   }
   let prev = null;
   for (const z of groundZs) {
-    const half = floorHalf(z) + 2.8;
+    const cx = pathX(z);
+    const leftW = wallPoint(z, -1, 0);
+    const rightW = wallPoint(z, 1, 0);
+    const half = Math.max(floorHalf(z) + 2.8, Math.abs(leftW[0] - cx), Math.abs(rightW[0] - cx)) + 1.2;
     const lats = fracs.map((f) => -half + f * 2 * half);
     lats.push(-0.6, 0.6);
     lats.sort((a, b) => a - b);

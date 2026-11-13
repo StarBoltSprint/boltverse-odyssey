@@ -341,6 +341,12 @@ fn darken15(c: vec3f) -> vec3f {
     return vec4f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0), ndv * near);
   }
   var nLit = n;
+  // Derivatives stay outside the material branch. Uniform control flow.
+  let gAlb = dpdx(alb) + dpdy(alb);
+  if (m < 0.5) {
+    // Grain from the still. A world-space sine at this scale became corduroy.
+    nLit = normalize(n + vec3f(gAlb.r, 0.0, gAlb.g) * 0.45);
+  }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
   var col = litIce(alb, nLit, view);
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
