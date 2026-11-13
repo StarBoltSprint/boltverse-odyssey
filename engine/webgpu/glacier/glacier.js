@@ -337,7 +337,9 @@ fn darken15(c: vec3f) -> vec3f {
     let near = select(0.0, 1.0, dist < 40.0);
     return vec4f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0), ndv * near);
   }
-  var col = litIce(alb, n, view);
+  var nLit = n;
+  if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
+  var col = litIce(alb, nLit, view);
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
@@ -688,7 +690,14 @@ async function main() {
     }
     return tex;
   }
-  const snowTex = await loadAstcArray(['./tex/crust-atlas/atlas-7.astcpack', './tex/crust-atlas/atlas-19.astcpack']);
+  // Run 18 stills. The quilted atlases stay on disk and are not sampled.
+  const snowTex = await loadArray(['./tex/crust/v1.jpg', './tex/crust/v2.jpg', './tex/crust/v3.jpg', './tex/crust/v4.jpg']);
+  let snowAstc = null;
+  try {
+    snowAstc = await loadAstcArray(['./tex/crust-diag/v1.astcpack', './tex/crust-diag/v2.astcpack', './tex/crust-diag/v3.astcpack', './tex/crust-diag/v4.astcpack']);
+  } catch (err) {
+    snowAstc = null;
+  }
   const wallTex = await loadArray(['./tex/glacier-ice/v1.jpg', './tex/glacier-ice/v2.jpg', './tex/glacier-ice/v3.jpg', './tex/glacier-ice/v4.jpg']);
   const fallTex = await loadArray(['./tex/fall-ice/v1.jpg', './tex/fall-ice/v2.jpg', './tex/fall-ice/v3.jpg', './tex/fall-ice/v4.jpg']);
   const archTex = await loadArray(['./tex/arch-ice/v1.jpg', './tex/arch-ice/v2.jpg', './tex/arch-ice/v3.jpg', './tex/arch-ice/v4.jpg']);
@@ -733,17 +742,20 @@ async function main() {
     { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
   ] });
-  const bg = dev.createBindGroup({ layout: bgl, entries: [
+  const snowEntries = (snow) => [
     { binding: 0, resource: { buffer: ub } },
     { binding: 1, resource: samp },
     { binding: 2, resource: atlas.createView() },
-    { binding: 3, resource: snowTex.createView({ dimension: '2d-array' }) },
+    { binding: 3, resource: snow.createView({ dimension: '2d-array' }) },
     { binding: 4, resource: wallTex.createView({ dimension: '2d-array' }) },
     { binding: 5, resource: planetTex.createView() },
     { binding: 6, resource: fallTex.createView({ dimension: '2d-array' }) },
     { binding: 7, resource: archTex.createView({ dimension: '2d-array' }) },
     { binding: 8, resource: seracTex.createView({ dimension: '2d-array' }) },
-  ] });
+  ];
+  const bg = dev.createBindGroup({ layout: bgl, entries: snowEntries(snowTex) });
+  const bgAstc = snowAstc ? dev.createBindGroup({ layout: bgl, entries: snowEntries(snowAstc) }) : null;
+  let drawBg = bg;
   const layout = dev.createPipelineLayout({ bindGroupLayouts: [bgl] });
   const mod = dev.createShaderModule({ code: WGSL });
   if (mod.getCompilationInfo) {
@@ -824,6 +836,7 @@ async function main() {
     0.0690, 0.1380, 0.1580, 0.1396, 0.1242, 0.1135, 0.1058, 0.0997,
   ];
 
+  let snowDiag = 0;
   function fillU(t) {
     const bp = [live.x, pawGround(), live.z];
     let { eye, tgt } = followEye(bp, live.cam, world.heightAt, 0);
@@ -853,7 +866,7 @@ async function main() {
     const pawLy = (pawFrac - 6 / 652) * 1.15 - 0.095;
     U[56] = pawLy + 0.02;
     U.set([0.70, 0.78, 0.88, 0], 44);
-    U.set([sunDir[0], sunDir[1], sunDir[2], 0], 48);
+    U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
     U[53] = 0;
     U[54] = gateMode;
@@ -892,7 +905,7 @@ async function main() {
     }
     const enc = dev.createCommandEncoder();
     const pass = beginPass(enc, [0, 0, 0, 1]);
-    pass.setBindGroup(0, bg);
+    pass.setBindGroup(0, drawBg);
     pass.setPipeline(pSky); pass.draw(3);
     pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
     pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.setVertexBuffer(1, shadeVb); pass.draw(worldVerts);
@@ -1070,7 +1083,7 @@ async function main() {
   function renderBoltMask() {
     const enc = dev.createCommandEncoder();
     const pass = beginPass(enc, [0, 0, 0, 1]);
-    pass.setBindGroup(0, bg);
+    pass.setBindGroup(0, drawBg);
     pass.setPipeline(pBolt);
     pass.draw(6);
     pass.end();
@@ -1164,18 +1177,49 @@ async function main() {
   }
 
   let sim = 0;
-  window.__glacierPeak = async (t) => {
-    const dt = 1 / 60;
-    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+  const DIAG = [
+    [0, 'baseline', false],
+    [1, 'mip0', false],
+    [2, 'mipBias+1', false],
+    [3, 'bilinear', false],
+    [4, 'aniso8', false],
+    [5, 'liftOff', false],
+    [6, 'normalUp', false],
+    [0, 'astc', true],
+  ];
+  async function scoreHere() {
     const frame = await readFrame();
     renderBoltMask();
     const maskSrc = await readback();
+    return { peak: snowGrid(frame.src, maskSrc), gpuErr: frame.gpuErr };
+  }
+  window.__glacierPeak = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    snowDiag = 0;
+    drawBg = bg;
+    const row = await scoreHere();
     return {
-      peak: snowGrid(frame.src, maskSrc),
+      peak: row.peak,
       z: live.z, x: live.x, psi: live.psi,
       eye: lastEye,
-      gpuErr: frame.gpuErr,
+      gpuErr: row.gpuErr,
     };
+  };
+  window.__glacierTable = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const rows = [];
+    for (const [mode, name, astc] of DIAG) {
+      if (astc && !bgAstc) { rows.push({ name, peak: null, skip: 'no astc' }); continue; }
+      snowDiag = mode;
+      drawBg = astc ? bgAstc : bg;
+      const row = await scoreHere();
+      rows.push({ name, peak: row.peak, gpuErr: row.gpuErr });
+    }
+    snowDiag = 0;
+    drawBg = bg;
+    return { t, z: live.z, rows };
   };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;

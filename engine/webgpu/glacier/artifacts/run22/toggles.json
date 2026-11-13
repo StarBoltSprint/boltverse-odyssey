@@ -1,0 +1,18 @@
+{
+  "baseline": "run 18 shader and the four 1024 crust stills. The quilted atlases are not sampled.",
+  "anisoDevice": 1,
+  "times": [5.1, 5.567, 7.9, 11.7],
+  "note": "t=7.9 scored 4.343 on the run 21 quilt. On this baseline it is 1.484. There is no temporal resolve in the renderer. The stills are not a normal map. MSAA is 4x and is not a history buffer.",
+  "rows": [
+    { "toggle": "baseline auto trilinear, lift on, shade normal", "t5.1": 1.859, "t5.567": 1.865, "t7.9": 1.484, "t11.7": 1.928 },
+    { "toggle": "a mip forced to 0", "t5.1": 1.725, "t5.567": 1.704, "t7.9": 1.474, "t11.7": 2.151 },
+    { "toggle": "a mip bias +1", "t5.1": 1.764, "t5.567": 1.813, "t7.9": 1.468, "t11.7": 1.774 },
+    { "toggle": "a bilinear, one mip, no trilinear blend", "t5.1": 1.890, "t5.567": 1.837, "t7.9": 1.508, "t11.7": 1.968 },
+    { "toggle": "b 8-tap anisotropy along the long derivative", "t5.1": 1.845, "t5.567": 1.889, "t7.9": 1.468, "t11.7": 1.920 },
+    { "toggle": "c same stills as ASTC 4x4", "t5.1": 1.856, "t5.567": 1.875, "t7.9": 1.485, "t11.7": 1.932 },
+    { "toggle": "d temporal resolve", "t5.1": null, "t5.567": null, "t7.9": null, "t11.7": null, "absent": "no history buffer" },
+    { "toggle": "e snow lighting normal forced up", "t5.1": 1.890, "t5.567": 1.858, "t7.9": 1.630, "t11.7": 2.219 },
+    { "toggle": "f colour lift off", "t5.1": 1.913, "t5.567": 1.981, "t7.9": 1.481, "t11.7": 2.022 }
+  ],
+  "reading": "No toggle clears 5.10, 5.567, and 11.70 together. Mip bias +1 brings 5.10 and 11.70 under 1.8 and leaves 5.567 at 1.813. Anisotropy and ASTC do not move the spikes. The 4.343 at 7.9 s was the quilt, not the sampler. The run 18 baseline stays. No chase was recooked."
+}
