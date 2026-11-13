@@ -1,0 +1,47 @@
+{
+  "sha256": "b7e6750f4b388e6283b7962af3e773af1e198fff0d5146247dce1a7516e142f2",
+  "bytes": 45122126,
+  "ffprobe": {
+    "codec_name": "h264",
+    "width": 720,
+    "height": 1280,
+    "pix_fmt": "yuv420p",
+    "avg_frame_rate": "30/1",
+    "duration": "45.000000",
+    "nb_frames": "1350"
+  },
+  "grid": {
+    "frames": 450,
+    "every": 3,
+    "worst": 1.525,
+    "worstT": 1.4,
+    "over": 0,
+    "limit": 1.8,
+    "mask": "center pixels that leave the row snow, dilated 8 px"
+  },
+  "speckle": 0.474,
+  "temporal": 1.163,
+  "cie76": {
+    "vsStillMean": 6.94,
+    "acrossFrames": 0.76,
+    "renderGate": 1.6,
+    "labs": {
+      "t2": [
+        68.37,
+        5,
+        -5.28
+      ],
+      "t10": [
+        68.1,
+        4.91,
+        -5.13
+      ],
+      "t25": [
+        69.18,
+        5.03,
+        -4.56
+      ]
+    }
+  },
+  "encode": "H.264 CRF 18, 720x1280, 45.1 MB, under the 100 MB limit. No second encode."
+}
