@@ -1,0 +1,43 @@
+{
+  "floor": {
+    "pass": "flat albedo, mode 37, same chase and column metric",
+    "probes": [
+      { "t": 5.1, "peak": 1.588 },
+      { "t": 5.567, "peak": 1.584 },
+      { "t": 7.9, "peak": 1.576 },
+      { "t": 11.7, "peak": 1.555 }
+    ],
+    "floor": 1.588,
+    "margin": 0.1,
+    "limit": 1.688
+  },
+  "oldStills": {
+    "note": "Must still fail the recalibrated limit. None of 0, 1, or 2 pass.",
+    "probes": [
+      { "t": 5.1, "still0": 2.440, "still1": 4.028, "still2": 3.621, "still3": 1.412 },
+      { "t": 5.567, "still0": 2.967, "still1": 1.689, "still2": 4.258, "still3": 1.241 },
+      { "t": 7.9, "still0": 2.444, "still1": 2.035, "still2": 3.144, "still3": 1.327 },
+      { "t": 11.7, "still0": 3.451, "still1": 1.886, "still2": 2.422, "still3": 1.293 }
+    ]
+  },
+  "mix": {
+    "layers": ["snow-v2-0.png", "snow-v2-2.png", "snow-v2-3.png", "crust/v4.jpg"],
+    "leftOut": "snow-v2-1.png. v2-2 stays for colour. v2-0, v2-3, and old still 3 score lower.",
+    "cie76": {
+      "reference": "published still-3 colour sRGB 169 179 192",
+      "equalMix": 2.89,
+      "eachVsReference": { "v2-0": 9.15, "v2-2": 3.76, "v2-3": 6.59, "v4FileMean": 15.38 }
+    },
+    "probes": [
+      { "t": 5.1, "mix": 1.532, "v2-0": 1.585, "v2-2": 1.634, "v2-3": 1.646, "still3": 1.412 },
+      { "t": 5.567, "mix": 1.549, "v2-0": 1.587, "v2-2": 1.601, "v2-3": 1.616, "still3": 1.241 },
+      { "t": 7.9, "mix": 1.402, "v2-0": 1.575, "v2-2": 1.552, "v2-3": 1.576, "still3": 1.327 },
+      { "t": 11.7, "mix": 1.335, "v2-0": 1.588, "v2-2": 1.570, "v2-3": 1.586, "still3": 1.293 }
+    ]
+  },
+  "texel": "PASS. 1024 native, 0.5 m, 2048 px/m, stretch p99 at or under 1.30, planet magnification 0.950.",
+  "colour": "Render gate snow CIE76 1.60. Wall negative control blocks at 14.72.",
+  "speckle": 0.458,
+  "temporal": 1.163,
+  "scan": "450 coarse frames, 0 over 1.8. Worst coarse 1.636 at 2.2 s. Every frame from 1.0 s to 3.5 s, worst 1.636 at 2.2 s, 0 over 1.8."
+}

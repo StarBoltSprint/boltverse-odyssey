@@ -1,0 +1,12 @@
+{
+  "limit": 1.8,
+  "coarse": 450,
+  "dense": 20,
+  "over": 0,
+  "worst": {
+    "frame": 36,
+    "t": 2.2,
+    "peak": 1.6356339273368707
+  },
+  "overFrames": []
+}

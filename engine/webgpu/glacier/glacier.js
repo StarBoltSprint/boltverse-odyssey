@@ -693,11 +693,12 @@ async function main() {
     }
     return tex;
   }
-  // Run 18 stills. The quilted atlases stay on disk and are not sampled.
-  // snow=v2 loads the Texture-bot candidates so the column gate can score them.
+  // Four passers. v2-1 (worst 1.613) is the one left out: v2-2 stays for colour,
+  // and v2-0, v2-3, and old still 3 score lower. The run 18 sampler is unchanged.
+  // snow=v2 still loads all four Texture-bot stills for the column gate.
   const snowFiles = qs.get('snow') === 'v2'
     ? ['./tex/snow-v2/snow-v2-0.png', './tex/snow-v2/snow-v2-1.png', './tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png']
-    : ['./tex/crust/v1.jpg', './tex/crust/v2.jpg', './tex/crust/v3.jpg', './tex/crust/v4.jpg'];
+    : ['./tex/snow-v2/snow-v2-0.png', './tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png', './tex/crust/v4.jpg'];
   const snowTex = await loadArray(snowFiles);
   let snowAstc = null;
   try {
@@ -1289,6 +1290,15 @@ async function main() {
     snowDiag = 0;
     return { t, rows };
   };
+  window.__glacierFloor = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    snowDiag = 37;
+    drawBg = bg;
+    const row = await scoreHere();
+    snowDiag = 0;
+    return { t, peak: row.peak, gpuErr: row.gpuErr };
+  };
   function spectrumOf(sig) {
     const n = sig.length;
     let mean = 0;
@@ -1469,6 +1479,14 @@ async function main() {
         gpuErr: frame.gpuErr,
       },
     };
+  };
+  window.__glacierFilm = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const frame = await readFrame();
+    const jpg = await blobOf(frame.src, 'image/jpeg', 0.92);
+    const pix = projectPixel([live.x, pawGround(), live.z]);
+    return { jpg, info: { x: live.x, z: live.z, boltPx: pix, gpuErr: frame.gpuErr } };
   };
   window.__glacierGate = async (shot) => {
     gatePose = { eye: shot.eye, tgt: shot.tgt };

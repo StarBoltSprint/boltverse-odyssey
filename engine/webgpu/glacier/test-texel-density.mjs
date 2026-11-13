@@ -10,28 +10,12 @@ import { buildWorld } from './world.js';
 import { MAT, PLANET } from './biome.js';
 import { IMAGINE, MIN_PX_PER_M, MAX_UV_STRETCH, MAG_MAX, MIN_LARGE_VARIANTS, TILE_M } from './texel-density.js';
 import {
-  gateBiome, stretchByMaterial, formatTable, triangleStretch as gateStretch, triangleArea as gateArea,
+  gateBiome, stretchByMaterial, formatTable, triangleStretch as gateStretch, triangleArea as gateArea, imageSize,
   MIN_PX_PER_M as GATE_MIN, MIN_LARGE_VARIANTS as GATE_LARGE, MIN_PROP_VARIANTS, STRETCH_P99_MAX, MAG_MAX as GATE_MAG,
 } from '../biome-factory/texel-gate.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PHONE_H = 1280;
-
-function imageSize(buf) {
-  if (buf[0] === 0xff && buf[1] === 0xd8) {
-    let i = 2;
-    while (i < buf.length - 8) {
-      if (buf[i] !== 0xff) { i++; continue; }
-      const m = buf[i + 1];
-      if (m === 0xc0 || m === 0xc1 || m === 0xc2) return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
-      if (m === 0xd8 || m === 0xd9 || (m >= 0xd0 && m <= 0xd7)) { i += 2; continue; }
-      const len = buf.readUInt16BE(i + 2);
-      if (!(len >= 2)) break;
-      i += 2 + len;
-    }
-  }
-  return null;
-}
 
 function triangleStretch(p0, p1, p2, uv0, uv1, uv2, texW, texH) {
   const e1 = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]];

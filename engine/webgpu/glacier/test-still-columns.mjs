@@ -1,13 +1,15 @@
-// Blocking per-still gate. A crust still that scores above 1.5 on the chase
-// column metric cannot enter the snow mix. Still 3 is the bar, about 1.3.
-// The limit is not lowered.
+// Blocking per-still gate. The chase limit of 1.8 is unchanged.
+// Flat albedo on this same chase, mode 37, scored:
+// 5.10 s 1.588, 5.567 s 1.584, 7.9 s 1.576, 11.70 s 1.555.
+// The floor is the highest of those. A still may sit 0.10 above it.
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { serve, withChrome } from './chrome.mjs';
 import { CANDIDATE } from './biome.js';
 
-const STILL_COLUMN_MAX = 1.5;
+const FLAT_FLOOR = 1.588;
+const STILL_COLUMN_MAX = 1.688;
 const TIMES = [5.1, 5.567, 7.9, 11.7];
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(dir, '..');

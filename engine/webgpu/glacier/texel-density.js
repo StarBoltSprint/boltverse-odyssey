@@ -15,7 +15,7 @@ export const IMAGINE = [
     role: 'snow',
     surfaceClass: 'snow',
     tileMetres: TILE_M,
-    files: ['tex/crust/v1.jpg', 'tex/crust/v2.jpg', 'tex/crust/v3.jpg', 'tex/crust/v4.jpg'],
+    files: ['tex/snow-v2/snow-v2-0.png', 'tex/snow-v2/snow-v2-2.png', 'tex/snow-v2/snow-v2-3.png', 'tex/crust/v4.jpg'],
     worldMats: [MAT.snow, MAT.drift],
     instances: ['drift', 'chunk'],
   },
