@@ -1265,6 +1265,26 @@ async function main() {
     snowDiag = 0;
     return { t, rows };
   };
+  const STILLS = [
+    [0, 'mix'],
+    [30, 'still0'],
+    [31, 'still1'],
+    [32, 'still2'],
+    [33, 'still3'],
+  ];
+  window.__glacierStills = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const rows = [];
+    for (const [mode, name] of STILLS) {
+      snowDiag = mode;
+      drawBg = bg;
+      const row = await scoreHere();
+      rows.push({ name, peak: row.peak, gpuErr: row.gpuErr });
+    }
+    snowDiag = 0;
+    return { t, rows };
+  };
   function spectrumOf(sig) {
     const n = sig.length;
     let mean = 0;

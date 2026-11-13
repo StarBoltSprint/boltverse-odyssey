@@ -1,0 +1,134 @@
+[
+  {
+    "still": 0,
+    "file": "v1.jpg",
+    "native": [
+      1024,
+      1024
+    ],
+    "seamX": 14.7,
+    "seamY": 14.54,
+    "interiorGradX": 5.8,
+    "interiorGradY": 8.21,
+    "seamOverInteriorX": 2.53,
+    "seamOverInteriorY": 1.77,
+    "interiorColumnPeriodShare": 0.77,
+    "interiorColumnPtp": 10.13,
+    "interiorRowPeriodShare": 0.287,
+    "interiorRowPtp": 33.41,
+    "offset": [
+      454,
+      530
+    ],
+    "rolledSeamSum": 11.09,
+    "after": {
+      "seamX": 0.0,
+      "seamY": 0.0,
+      "seamOverInteriorX": 0.0,
+      "seamOverInteriorY": 0.0,
+      "interiorColumnPtp": 11.49,
+      "interiorRowPtp": 37.56,
+      "interiorColumnPeriodShare": 0.859,
+      "interiorRowPeriodShare": 0.158
+    }
+  },
+  {
+    "still": 1,
+    "file": "v2.jpg",
+    "native": [
+      1024,
+      1024
+    ],
+    "seamX": 24.42,
+    "seamY": 24.09,
+    "interiorGradX": 7.15,
+    "interiorGradY": 8.76,
+    "seamOverInteriorX": 3.42,
+    "seamOverInteriorY": 2.75,
+    "interiorColumnPeriodShare": 0.836,
+    "interiorColumnPtp": 19.5,
+    "interiorRowPeriodShare": 0.268,
+    "interiorRowPtp": 42.67,
+    "offset": [
+      252,
+      18
+    ],
+    "rolledSeamSum": 12.9,
+    "after": {
+      "seamX": 0.0,
+      "seamY": 0.0,
+      "seamOverInteriorX": 0.0,
+      "seamOverInteriorY": 0.0,
+      "interiorColumnPtp": 20.54,
+      "interiorRowPtp": 42.04,
+      "interiorColumnPeriodShare": 0.887,
+      "interiorRowPeriodShare": 0.289
+    }
+  },
+  {
+    "still": 2,
+    "file": "v3.jpg",
+    "native": [
+      1024,
+      1024
+    ],
+    "seamX": 20.04,
+    "seamY": 22.57,
+    "interiorGradX": 8.51,
+    "interiorGradY": 9.28,
+    "seamOverInteriorX": 2.35,
+    "seamOverInteriorY": 2.43,
+    "interiorColumnPeriodShare": 0.222,
+    "interiorColumnPtp": 21.94,
+    "interiorRowPeriodShare": 0.144,
+    "interiorRowPtp": 34.53,
+    "offset": [
+      70,
+      4
+    ],
+    "rolledSeamSum": 14.78,
+    "after": {
+      "seamX": 0.0,
+      "seamY": 0.0,
+      "seamOverInteriorX": 0.0,
+      "seamOverInteriorY": 0.0,
+      "interiorColumnPtp": 21.58,
+      "interiorRowPtp": 40.51,
+      "interiorColumnPeriodShare": 0.144,
+      "interiorRowPeriodShare": 0.159
+    }
+  },
+  {
+    "still": 3,
+    "file": "v4.jpg",
+    "native": [
+      1024,
+      1024
+    ],
+    "seamX": 16.07,
+    "seamY": 13.69,
+    "interiorGradX": 7.74,
+    "interiorGradY": 9.22,
+    "seamOverInteriorX": 2.08,
+    "seamOverInteriorY": 1.48,
+    "interiorColumnPeriodShare": 0.653,
+    "interiorColumnPtp": 10.61,
+    "interiorRowPeriodShare": 0.455,
+    "interiorRowPtp": 23.37,
+    "offset": [
+      42,
+      46
+    ],
+    "rolledSeamSum": 11.78,
+    "after": {
+      "seamX": 0.0,
+      "seamY": 0.0,
+      "seamOverInteriorX": 0.0,
+      "seamOverInteriorY": 0.0,
+      "interiorColumnPtp": 12.33,
+      "interiorRowPtp": 23.46,
+      "interiorColumnPeriodShare": 0.662,
+      "interiorRowPeriodShare": 0.403
+    }
+  }
+]

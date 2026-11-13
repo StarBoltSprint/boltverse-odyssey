@@ -1,0 +1,56 @@
+{
+  "imagine": "No Imagine access. XAI_API_KEY is not set. The large features were not replaced.",
+  "verdict": "The 0.5 m peak is a large feature inside stills 0, 1, and 2. The wrap seam is real and smaller. Closing it does not clear the column gate. Those three stills stay out of any new mix. The live files are the run 18 stills.",
+  "seam": "Edge jump divided by the interior 1 px gradient. The interior peak-to-peak is the column or row mean of the still with the outer 64 px left out, so the seam is not in that number.",
+  "stills": [
+    {
+      "still": 0,
+      "seamOverInterior": { "x": 2.53, "y": 1.77 },
+      "seamLuma": { "x": 14.7, "y": 14.5 },
+      "interiorPtp": { "column": 10.1, "row": 33.4 },
+      "periodShare": { "column": 0.802, "row": 0.263 },
+      "afterSeam": { "seamLuma": { "x": 1.28, "y": 1.18 }, "interiorPtp": { "column": 11.5, "row": 37.6 } },
+      "source": "layered plates across the still"
+    },
+    {
+      "still": 1,
+      "seamOverInterior": { "x": 3.42, "y": 2.75 },
+      "seamLuma": { "x": 24.4, "y": 24.1 },
+      "interiorPtp": { "column": 19.5, "row": 42.7 },
+      "periodShare": { "column": 0.834, "row": 0.327 },
+      "afterSeam": { "seamLuma": { "x": 1.31, "y": 1.13 }, "interiorPtp": { "column": 20.5, "row": 42.0 } },
+      "source": "wind slabs and a broad shadow across the still"
+    },
+    {
+      "still": 2,
+      "seamOverInterior": { "x": 2.35, "y": 2.43 },
+      "seamLuma": { "x": 20.0, "y": 22.6 },
+      "interiorPtp": { "column": 21.9, "row": 34.5 },
+      "periodShare": { "column": 0.206, "row": 0.220 },
+      "afterSeam": { "seamLuma": { "x": 1.27, "y": 1.19 }, "interiorPtp": { "column": 21.6, "row": 40.5 } },
+      "source": "crust plates and cracks across the still"
+    },
+    {
+      "still": 3,
+      "seamOverInterior": { "x": 2.08, "y": 1.48 },
+      "seamLuma": { "x": 16.1, "y": 13.7 },
+      "interiorPtp": { "column": 10.6, "row": 23.4 },
+      "periodShare": { "column": 0.787, "row": 0.610 },
+      "afterSeam": { "seamLuma": { "x": 1.18, "y": 1.24 }, "interiorPtp": { "column": 12.3, "row": 23.5 } },
+      "source": "fine diagonal cracks. This is the clean still."
+    }
+  ],
+  "chaseOriginal": [
+    { "t": 5.1, "mix": 1.859, "still0": 2.440, "still1": 4.028, "still2": 3.621, "still3": 1.412 },
+    { "t": 5.567, "mix": 1.865, "still0": 2.967, "still1": 1.689, "still2": 4.258, "still3": 1.241 },
+    { "t": 7.9, "mix": 1.484, "still0": 2.444, "still1": 2.035, "still2": 3.144, "still3": 1.327 },
+    { "t": 11.7, "mix": 1.928, "still0": 3.451, "still1": 1.886, "still2": 2.422, "still3": 1.293 }
+  ],
+  "chaseSeamFixed": [
+    { "t": 5.1, "mix": 1.739, "still0": 2.248, "still1": 2.330, "still2": 5.031, "still3": 1.353 },
+    { "t": 5.567, "mix": 2.039, "still0": 1.946, "still1": 2.331, "still2": 5.087, "still3": 1.326 },
+    { "t": 7.9, "mix": 1.689, "still0": 2.159, "still1": 2.145, "still2": 3.362, "still3": 1.285 },
+    { "t": 11.7, "mix": 2.301, "still0": 2.478, "still1": 3.035, "still2": 3.366, "still3": 1.328 }
+  ],
+  "gate": "test-still-columns.mjs. Each still alone on the chase ground, four probes. Limit 1.5. Still 3 passes. Stills 0, 1, and 2 fail before and after the seam fix, so they do not enter the mix. No chase."
+}
