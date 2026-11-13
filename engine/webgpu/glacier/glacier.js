@@ -511,7 +511,17 @@ async function main() {
     window.__glacierReady = false;
     return;
   }
-  const dev = await ad.requestDevice();
+  if (!ad.features.has('texture-compression-astc')) {
+    window.__glacierErr = 'texture-compression-astc missing';
+    window.__glacierReady = false;
+    return;
+  }
+  const dev = await ad.requestDevice({ requiredFeatures: ['texture-compression-astc'] });
+  window.__glacierGpu = {
+    features: [...dev.features],
+    maxTextureDimension2D: ad.limits.maxTextureDimension2D,
+    maxSamplerAnisotropy: ad.limits.maxSamplerAnisotropy,
+  };
   const ctx = canvas.getContext('webgpu');
   const fmt = 'rgba8unorm';
   ctx.configure({
@@ -621,7 +631,64 @@ async function main() {
     }
     return tex;
   }
-  const snowTex = await loadArray(['./tex/crust/v1.jpg', './tex/crust/v2.jpg', './tex/crust/v3.jpg', './tex/crust/v4.jpg']);
+  async function loadAstcArray(files) {
+    const layers = [];
+    for (const file of files) {
+      const res = await fetch(new URL(file, import.meta.url).href);
+      if (!res.ok) throw new Error('albedo missing ' + file);
+      const buf = await res.arrayBuffer();
+      const view = new DataView(buf);
+      const magic = String.fromCharCode(view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3));
+      if (magic !== 'AST4') throw new Error('bad atlas ' + file);
+      const count = view.getUint32(12, true);
+      const levels = [];
+      let o = 16;
+      for (let i = 0; i < count; i++) {
+        const w = view.getUint32(o, true);
+        const h = view.getUint32(o + 4, true);
+        const n = view.getUint32(o + 8, true);
+        o += 12;
+        levels.push({ w, h, data: new Uint8Array(buf, o, n) });
+        o += n;
+      }
+      layers.push(levels);
+    }
+    const base = layers[0][0];
+    let gpuBytes = 0;
+    for (const levels of layers) for (const mip of levels) gpuBytes += mip.data.byteLength;
+    window.__glacierSnowBytes = gpuBytes;
+    const tex = dev.createTexture({
+      size: [base.w, base.h, layers.length],
+      mipLevelCount: layers[0].length,
+      format: 'astc-4x4-unorm-srgb',
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+    });
+    for (let layer = 0; layer < layers.length; layer++) {
+      for (let level = 0; level < layers[layer].length; level++) {
+        const mip = layers[layer][level];
+        const blocksX = mip.w >> 2;
+        const blocksY = mip.h >> 2;
+        const rowBytes = blocksX * 16;
+        const padded = (rowBytes + 255) & ~255;
+        let data = mip.data;
+        if (padded !== rowBytes) {
+          const packed = new Uint8Array(padded * blocksY);
+          for (let y = 0; y < blocksY; y++) packed.set(mip.data.subarray(y * rowBytes, y * rowBytes + rowBytes), y * padded);
+          data = packed;
+        } else if (data.byteOffset !== 0) {
+          data = data.slice();
+        }
+        dev.queue.writeTexture(
+          { texture: tex, mipLevel: level, origin: [0, 0, layer] },
+          data,
+          { bytesPerRow: padded },
+          [mip.w, mip.h, 1],
+        );
+      }
+    }
+    return tex;
+  }
+  const snowTex = await loadAstcArray(['./tex/crust-atlas/atlas-7.astcpack', './tex/crust-atlas/atlas-19.astcpack']);
   const wallTex = await loadArray(['./tex/glacier-ice/v1.jpg', './tex/glacier-ice/v2.jpg', './tex/glacier-ice/v3.jpg', './tex/glacier-ice/v4.jpg']);
   const fallTex = await loadArray(['./tex/fall-ice/v1.jpg', './tex/fall-ice/v2.jpg', './tex/fall-ice/v3.jpg', './tex/fall-ice/v4.jpg']);
   const archTex = await loadArray(['./tex/arch-ice/v1.jpg', './tex/arch-ice/v2.jpg', './tex/arch-ice/v3.jpg', './tex/arch-ice/v4.jpg']);

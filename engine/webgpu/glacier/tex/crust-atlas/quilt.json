@@ -1,0 +1,34 @@
+[
+  {
+    "seed": 7,
+    "file": "tex/crust-atlas/atlas-7.png",
+    "bytes": 28660688,
+    "sources": [
+      17,
+      18,
+      18,
+      11
+    ],
+    "ac1024": {
+      "ratio": 0.902,
+      "peak": 0.375,
+      "beside": 0.335
+    }
+  },
+  {
+    "seed": 19,
+    "file": "tex/crust-atlas/atlas-19.png",
+    "bytes": 29065528,
+    "sources": [
+      18,
+      20,
+      20,
+      6
+    ],
+    "ac1024": {
+      "ratio": 0.845,
+      "peak": 0.253,
+      "beside": 0.219
+    }
+  }
+]

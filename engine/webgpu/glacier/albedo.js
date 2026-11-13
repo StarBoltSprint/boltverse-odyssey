@@ -124,50 +124,29 @@ fn vnoise(p: vec2f) -> f32 {
   let d = hash21(i + vec2f(1.0, 1.0));
   return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
-// Across the lane only, wavelength 2.5 m. Nothing along the road, so the
-// phase does not walk as the chase advances. 0.05 m is 0.10 of a tile.
-fn snowWarp(p: vec2f, seed: vec2f) -> vec2f {
-  let n = vnoise(vec2f(p.x * 0.40 + seed.x, seed.y));
-  return vec2f((n - 0.5) * 0.05, (vnoise(vec2f(p.x * 0.40 + seed.y, seed.x + 3.7)) - 0.5) * 0.05);
+fn coverAtlas(d: vec2f) -> vec2f {
+  let len = length(d);
+  let floor = 3.0 / 4096.0;
+  if (len > 1e-6 && len < floor) { return d * (floor / len); }
+  return d;
 }
-// One heading. Weights drift over several metres on two world axes, and they
-// are not squared, so one still cannot take the lane. Each still is shifted
-// a few centimetres inside the tile so a shared streak cannot line up.
-// A slow macro from the same stills keeps the lane from being one flat repeat.
+// Run 18 mix, on the quilted atlases. One heading. The two atlases are mixed
+// slowly by world position. 4096 px cover 2 m, so the density stays 2048 px/m
+// and the old 0.5 m repeat is gone. The colour lift is the run 18 response.
 fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: vec4f) -> vec3f {
   let metres = vec2f(p.x, p.z);
   let dmu = vec2f(px.x, px.z);
   let dmv = vec2f(py.x, py.z);
   let ang = 0.41;
   let base = rot2(metres, ang);
-  let du = cover(rot2(dmu, ang) * ${repeats} * 2.0);
-  let dv = cover(rot2(dmv, ang) * ${repeats} * 2.0);
-  let s = vec2f(base.y * 0.07, base.x * 0.05 + metres.x * 0.04);
-  var wt = vec4f(
-    vnoise(s),
-    vnoise(s + vec2f(5.2, 1.7)),
-    vnoise(s + vec2f(2.4, 8.1)),
-    vnoise(s + vec2f(9.0, 3.4))
-  ) + vec4f(1.15);
-  wt = wt / max(dot(wt, vec4f(1.0)), 1e-4);
-  let r = f32(${repeats});
-  // 1.06 keeps the warped density at or above 2048 px/m.
-  let firm = base * 1.06;
-  let du0 = du;
-  let dv0 = dv;
-  let c0 = textureSampleGrad(arr, samp, (firm + snowWarp(metres, vec2f(1.7, 4.2))) * r, 0, du0, dv0).rgb * gain.x;
-  let c1 = textureSampleGrad(arr, samp, (firm + vec2f(0.13, 0.08) + snowWarp(metres, vec2f(8.4, 1.3))) * r, 1, du0, dv0).rgb * gain.y;
-  let c2 = textureSampleGrad(arr, samp, (firm + vec2f(0.05, 0.17) + snowWarp(metres, vec2f(3.1, 9.6))) * r, 2, du0, dv0).rgb * gain.z;
-  let c3 = textureSampleGrad(arr, samp, (firm + vec2f(0.19, 0.11) + snowWarp(metres, vec2f(6.8, 5.5))) * r, 3, du0, dv0).rgb * gain.w;
-  let detail = c0 * wt.x + c1 * wt.y + c2 * wt.z + c3 * wt.w;
-  let macroUv = base * r * 0.16;
-  let duM = cover(du * 0.16);
-  let dvM = cover(dv * 0.16);
-  let m0 = textureSampleGrad(arr, samp, macroUv, 0, duM, dvM).rgb * gain.x;
-  let m1 = textureSampleGrad(arr, samp, macroUv + vec2f(0.23, 0.11), 2, duM, dvM).rgb * gain.z;
-  // The crust stills sit near L 73. The dawn rig leaves the lane near L 56.
-  // A snow-only response lifts it. Ice and the sky keep the rig.
-  return (detail * 0.84 + (m0 * 0.62 + m1 * 0.38) * 0.16) * vec3f(1.64, 1.74, 1.90);
+  let r = 0.5;
+  let du = coverAtlas(rot2(dmu, ang) * r);
+  let dv = coverAtlas(rot2(dmv, ang) * r);
+  let uv = base * r;
+  let w = vnoise(metres * 0.07);
+  let c0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb * gain.x;
+  let c1 = textureSampleGrad(arr, samp, uv + vec2f(0.31, 0.17), 1, du, dv).rgb * gain.y;
+  return mix(c0, c1, w) * vec3f(1.64, 1.74, 1.90);
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
@@ -180,13 +159,13 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     if (m < 1.5) {
       let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0, 2.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+      let snow = sampleSnow(snowArr, p, px, py, snowGain);
       let lip = smoothstep(0.35, 0.75, nrm.y);
       return mix(fall, snow, lip * 0.85);
     }
     if (m < 2.5) {
       let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 2.0, 4.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+      let snow = sampleSnow(snowArr, p, px, py, snowGain);
       let cap = smoothstep(0.28, 0.62, nrm.y);
       return mix(arch, snow, cap);
     }
@@ -195,7 +174,7 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   }
   let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
   let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
-  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+  let snow = sampleSnow(snowArr, p, px, py, snowGain);
   let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 2.0);
   if (m < 4.5) {
     let chunk = skyNoise(p * 0.17);

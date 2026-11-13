@@ -1,0 +1,54 @@
+{
+  "film": "not committed",
+  "reason": "The quilt has no 1024 px peak, and the chase still fails. 203 frames are over 1.8. The worst is 3.516 at 7.5 s. There is no film.",
+  "limit": 1.8,
+  "scan": "Every 3rd frame (450 samples), then every frame within 0.4 s of a coarse sample at or above 1.6 (1292 frames). 1306 frames scored.",
+  "overCount": 203,
+  "max": { "t": 7.5, "peak": 3.516 },
+  "coarseMax": { "t": 7.5, "peak": 3.664 },
+  "secondsOver": "43 of 45",
+  "atlas": {
+    "method": "Efros-Freeman min-error cut. 576 px patches, 64 px overlap, 4 px feather. Patches are copied 1:1 from the four 1024 crust stills. No resample.",
+    "size": "4096 squared, seeds 7 and 19. One heading. The two atlases mix by world position (value noise, about 14 m).",
+    "sources": { "7": [17, 18, 18, 11], "19": [18, 20, 20, 6] },
+    "native": "64 of 64 interior 16 px blocks matched a source still exactly.",
+    "period1024": {
+      "seed7": { "ratio": 0.902, "ac": 0.375, "beside": 0.336, "ac2Ratio": 0.952 },
+      "seed19": { "ratio": 0.845, "ac": 0.253, "beside": 0.219, "ac2Ratio": 1.142 }
+    },
+    "seam": "The patch step is 512 px, which is 0.25 m. Lag 1024 is level with its neighbors (ratio near 1, not a peak). The seam grid is what the column gate still measures."
+  },
+  "memory": {
+    "format": "astc-4x4-unorm-srgb",
+    "encoder": "astcenc 5.3.0 -medium",
+    "mips": "11 levels, 4096 down to the 4 px block",
+    "snowGpuBytes": 44739232,
+    "snowGpuMiB": 42.67,
+    "budgetMiB": 48,
+    "uncompressedMiB": 170.67,
+    "deviceFeature": "texture-compression-astc",
+    "baseMae": { "7": 0.702, "19": 0.713 }
+  },
+  "texel": {
+    "pxPerM": 2048,
+    "atlasTileM": 2,
+    "stretchP99": { "crust": 1.02, "glacier-ice": 1.29, "serac": 1.27, "fall-ice": 1.3, "arch-ice": 1.25 },
+    "planetMagnification": 0.95,
+    "verdict": "PASS"
+  },
+  "snowColour": {
+    "stillLab": [73.03, 0.06, -7.1],
+    "lift": "vec3(1.64, 1.74, 1.90), the run 18 snow response. No fog.",
+    "t2": { "lab": [73.15, 5.36, -4.22], "cie76": 6.03 },
+    "t10": { "lab": [70.8, 5.0, -4.9], "cie76": 5.85 },
+    "t25": { "lab": [72.3, 5.17, -4.81], "cie76": 5.65 }
+  },
+  "colourGate": { "snow": 7.74, "waterfall": 0.04, "arch": 0.2, "wall": 0.08, "negativeWall": 14.72 },
+  "skyWorst": 0,
+  "skyNegative": 0.04635,
+  "stability": { "speckleRatio": 0.56, "temporalRatio": 1.412, "staticLumaStd": 0 },
+  "tris": 193690,
+  "draws": 9,
+  "cardH": 1.15,
+  "boltCenterX": 360
+}

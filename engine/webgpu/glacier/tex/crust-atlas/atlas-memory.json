@@ -1,0 +1,26 @@
+{
+  "format": "astc-4x4-unorm-srgb",
+  "block": 4,
+  "quality": "astcenc 5.3.0 -medium",
+  "atlases": [
+    {
+      "seed": 7,
+      "file": "atlas-7.astcpack",
+      "fileBytes": 22369764,
+      "gpuBytes": 22369616,
+      "levels": 11,
+      "baseMae": 0.702
+    },
+    {
+      "seed": 19,
+      "file": "atlas-19.astcpack",
+      "fileBytes": 22369764,
+      "gpuBytes": 22369616,
+      "levels": 11,
+      "baseMae": 0.713
+    }
+  ],
+  "snowGpuBytes": 44739232,
+  "snowGpuMiB": 42.67,
+  "budgetMiB": 48
+}
