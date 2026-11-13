@@ -328,6 +328,9 @@ fn darken15(c: vec3f) -> vec3f {
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
   let alb = albedoOf(m, v.w, nUv, gx, gy);
+  let iso = u.sun.w;
+  if (iso > 29.5 && iso < 35.5) { return present(alb); }
+  if (iso > 36.5 && iso < 37.5) { return present(vec3f(0.62)); }
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
@@ -915,9 +918,11 @@ async function main() {
     pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
     if (!gatePose) {
       pass.setPipeline(pContact); pass.draw(60);
-      pass.setPipeline(pFlake);
-      pass.setVertexBuffer(0, flakeBuf);
-      pass.draw(6, FLAKE_N);
+      if (!(snowDiag > 29.5 && snowDiag < 37.5)) {
+        pass.setPipeline(pFlake);
+        pass.setVertexBuffer(0, flakeBuf);
+        pass.draw(6, FLAKE_N);
+      }
       pass.setPipeline(pBolt); pass.draw(6);
     }
     pass.end();
@@ -1101,7 +1106,7 @@ async function main() {
     return btoa(s);
   }
 
-  function snowGrid(src, maskSrc) {
+  function boltMask(maskSrc) {
     const bin = new Uint8Array(W * H);
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
@@ -1130,6 +1135,11 @@ async function main() {
         for (let k = a; k <= b; k++) if (tmp[k * W + x]) { mask[y * W + x] = 1; break; }
       }
     }
+    return mask;
+  }
+
+  function columnSig(src, maskSrc) {
+    const mask = boltMask(maskSrc);
     const y0 = Math.floor(H * 0.55), y1 = Math.floor(H * 0.96);
     const sig = new Float64Array(W);
     let rows = 0;
@@ -1156,6 +1166,11 @@ async function main() {
       for (let x = 0; x < W; x++) sig[x] += row[x];
     }
     for (let x = 0; x < W; x++) sig[x] /= rows || 1;
+    return sig;
+  }
+
+  function snowGrid(src, maskSrc) {
+    const sig = columnSig(src, maskSrc);
     const hp = new Float64Array(W);
     for (let i = 0; i < W; i++) hp[i] = sig[i] - sig[Math.max(0, i - 24)];
     let mean = 0;
@@ -1249,6 +1264,146 @@ async function main() {
     }
     snowDiag = 0;
     return { t, rows };
+  };
+  function spectrumOf(sig) {
+    const n = sig.length;
+    let mean = 0;
+    for (let i = 0; i < n; i++) mean += sig[i];
+    mean /= n;
+    let sxx = 0;
+    let sxy = 0;
+    const mid = (n - 1) / 2;
+    for (let i = 0; i < n; i++) {
+      const x = i - mid;
+      sxx += x * x;
+      sxy += x * (sig[i] - mean);
+    }
+    const slope = sxy / sxx;
+    const y = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      const w = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (n - 1)));
+      y[i] = (sig[i] - mean - slope * (i - mid)) * w;
+    }
+    const raw = [];
+    for (let p = 8; p <= 280; p += 0.5) {
+      let re = 0;
+      let im = 0;
+      const w = (2 * Math.PI) / p;
+      for (let i = 0; i < n; i++) {
+        re += y[i] * Math.cos(w * i);
+        im += y[i] * Math.sin(w * i);
+      }
+      raw.push({ periodPx: p, power: re * re + im * im });
+    }
+    const peaks = [];
+    for (let i = 1; i < raw.length - 1; i++) {
+      if (raw[i].power >= raw[i - 1].power && raw[i].power > raw[i + 1].power) peaks.push(raw[i]);
+    }
+    peaks.sort((a, b) => b.power - a.power);
+    const top = peaks[0] ? peaks[0].power : 1;
+    return peaks.slice(0, 4).map((p) => ({
+      periodPx: Math.round(p.periodPx * 10) / 10,
+      rel: Math.round((p.power / top) * 1000) / 1000,
+    }));
+  }
+  function clipToWorld(ndcX, ndcY, ndcZ) {
+    const x = U[16] * ndcX + U[20] * ndcY + U[24] * ndcZ + U[28];
+    const y = U[17] * ndcX + U[21] * ndcY + U[25] * ndcZ + U[29];
+    const z = U[18] * ndcX + U[22] * ndcY + U[26] * ndcZ + U[30];
+    const w = U[19] * ndcX + U[23] * ndcY + U[27] * ndcZ + U[31];
+    return [x / w, y / w, z / w];
+  }
+  function groundAt(px, py) {
+    const ndcX = (px / W) * 2 - 1;
+    const ndcY = 1 - (py / H) * 2;
+    const a = clipToWorld(ndcX, ndcY, 0);
+    const b = clipToWorld(ndcX, ndcY, 1);
+    let lo = 0;
+    let hi = 1;
+    for (let i = 0; i < 24; i++) {
+      const t = (lo + hi) * 0.5;
+      const p = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+      if (p[1] > world.heightAt(p[0], p[2])) lo = t;
+      else hi = t;
+    }
+    const t = (lo + hi) * 0.5;
+    const p = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+    const h = world.heightAt(p[0], p[2]);
+    return { p, h };
+  }
+  function snowUv(p) {
+    const ang = 0.41;
+    const c = Math.cos(ang);
+    const s = Math.sin(ang);
+    const bx = p[0] * c - p[2] * s;
+    const by = p[0] * s + p[2] * c;
+    return [bx * 2, by * 2];
+  }
+  function scaleAt(frac) {
+    const py = frac * H;
+    const left = groundAt(W * 0.35, py);
+    const right = groundAt(W * 0.65, py);
+    const dist = Math.hypot(right.p[0] - left.p[0], right.p[2] - left.p[2]);
+    const span = W * 0.3;
+    const u0 = snowUv(left.p);
+    const u1 = snowUv(right.p);
+    const du = Math.hypot(u1[0] - u0[0], u1[1] - u0[1]);
+    const mPerPx = dist / span;
+    const uvPerPx = du / span;
+    return {
+      bandY: Math.round(frac * 1000) / 1000,
+      mPerPx: Math.round(mPerPx * 10000) / 10000,
+      uvPerPx: Math.round(uvPerPx * 10000) / 10000,
+      tile05mPx: Math.round((0.5 / mPerPx) * 10) / 10,
+      uvPeriodPx: Math.round((1 / uvPerPx) * 10) / 10,
+      hitErrM: Math.round((Math.abs(left.p[1] - left.h) + Math.abs(right.p[1] - right.h)) * 1000) / 1000,
+      depthM: Math.round(Math.hypot(left.p[0] - lastEye[0], left.p[2] - lastEye[2]) * 100) / 100,
+    };
+  }
+  function placePeriod(periodPx, scales) {
+    return scales.map((s) => ({
+      bandY: s.bandY,
+      metres: Math.round(periodPx * s.mPerPx * 1000) / 1000,
+      uv: Math.round(periodPx * s.uvPerPx * 1000) / 1000,
+    }));
+  }
+  const ISO = [
+    [0, 'baseline'],
+    [30, 'still0'],
+    [31, 'still1'],
+    [32, 'still2'],
+    [33, 'still3'],
+    [34, 'weights'],
+    [35, 'macro'],
+    [36, 'lighting'],
+    [37, 'decals'],
+  ];
+  window.__glacierIso = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const rows = [];
+    let scales = null;
+    let spectrum = null;
+    for (const [mode, name] of ISO) {
+      snowDiag = mode;
+      drawBg = bg;
+      const frame = await readFrame();
+      renderBoltMask();
+      const maskSrc = await readback();
+      const sig = columnSig(frame.src, maskSrc);
+      const peak = snowGrid(frame.src, maskSrc);
+      const jpg = await blobOf(frame.src, 'image/jpeg', 0.62);
+      const row = { name, peak, jpg };
+      if (name === 'baseline') {
+        spectrum = spectrumOf(sig);
+        scales = [0.62, 0.78, 0.92].map(scaleAt);
+        row.spectrum = spectrum.map((p) => ({ ...p, world: placePeriod(p.periodPx, scales) }));
+      }
+      rows.push(row);
+    }
+    snowDiag = 0;
+    drawBg = bg;
+    return { t, z: live.z, eye: lastEye, scales, spectrum: rows[0].spectrum, rows: rows.map((r) => ({ name: r.name, peak: r.peak, jpg: r.jpg, spectrum: r.spectrum || null })) };
   };
   window.__glacierTable = async (t) => {
     const dt = 1 / 60;

@@ -1,0 +1,639 @@
+{
+  "baseline": "Run 18 snow. Diagnostic modes do not run unless asked. Baseline scores match the earlier probes.",
+  "band": "y 0.55-0.96, Bolt mask dilated 8 px. Spectrum is the detrended column mean of that band.",
+  "tile": "One crust still covers 0.5 m, which is one UV repeat (2 repeats per metre).",
+  "passes": {
+    "still0-3": "That still alone, unlit, no blend and no macro.",
+    "weights": "The four blend weights as colour. Their sum is flat, so the picture is the field.",
+    "macro": "The macro term only. Its UV is the detail UV times 0.16.",
+    "lighting": "Flat white snow through the dawn lighting and the mesh normal.",
+    "decals": "Flat grey world, Bolt, and the paw prints. No flakes."
+  },
+  "frames": [
+    {
+      "t": 5.1,
+      "scales": [
+        {
+          "bandY": 0.62,
+          "mPerPx": 0.0041,
+          "uvPerPx": 0.0081,
+          "tile05mPx": 123.4,
+          "uvPeriodPx": 123.4,
+          "hitErrM": 0,
+          "depthM": 4.27
+        },
+        {
+          "bandY": 0.78,
+          "mPerPx": 0.0024,
+          "uvPerPx": 0.0049,
+          "tile05mPx": 205.6,
+          "uvPeriodPx": 205.6,
+          "hitErrM": 0,
+          "depthM": 2.52
+        },
+        {
+          "bandY": 0.92,
+          "mPerPx": 0.0018,
+          "uvPerPx": 0.0036,
+          "tile05mPx": 276.5,
+          "uvPeriodPx": 276.5,
+          "hitErrM": 0,
+          "depthM": 1.84
+        }
+      ],
+      "spectrum": [
+        {
+          "periodPx": 129,
+          "rel": 1,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.529,
+              "uv": 1.045
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.31,
+              "uv": 0.632
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.232,
+              "uv": 0.464
+            }
+          ]
+        },
+        {
+          "periodPx": 95.5,
+          "rel": 0.816,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.392,
+              "uv": 0.774
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.229,
+              "uv": 0.468
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.172,
+              "uv": 0.344
+            }
+          ]
+        },
+        {
+          "periodPx": 61,
+          "rel": 0.091,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.25,
+              "uv": 0.494
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.146,
+              "uv": 0.299
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.11,
+              "uv": 0.22
+            }
+          ]
+        },
+        {
+          "periodPx": 32.5,
+          "rel": 0.072,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.133,
+              "uv": 0.263
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.078,
+              "uv": 0.159
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.059,
+              "uv": 0.117
+            }
+          ]
+        }
+      ],
+      "passes": [
+        {
+          "name": "baseline",
+          "peak": 1.859
+        },
+        {
+          "name": "still0",
+          "peak": 2.44
+        },
+        {
+          "name": "still1",
+          "peak": 4.028
+        },
+        {
+          "name": "still2",
+          "peak": 3.621
+        },
+        {
+          "name": "still3",
+          "peak": 1.412
+        },
+        {
+          "name": "weights",
+          "peak": 1.591
+        },
+        {
+          "name": "macro",
+          "peak": 1.352
+        },
+        {
+          "name": "lighting",
+          "peak": 1.493
+        },
+        {
+          "name": "decals",
+          "peak": 1.588
+        }
+      ]
+    },
+    {
+      "t": 5.567,
+      "scales": [
+        {
+          "bandY": 0.62,
+          "mPerPx": 0.0041,
+          "uvPerPx": 0.0083,
+          "tile05mPx": 120.5,
+          "uvPeriodPx": 120.5,
+          "hitErrM": 0,
+          "depthM": 4.37
+        },
+        {
+          "bandY": 0.78,
+          "mPerPx": 0.0024,
+          "uvPerPx": 0.0048,
+          "tile05mPx": 206.7,
+          "uvPeriodPx": 206.7,
+          "hitErrM": 0,
+          "depthM": 2.5
+        },
+        {
+          "bandY": 0.92,
+          "mPerPx": 0.0018,
+          "uvPerPx": 0.0036,
+          "tile05mPx": 280.6,
+          "uvPeriodPx": 280.6,
+          "hitErrM": 0,
+          "depthM": 1.81
+        }
+      ],
+      "spectrum": [
+        {
+          "periodPx": 119.5,
+          "rel": 1,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.49,
+              "uv": 0.992
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.287,
+              "uv": 0.574
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.215,
+              "uv": 0.43
+            }
+          ]
+        },
+        {
+          "periodPx": 60,
+          "rel": 0.114,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.246,
+              "uv": 0.498
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.144,
+              "uv": 0.288
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.108,
+              "uv": 0.216
+            }
+          ]
+        },
+        {
+          "periodPx": 42,
+          "rel": 0.073,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.172,
+              "uv": 0.349
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.101,
+              "uv": 0.202
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.076,
+              "uv": 0.151
+            }
+          ]
+        },
+        {
+          "periodPx": 34.5,
+          "rel": 0.016,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.141,
+              "uv": 0.286
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.083,
+              "uv": 0.166
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.062,
+              "uv": 0.124
+            }
+          ]
+        }
+      ],
+      "passes": [
+        {
+          "name": "baseline",
+          "peak": 1.865
+        },
+        {
+          "name": "still0",
+          "peak": 2.967
+        },
+        {
+          "name": "still1",
+          "peak": 1.689
+        },
+        {
+          "name": "still2",
+          "peak": 4.258
+        },
+        {
+          "name": "still3",
+          "peak": 1.241
+        },
+        {
+          "name": "weights",
+          "peak": 1.581
+        },
+        {
+          "name": "macro",
+          "peak": 1.406
+        },
+        {
+          "name": "lighting",
+          "peak": 1.51
+        },
+        {
+          "name": "decals",
+          "peak": 1.584
+        }
+      ]
+    },
+    {
+      "t": 7.9,
+      "scales": [
+        {
+          "bandY": 0.62,
+          "mPerPx": 0.0048,
+          "uvPerPx": 0.0096,
+          "tile05mPx": 103.7,
+          "uvPeriodPx": 103.7,
+          "hitErrM": 0,
+          "depthM": 4.99
+        },
+        {
+          "bandY": 0.78,
+          "mPerPx": 0.0025,
+          "uvPerPx": 0.0049,
+          "tile05mPx": 202.7,
+          "uvPeriodPx": 202.7,
+          "hitErrM": 0,
+          "depthM": 2.49
+        },
+        {
+          "bandY": 0.92,
+          "mPerPx": 0.0017,
+          "uvPerPx": 0.0035,
+          "tile05mPx": 288.6,
+          "uvPeriodPx": 288.6,
+          "hitErrM": 0,
+          "depthM": 1.71
+        }
+      ],
+      "spectrum": [
+        {
+          "periodPx": 130,
+          "rel": 1,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.624,
+              "uv": 1.248
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.325,
+              "uv": 0.637
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.221,
+              "uv": 0.455
+            }
+          ]
+        },
+        {
+          "periodPx": 61,
+          "rel": 0.123,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.293,
+              "uv": 0.586
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.153,
+              "uv": 0.299
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.104,
+              "uv": 0.214
+            }
+          ]
+        },
+        {
+          "periodPx": 40.5,
+          "rel": 0.064,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.194,
+              "uv": 0.389
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.101,
+              "uv": 0.198
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.069,
+              "uv": 0.142
+            }
+          ]
+        },
+        {
+          "periodPx": 34,
+          "rel": 0.042,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.163,
+              "uv": 0.326
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.085,
+              "uv": 0.167
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.058,
+              "uv": 0.119
+            }
+          ]
+        }
+      ],
+      "passes": [
+        {
+          "name": "baseline",
+          "peak": 1.484
+        },
+        {
+          "name": "still0",
+          "peak": 2.444
+        },
+        {
+          "name": "still1",
+          "peak": 2.035
+        },
+        {
+          "name": "still2",
+          "peak": 3.144
+        },
+        {
+          "name": "still3",
+          "peak": 1.327
+        },
+        {
+          "name": "weights",
+          "peak": 1.578
+        },
+        {
+          "name": "macro",
+          "peak": 1.541
+        },
+        {
+          "name": "lighting",
+          "peak": 1.431
+        },
+        {
+          "name": "decals",
+          "peak": 1.576
+        }
+      ]
+    },
+    {
+      "t": 11.7,
+      "scales": [
+        {
+          "bandY": 0.62,
+          "mPerPx": 0.004,
+          "uvPerPx": 0.008,
+          "tile05mPx": 125.2,
+          "uvPeriodPx": 125.2,
+          "hitErrM": 0,
+          "depthM": 4.21
+        },
+        {
+          "bandY": 0.78,
+          "mPerPx": 0.0025,
+          "uvPerPx": 0.0049,
+          "tile05mPx": 203.9,
+          "uvPeriodPx": 203.9,
+          "hitErrM": 0,
+          "depthM": 2.54
+        },
+        {
+          "bandY": 0.92,
+          "mPerPx": 0.0018,
+          "uvPerPx": 0.0037,
+          "tile05mPx": 273.2,
+          "uvPeriodPx": 273.2,
+          "hitErrM": 0,
+          "depthM": 1.87
+        }
+      ],
+      "spectrum": [
+        {
+          "periodPx": 123,
+          "rel": 1,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.492,
+              "uv": 0.984
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.308,
+              "uv": 0.603
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.221,
+              "uv": 0.455
+            }
+          ]
+        },
+        {
+          "periodPx": 224,
+          "rel": 0.709,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.896,
+              "uv": 1.792
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.56,
+              "uv": 1.098
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.403,
+              "uv": 0.829
+            }
+          ]
+        },
+        {
+          "periodPx": 43.5,
+          "rel": 0.123,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.174,
+              "uv": 0.348
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.109,
+              "uv": 0.213
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.078,
+              "uv": 0.161
+            }
+          ]
+        },
+        {
+          "periodPx": 60,
+          "rel": 0.109,
+          "world": [
+            {
+              "bandY": 0.62,
+              "metres": 0.24,
+              "uv": 0.48
+            },
+            {
+              "bandY": 0.78,
+              "metres": 0.15,
+              "uv": 0.294
+            },
+            {
+              "bandY": 0.92,
+              "metres": 0.108,
+              "uv": 0.222
+            }
+          ]
+        }
+      ],
+      "passes": [
+        {
+          "name": "baseline",
+          "peak": 1.928
+        },
+        {
+          "name": "still0",
+          "peak": 3.451
+        },
+        {
+          "name": "still1",
+          "peak": 1.886
+        },
+        {
+          "name": "still2",
+          "peak": 2.422
+        },
+        {
+          "name": "still3",
+          "peak": 1.293
+        },
+        {
+          "name": "weights",
+          "peak": 1.557
+        },
+        {
+          "name": "macro",
+          "peak": 1.606
+        },
+        {
+          "name": "lighting",
+          "peak": 1.296
+        },
+        {
+          "name": "decals",
+          "peak": 1.555
+        }
+      ]
+    }
+  ],
+  "reading": "The dominant period is one repeat of a crust still. It is 119.5-130 px on screen. On the ground at the far edge of the band, about 4.2-5.0 m from the eye, that is 0.49-0.62 m and UV 0.98-1.25, and a 0.5 m tile is 104-125 px there. A weaker second peak sits near 60 px, half a tile. At 11.70 s another peak at 224 px is about two tiles. still0 and still2 score above 1.8 at all four probes. still1 does at 5.10, 7.9, and 11.70. still3 stays under. Weights, the macro, lighting, and the Bolt mask plus paw prints stay under 1.8 at every probe. The 7.9 s frame passes only as the four-still mix. The columns are the still repeating at the 0.5 m tile, not the weight field, the macro, the normals, or the decals."
+}

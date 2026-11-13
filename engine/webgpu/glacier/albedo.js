@@ -209,6 +209,16 @@ fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: 
   let m0 = snowFetch(arr, macroUv, 0, duM, dvM) * gain.x;
   let m1 = snowFetch(arr, macroUv + vec2f(0.23, 0.11), 2, duM, dvM) * gain.z;
   let lift = select(vec3f(1.64, 1.74, 1.90), vec3f(1.0, 1.0, 1.0), u.sun.w > 4.5 && u.sun.w < 5.5);
+  let iso = u.sun.w;
+  if (iso > 29.5 && iso < 30.5) { return snowFetch(arr, base * r, 0, du, dv) * gain.x * lift; }
+  if (iso > 30.5 && iso < 31.5) { return snowFetch(arr, (base + vec2f(0.13, 0.08)) * r, 1, du, dv) * gain.y * lift; }
+  if (iso > 31.5 && iso < 32.5) { return snowFetch(arr, (base + vec2f(0.05, 0.17)) * r, 2, du, dv) * gain.z * lift; }
+  if (iso > 32.5 && iso < 33.5) { return snowFetch(arr, (base + vec2f(0.19, 0.11)) * r, 3, du, dv) * gain.w * lift; }
+  if (iso > 33.5 && iso < 34.5) {
+    return vec3f(0.25 + 1.6 * wt.x, 0.25 + 1.6 * wt.y, 0.25 + 1.6 * wt.z);
+  }
+  if (iso > 34.5 && iso < 35.5) { return (m0 * 0.62 + m1 * 0.38) * lift; }
+  if (iso > 35.5 && iso < 36.5) { return vec3f(1.0); }
   return (detail * 0.84 + (m0 * 0.62 + m1 * 0.38) * 0.16) * lift;
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
