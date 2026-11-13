@@ -160,6 +160,28 @@ fn snowFetch(arr: texture_2d_array<f32>, uv: vec2f, layer: i32, du: vec2f, dv: v
     }
     return acc / 8.0;
   }
+  // 10 / 11 / 12 = footprint LOD, k = 0.25 / 0.5 / 0.75.
+  // LOD follows the minor axis. Bias grows only when the footprint is stretched.
+  if (mode > 9.5 && mode < 12.5) {
+    var k = 0.25;
+    if (mode > 10.5 && mode < 11.5) { k = 0.5; }
+    else if (mode > 11.5) { k = 0.75; }
+    let lu = length(du);
+    let lv = length(dv);
+    let major = max(lu, lv);
+    let minor = max(min(lu, lv), 1e-8);
+    let ratio = major / minor;
+    let bias = k * clamp(log2(ratio) - 1.0, 0.0, 2.0);
+    let lod = max(log2(max(minor * 1024.0, 1.0)) + bias, 0.0);
+    var acc = vec3f(0.0);
+    let along = select(dv, du, lu >= lv);
+    let step = along / 8.0;
+    for (var n = 0; n < 8; n++) {
+      let o = (f32(n) - 3.5) * step;
+      acc += textureSampleLevel(arr, samp, uv + o, layer, lod).rgb;
+    }
+    return acc / 8.0;
+  }
   return textureSampleGrad(arr, samp, uv, layer, du, dv).rgb;
 }
 fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: vec4f) -> vec3f {

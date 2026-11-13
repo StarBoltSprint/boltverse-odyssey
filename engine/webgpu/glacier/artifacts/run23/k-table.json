@@ -1,0 +1,44 @@
+{
+  "baseline": "run 18 snow. Footprint LOD is diagnostic only. Default sampling is unchanged.",
+  "lod": "log2(minorTexels) + k * clamp(log2(major/minor) - 1, 0, 2), then 8 taps along the major axis",
+  "k": [0.25, 0.5, 0.75],
+  "sharpness": "mean absolute Laplacian on y 0.82-0.96, Bolt masked, divided by the baseline at the same time. A drop past 10% would fail.",
+  "probes": [
+    {
+      "t": 5.1,
+      "baseline": { "peak": 1.859, "sharp": 1 },
+      "k0.25": { "peak": 1.849, "sharp": 1.215 },
+      "k0.50": { "peak": 1.858, "sharp": 1.215 },
+      "k0.75": { "peak": 1.864, "sharp": 1.215 }
+    },
+    {
+      "t": 5.567,
+      "baseline": { "peak": 1.865, "sharp": 1 },
+      "k0.25": { "peak": 1.887, "sharp": 1.230 },
+      "k0.50": { "peak": 1.886, "sharp": 1.230 },
+      "k0.75": { "peak": 1.888, "sharp": 1.229 }
+    },
+    {
+      "t": 7.9,
+      "baseline": { "peak": 1.484, "sharp": 1 },
+      "k0.25": { "peak": 1.468, "sharp": 1.292 },
+      "k0.50": { "peak": 1.469, "sharp": 1.285 },
+      "k0.75": { "peak": 1.468, "sharp": 1.279 }
+    },
+    {
+      "t": 8,
+      "baseline": { "peak": 1.441, "sharp": 1 },
+      "k0.25": { "peak": 1.447, "sharp": 1.295 },
+      "k0.50": { "peak": 1.450, "sharp": 1.289 },
+      "k0.75": { "peak": 1.450, "sharp": 1.283 }
+    },
+    {
+      "t": 11.7,
+      "baseline": { "peak": 1.928, "sharp": 1 },
+      "k0.25": { "peak": 1.921, "sharp": 1.200 },
+      "k0.50": { "peak": 1.920, "sharp": 1.200 },
+      "k0.75": { "peak": 1.921, "sharp": 1.200 }
+    }
+  ],
+  "reading": "The three k values render the same pixels. The bias term is zero: after the derivative floor, major/minor stays at or under 2, so clamp(log2(r)-1, 0, 2) is 0. The minor-axis 8-tap is sharper than the run 18 fetch (near ground at t=8 is 1.28-1.30 of the baseline, not a blur) and it does not move the spikes. 5.10, 5.567, and 11.70 stay over 1.8. No k is applied. No chase."
+}

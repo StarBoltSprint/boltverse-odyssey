@@ -1176,6 +1176,30 @@ async function main() {
     return peak / (Math.abs(beside) + 0.08);
   }
 
+  function nearSharp(src, maskSrc) {
+    const y0 = Math.floor(H * 0.82), y1 = Math.floor(H * 0.96);
+    let acc = 0;
+    let n = 0;
+    const lumaAt = (x, y) => {
+      const i = y * bpr + x * 4;
+      return src[i] * 0.3 + src[i + 1] * 0.59 + src[i + 2] * 0.11;
+    };
+    const masked = (x, y) => {
+      const i = y * bpr + x * 4;
+      return maskSrc[i] * 0.3 + maskSrc[i + 1] * 0.59 + maskSrc[i + 2] * 0.11 > 12;
+    };
+    for (let y = y0 + 1; y < y1 - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        if (masked(x, y)) continue;
+        const c = lumaAt(x, y);
+        const lap = Math.abs(4 * c - lumaAt(x - 1, y) - lumaAt(x + 1, y) - lumaAt(x, y - 1) - lumaAt(x, y + 1));
+        acc += lap;
+        n++;
+      }
+    }
+    return n ? acc / n : 0;
+  }
+
   let sim = 0;
   const DIAG = [
     [0, 'baseline', false],
@@ -1191,7 +1215,7 @@ async function main() {
     const frame = await readFrame();
     renderBoltMask();
     const maskSrc = await readback();
-    return { peak: snowGrid(frame.src, maskSrc), gpuErr: frame.gpuErr };
+    return { peak: snowGrid(frame.src, maskSrc), sharp: nearSharp(frame.src, maskSrc), gpuErr: frame.gpuErr };
   }
   window.__glacierPeak = async (t) => {
     const dt = 1 / 60;
@@ -1205,6 +1229,25 @@ async function main() {
       eye: lastEye,
       gpuErr: row.gpuErr,
     };
+  };
+  const FOOT = [
+    [0, 'baseline'],
+    [10, 'k0.25'],
+    [11, 'k0.50'],
+    [12, 'k0.75'],
+  ];
+  window.__glacierFoot = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const rows = [];
+    for (const [mode, name] of FOOT) {
+      snowDiag = mode;
+      drawBg = bg;
+      const row = await scoreHere();
+      rows.push({ name, peak: row.peak, sharp: row.sharp, gpuErr: row.gpuErr });
+    }
+    snowDiag = 0;
+    return { t, rows };
   };
   window.__glacierTable = async (t) => {
     const dt = 1 / 60;
