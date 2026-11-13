@@ -237,11 +237,61 @@ function pawGround() {
   const right = world.heightAt(live.x + rx * 0.11, live.z + rz * 0.11);
   return Math.min(left, right);
 }
+// Lowest paw row in each bolt439 cell. A peak is a contact.
+const PAW_FRAC = [
+  0.0874, 0.0690, 0.0567, 0.0506, 0.0414, 0.0322, 0.0261, 0.0307,
+  0.0982, 0.1304, 0.1426, 0.1273, 0.1212, 0.1104, 0.0997, 0.1196,
+  0.1396, 0.1012, 0.0721, 0.0506, 0.0383, 0.0322, 0.0199, 0.0077,
+  0.0690, 0.1380, 0.1580, 0.1396, 0.1242, 0.1135, 0.1058, 0.0997,
+];
+const PRINT_N = 12;
+const prints = Array.from({ length: PRINT_N }, () => ({ x: 0, y: -100, z: 0, yaw: 0 }));
+const pawHit = { prev: 0, armed: false, side: 1, n: 0 };
+function dropPrint(side) {
+  const yaw = live.psi;
+  const fx = -Math.sin(yaw);
+  const fz = -Math.cos(yaw);
+  const rx = fz;
+  const rz = -fx;
+  const n = pawHit.n++;
+  const j1 = Math.sin(n * 12.9898) * 43758.5453;
+  const j2 = Math.sin(n * 78.233) * 43758.5453;
+  const a = j1 - Math.floor(j1);
+  const b = j2 - Math.floor(j2);
+  const across = side * 0.10 + (a - 0.5) * 0.05;
+  const back = 0.06 + (b - 0.5) * 0.04;
+  const x = live.x + rx * across - fx * back;
+  const z = live.z + rz * across - fz * back;
+  let slot = -1;
+  let best = 10.2;
+  for (let i = 0; i < PRINT_N; i++) {
+    const p = prints[i];
+    if (p.y < -10) { slot = i; break; }
+    const behind = -((p.x - live.x) * fx + (p.z - live.z) * fz);
+    if (behind > best) { best = behind; slot = i; }
+  }
+  if (slot < 0) return;
+  prints[slot].x = x;
+  prints[slot].z = z;
+  prints[slot].y = world.heightAt(x, z) + 0.06;
+  prints[slot].yaw = yaw;
+}
+function notePaw() {
+  const frac = PAW_FRAC[Math.floor((live.phase % 1) * 32) % 32];
+  if (pawHit.armed && pawHit.prev > 0.12 && frac < pawHit.prev - 0.008) {
+    dropPrint(pawHit.side);
+    pawHit.side = -pawHit.side;
+    pawHit.armed = false;
+  }
+  if (frac < 0.055) pawHit.armed = true;
+  pawHit.prev = frac;
+}
 function stepLive(dt) {
   const input = DEMO ? chaseInput(simClock, live) : playerInput();
   simClock += dt;
   IDLE.stepMotion(live, dt, input.run);
   integrate(live, dt, input);
+  notePaw();
   stepFlakes(dt);
   return live;
 }
@@ -249,6 +299,7 @@ function stepLive(dt) {
 const WGSL = /* wgsl */`
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
+  prints: array<vec4f, 12>,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -394,7 +445,8 @@ fn darken15(c: vec3f) -> vec3f {
   let lr = idleCardLy(c); let lx = lr.x; let ly = lr.y - u.spin.x;
   let cr = cos(u.bp.x); let sr = -sin(u.bp.x);
   let rx = lx * cr - ly * sr; let ry = lx * sr + ly * cr;
-  let w = b + rt * rx + vec3f(0.0, ry, 0.0);
+  // Head sits a few centimetres further than the paws, so the card is not a flat sticker.
+  let w = b + rt * rx + vec3f(0.0, ry, 0.0) - vec3f(toE.x, 0.0, toE.y) * c.y * 0.045;
   var o: BO; o.p = u.vp * vec4f(w, 1.0); o.uv = vec2f(-c.x + 0.5, 1.0 - c.y); o.w = w; return o;
 }
 fn cell(f: u32, uv: vec2f) -> vec4f {
@@ -408,14 +460,23 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let lift = 0.045 * lw * ((1.0 - sw) * max(sin(gph), 0.0) + sw * max(-sin(gph), 0.0)) * smoothstep(0.25, 1.2, spd) * (1.0 - u.misc.x);
   let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
   let s = mix(cell(a, uvs), cell(bb, uvs), k);
-  if (s.a < select(0.12, 0.04, u.misc.y > 0.001)) { discard; }
+  if (s.a < 0.03) { discard; }
   var c = s.rgb;
   c = mix(c, vec3f(dot(c, vec3f(0.3, 0.59, 0.11))), 0.12) * 1.08;
-  let hgt = v.w.y - u.bolt.y;
-  let bounce = max(u.grid.xyz, vec3f(0.55));
-  c *= mix(vec3f(1.0), bounce, smoothstep(0.34, 0.02, hgt) * 0.22);
-  c *= mix(0.82, 1.0, smoothstep(-0.02, 0.25, hgt));
-  return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), s.a);
+  let toE = normalize(vec2f(u.cam.x - u.bolt.x, u.cam.z - u.bolt.z));
+  let right = vec2f(-toE.y, toE.x);
+  let sun = normalize(u.sun.xyz);
+  let sunRight = dot(normalize(sun.xz), right);
+  let across = select(v.uv.x, 1.0 - v.uv.x, sunRight < 0.0);
+  let warm = smoothstep(0.12, 0.88, across);
+  c = mix(c * vec3f(0.84, 0.88, 0.98), c * vec3f(1.05, 0.97, 0.90), warm);
+  let belly = smoothstep(0.62, 0.06, v.uv.y);
+  c = mix(c, c * vec3f(0.74, 0.82, 0.94), belly * 0.62);
+  let top = smoothstep(0.42, 0.94, v.uv.y);
+  let fringe = 1.0 - smoothstep(0.18, 0.55, s.a);
+  c = c + vec3f(0.62, 0.30, 0.44) * (top * 0.14 + fringe * 0.20);
+  let edge = smoothstep(0.03, 0.22, s.a);
+  return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), edge);
 }
 @vertex fn vsContact(@builtin(vertex_index) vi: u32) -> CO {
   var q = array<vec2f, 6>(vec2f(-1, -1), vec2f(1, -1), vec2f(1, 1), vec2f(-1, -1), vec2f(1, 1), vec2f(-1, 1));
@@ -426,30 +487,60 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let psi = b.w;
   let fwd = vec2f(-sin(psi), -cos(psi));
   let right = vec2f(fwd.y, -fwd.x);
+  let sun = normalize(u.sun.xyz);
+  let shadeOff = -sun.xz * (0.38 / max(sun.y, 0.18));
+  let shadeL = max(length(shadeOff), 1e-4);
+  let shadeD = shadeOff / shadeL;
+  let shadeR = vec2f(shadeD.y, -shadeD.x);
   var w: vec3f;
   var kind = 0.0;
   if (which == 0u) {
-    w = vec3f(b.x + right.x * (c.x * 0.09 - 0.11) + fwd.x * c.y * 0.05, b.y + 0.02, b.z + right.y * (c.x * 0.09 - 0.11) + fwd.y * c.y * 0.06);
+    // Body occlusion, on the snow under the chest.
+    w = vec3f(b.x + right.x * c.x * 0.16 + fwd.x * (0.22 + c.y * 0.20), b.y + 0.02, b.z + right.y * c.x * 0.16 + fwd.y * (0.22 + c.y * 0.20));
   } else if (which == 1u) {
-    w = vec3f(b.x + right.x * (c.x * 0.09 + 0.11) + fwd.x * c.y * 0.05, b.y + 0.02, b.z + right.y * (c.x * 0.09 + 0.11) + fwd.y * c.y * 0.06);
+    // Contact shadow along the dawn sun, not straight down.
+    w = vec3f(b.x + shadeOff.x + shadeR.x * c.x * 0.22 + shadeD.x * c.y * 0.34, b.y + 0.02, b.z + shadeOff.y + shadeR.y * c.x * 0.22 + shadeD.y * c.y * 0.34);
     kind = 1.0;
-  } else {
-    let n = f32(which - 2u);
-    let sway = select(-0.12, 0.12, (which & 1u) == 0u);
-    let dist = 0.65 + n * 0.28;
-    w = vec3f(b.x - fwd.x * dist + right.x * (c.x * 0.16 + sway), b.y + 0.1, b.z - fwd.y * dist + right.y * (c.x * 0.16 + sway));
+  } else if (which == 2u || which == 3u) {
+    let s = select(-1.0, 1.0, which == 3u);
+    w = vec3f(b.x + right.x * (c.x * 0.07 + s * 0.11) + fwd.x * c.y * 0.045, b.y + 0.02, b.z + right.y * (c.x * 0.07 + s * 0.11) + fwd.y * c.y * 0.045);
     kind = 2.0;
+  } else {
+    let pr = u.prints[which - 4u];
+    let py = pr.w;
+    let pf = vec2f(-sin(py), -cos(py));
+    let prt = vec2f(pf.y, -pf.x);
+    w = vec3f(pr.x + prt.x * c.x * 0.055 + pf.x * c.y * 0.09, pr.y, pr.z + prt.y * c.x * 0.055 + pf.y * c.y * 0.09);
+    let rel = vec2f(pr.x - b.x, pr.z - b.z);
+    let behind = -dot(rel, fwd);
+    let fade = (1.0 - smoothstep(7.5, 10.0, behind)) * smoothstep(-0.04, 0.22, behind);
+    kind = select(-1.0, 3.0 + fade, pr.y > -10.0);
   }
   var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; return o;
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
-  let r2 = dot(v.uv, v.uv); if (r2 > 1.0) { discard; }
-  let paw = (1.0 - smoothstep(0.05, 1.0, r2)) * 0.62;
-  let shade = (1.0 - smoothstep(0.05, 1.0, r2)) * 0.55;
-  let print = (1.0 - smoothstep(0.08, 0.95, r2)) * 0.7;
-  let blob = mix(paw, shade, step(0.5, v.k));
-  let a = select(blob, print, v.k > 1.5);
-  return vec4f(0.02, 0.025, 0.04, a);
+  if (v.k < 0.0) { discard; }
+  let r2 = dot(v.uv, v.uv);
+  if (r2 > 1.0) { discard; }
+  let r = sqrt(r2);
+  let soft = 1.0 - smoothstep(0.15, 1.0, r);
+  if (v.k < 0.5) {
+    return vec4f(0.16, 0.18, 0.26, soft * 0.46);
+  }
+  if (v.k < 1.5) {
+    return vec4f(0.18, 0.20, 0.32, soft * 0.34);
+  }
+  if (v.k < 2.5) {
+    return vec4f(0.14, 0.16, 0.24, soft * 0.40);
+  }
+  // The still prefilter scores the snow. Prints stay out of that pass.
+  if (u.sun.w > 29.5 && u.sun.w < 37.5) { discard; }
+  let bowl = smoothstep(0.62, 0.0, r);
+  let rim = smoothstep(0.28, 0.58, r) * smoothstep(1.0, 0.70, r);
+  let fade = v.k - 3.0;
+  let col = mix(vec3f(0.16, 0.20, 0.28), vec3f(0.78, 0.82, 0.88), rim);
+  let a = (bowl * 0.62 + rim * 0.28) * fade;
+  return vec4f(col, a);
 }
 struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fade: f32, @location(2) layer: f32, @location(3) seed: f32 };
 @vertex fn vsFlake(@builtin(vertex_index) vi: u32, @location(0) a: vec4f, @location(1) b: vec4f) -> FO {
@@ -702,8 +793,14 @@ async function main() {
   // Four passers. v2-1 (worst 1.613) is the one left out: v2-2 stays for colour,
   // and v2-0, v2-3, and old still 3 score lower. The run 18 sampler is unchanged.
   // snow=v2 still loads all four Texture-bot stills for the column gate.
-  const snowFiles = qs.get('snow') === 'v2'
+  // shoulder / serac load the ice-v2 stills onto the snow plane for the column prefilter only.
+  const snowQuery = qs.get('snow');
+  const snowFiles = snowQuery === 'v2'
     ? ['./tex/snow-v2/snow-v2-0.png', './tex/snow-v2/snow-v2-1.png', './tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png']
+    : snowQuery === 'shoulder'
+    ? ['./tex/ice-v2/shoulder-ice/shoulder-ice-0.png', './tex/ice-v2/shoulder-ice/shoulder-ice-1.png', './tex/ice-v2/shoulder-ice/shoulder-ice-2.png', './tex/ice-v2/shoulder-ice/shoulder-ice-3.png']
+    : snowQuery === 'serac'
+    ? ['./tex/ice-v2/range-serac/range-serac-0.png', './tex/ice-v2/range-serac/range-serac-1.png', './tex/ice-v2/range-serac/range-serac-2.png', './tex/ice-v2/range-serac/range-serac-3.png']
     : ['./tex/snow-v2/snow-v2-0.png', './tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png', './tex/crust/v4.jpg'];
   const snowTex = await loadArray(snowFiles);
   let snowAstc = null;
@@ -738,7 +835,7 @@ async function main() {
   const chunkI = mkInst(world.instances.chunk);
   const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
   const planetVerts = world.planet.length / 8;
-  const ub = dev.createBuffer({ size: 256, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
   window.__glacierAniso = aniso;
   const samp = dev.createSampler({
@@ -816,7 +913,15 @@ async function main() {
   const pSky = pipe('vsSky', 'fsSky', false, false, 'always');
   const pBolt = pipe('vsBolt', 'fsBolt', false, true, 'less');
   const pPlanet = pipe('vs', 'fsPlanet', false, true, 'less');
-  const pContact = pipe('vsContact', 'fsContact', true, false, 'less');
+  const pContact = dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: 'vsContact', buffers: [] },
+    fragment: { module: mod, entryPoint: 'fsContact', targets: [{ format: fmt, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    multisample: { count: SAMPLES },
+    // The decal sits on the snow. A negative bias keeps it from losing the depth test.
+    depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less', depthBias: -8, depthBiasSlopeScale: -4, depthBiasClamp: 0 },
+  });
   const flakeStep = { arrayStride: 32, stepMode: 'instance', attributes: [
     { shaderLocation: 0, offset: 0, format: 'float32x4' },
     { shaderLocation: 1, offset: 16, format: 'float32x4' },
@@ -839,16 +944,9 @@ async function main() {
   const off = dev.createTexture({ size: [W, H], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
   const bpr = Math.ceil(W * 4 / 256) * 256;
   const rb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
-  const U = new Float32Array(64);
+  const U = new Float32Array(128);
   let lastEye = [0, 0, 0];
   const worldVerts = world.verts.length / 8;
-
-  const PAW_FRAC = [
-    0.0874, 0.0690, 0.0567, 0.0506, 0.0414, 0.0322, 0.0261, 0.0307,
-    0.0982, 0.1304, 0.1426, 0.1273, 0.1212, 0.1104, 0.0997, 0.1196,
-    0.1396, 0.1012, 0.0721, 0.0506, 0.0383, 0.0322, 0.0199, 0.0077,
-    0.0690, 0.1380, 0.1580, 0.1396, 0.1242, 0.1135, 0.1058, 0.0997,
-  ];
 
   let snowDiag = 0;
   function fillU(t) {
@@ -878,7 +976,8 @@ async function main() {
     const f1 = (f0 + 1) % 32;
     const pawFrac = Math.min(PAW_FRAC[f0], PAW_FRAC[f1]);
     const pawLy = (pawFrac - 6 / 652) * 1.15 - 0.095;
-    U[56] = pawLy + 0.02;
+    // Four centimetres into the snow. The card size stays 1.15 m.
+    U[56] = pawLy + 0.04;
     U.set([0.70, 0.78, 0.88, 0], 44);
     U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
@@ -888,6 +987,13 @@ async function main() {
     U[58] = skySwim;
     U[59] = skyYaw;
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 60);
+    for (let i = 0; i < PRINT_N; i++) {
+      const p = prints[i];
+      U[64 + i * 4] = p.x;
+      U[65 + i * 4] = p.y;
+      U[66 + i * 4] = p.z;
+      U[67 + i * 4] = p.yaw;
+    }
   }
 
   function beginPass(enc, clear) {
@@ -928,7 +1034,7 @@ async function main() {
     pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
     pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
     if (!gatePose) {
-      pass.setPipeline(pContact); pass.draw(60);
+      pass.setPipeline(pContact); pass.draw(96);
       if (!(snowDiag > 29.5 && snowDiag < 37.5)) {
         pass.setPipeline(pFlake);
         pass.setVertexBuffer(0, flakeBuf);
