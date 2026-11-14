@@ -1,0 +1,103 @@
+{
+  "clean": [
+    {
+      "id": "snow",
+      "patches": 3,
+      "tried": 3,
+      "pixels": 1452,
+      "dE76": 0,
+      "verdict": "PASS",
+      "lab": [
+        80.63,
+        1.74,
+        0.61
+      ],
+      "predLab": [
+        80.63,
+        1.74,
+        0.61
+      ],
+      "threshold": 10
+    },
+    {
+      "id": "waterfall",
+      "patches": 3,
+      "tried": 3,
+      "pixels": 1452,
+      "dE76": 0.16,
+      "verdict": "PASS",
+      "lab": [
+        72.76,
+        0.9,
+        0.24
+      ],
+      "predLab": [
+        72.76,
+        1.06,
+        0.24
+      ],
+      "threshold": 10
+    },
+    {
+      "id": "arch",
+      "patches": 3,
+      "tried": 3,
+      "pixels": 1452,
+      "dE76": 0.14,
+      "verdict": "PASS",
+      "lab": [
+        62.17,
+        -5.22,
+        -11.77
+      ],
+      "predLab": [
+        62.14,
+        -5.28,
+        -11.65
+      ],
+      "threshold": 10
+    },
+    {
+      "id": "wall",
+      "patches": 2,
+      "tried": 3,
+      "pixels": 968,
+      "dE76": 0.13,
+      "verdict": "PASS",
+      "lab": [
+        65.03,
+        1.84,
+        0.89
+      ],
+      "predLab": [
+        65.01,
+        1.88,
+        0.77
+      ],
+      "threshold": 10
+    }
+  ],
+  "negativeControl": {
+    "id": "wall",
+    "patches": 2,
+    "tried": 2,
+    "pixels": 968,
+    "dE76": 11.87,
+    "verdict": "BLOCK",
+    "lab": [
+      53.14,
+      2.05,
+      0.92
+    ],
+    "predLab": [
+      65.01,
+      1.88,
+      0.77
+    ],
+    "threshold": 10
+  },
+  "threshold": 10,
+  "includesLightness": true,
+  "blocking": true
+}
+PASS render-colour

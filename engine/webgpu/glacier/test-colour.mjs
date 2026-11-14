@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DE76_MAX } from '../biome-factory/cie76.mjs';
-import { shadeAt } from '../biome-factory/light-rig.js';
+import { shadeAt, gradeLinear } from '../biome-factory/light-rig.js';
 import { scoreWindow } from '../biome-factory/render-colour-gate.mjs';
 import { serve, withChrome } from './chrome.mjs';
 import { buildWorld } from './world.js';
@@ -105,6 +105,7 @@ if (!only && new Set(shots.map((s) => s.id)).size < 4) {
 const port = 8765;
 const server = await serve(webgpu, port);
 const shade = (ndl, ny) => shadeAt(LIGHT, ndl, ny);
+const presentLin = (lin) => gradeLinear(lin, LIGHT).map((v) => Math.round(Math.min(1, Math.max(0, v)) * 255));
 let fail = 0;
 try {
   const url = `http://127.0.0.1:${port}/glacier/glacier.html?cap=1&w=720&h=1280&candidate=${CANDIDATE}`;
@@ -117,7 +118,7 @@ try {
         const frame = await evalJson(`window.__glacierGate(${JSON.stringify({
           eye: shot.eye, tgt: shot.tgt, at: shot.at, breakId: 0, rad: 10,
         })}).then(r => JSON.stringify(r))`);
-        const scored = frame.ok ? scoreWindow(frame, shot.mat, shade) : { ok: false, pixels: 0, verdict: 'UNCERTAIN', dE76: null, reason: frame.reason };
+        const scored = frame.ok ? scoreWindow(frame, shot.mat, shade, presentLin) : { ok: false, pixels: 0, verdict: 'UNCERTAIN', dE76: null, reason: frame.reason };
         rows.push({ id: shot.id, mat: shot.mat, ...scored, gpuErr: frame.gpuErr || null });
       }
       return rows;
@@ -133,7 +134,7 @@ try {
         const frame = await evalJson(`window.__glacierGate(${JSON.stringify({
           eye: shot.eye, tgt: shot.tgt, at: shot.at, breakId: MAT.wall + 1, rad: 10,
         })}).then(r => JSON.stringify(r))`);
-        const scored = frame.ok ? scoreWindow(frame, shot.mat, shade) : { ok: false, pixels: 0, verdict: 'UNCERTAIN', dE76: null, reason: frame.reason };
+        const scored = frame.ok ? scoreWindow(frame, shot.mat, shade, presentLin) : { ok: false, pixels: 0, verdict: 'UNCERTAIN', dE76: null, reason: frame.reason };
         rows.push({ id: shot.id, ...scored });
       }
       return rows;

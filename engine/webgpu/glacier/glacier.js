@@ -3,7 +3,7 @@
 import { boltIdle } from '../bricks/bolt-idle.js';
 import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
 import { invertMat4 } from '../biome-factory/mat4.js';
-import { lightWgsl, norm3, sunOf } from '../biome-factory/light-rig.js';
+import { lightWgsl, gradeWgsl, norm3, sunOf } from '../biome-factory/light-rig.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
@@ -316,6 +316,11 @@ struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w:
 struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
 
 ${lightWgsl(LIGHT)}
+fn lin1(c: f32) -> f32 {
+  if (c <= 0.04045) { return c / 12.92; }
+  return pow((c + 0.055) / 1.055, 2.4);
+}
+fn toLin(c: vec3f) -> vec3f { return vec3f(lin1(c.r), lin1(c.g), lin1(c.b)); }
 ${skyWgsl(LIGHT.sky)}
 ${albedoWgsl()}
 ${IDLE.wgsl}
@@ -415,9 +420,8 @@ fn darken15(c: vec3f) -> vec3f {
     let n = fract(sin(dot(v.p.xy, vec2f(12.9898, 78.233))) * 43758.5453);
     if (cover < n) { discard; }
   }
+  // No distance-to-horizon colour mix. The rim fade below is not a fog colour.
   let aerial = smoothstep(280.0, 6200.0, dist);
-  let horizon = skyColour(normalize(v.w - u.cam.xyz));
-  col = mix(col, horizon, aerial * 0.62);
   if (m > 6.5 && m < 7.5) {
     let rim = pow(1.0 - ndv, 1.6) * smoothstep(0.0, 0.35, ndl);
     let head = max(col.r, max(col.g, col.b));
@@ -433,10 +437,12 @@ fn darken15(c: vec3f) -> vec3f {
   let alb = textureSampleGrad(planetTex, samp, uv, dpdx(uv), dpdy(uv)).rgb;
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
+  if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(5.5 / 8.0, 0.0, 0.0, 1.0); }
+  if (u.misc.z > 1.5) { return present(alb); }
   var col = alb * dawnIrr(n);
   let limb = smoothstep(0.0, 0.22, ndv);
   col = col * mix(0.22, 1.0, limb);
-  return present(min(col, vec3f(0.9)));
+  return present(col);
 }
 @vertex fn vsBolt(@builtin(vertex_index) vi: u32) -> BO {
   var q = array<vec2f, 6>(vec2f(-0.5, 0), vec2f(0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 1));
@@ -476,7 +482,7 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let fringe = 1.0 - smoothstep(0.18, 0.55, s.a);
   c = c + vec3f(0.62, 0.30, 0.44) * (top * 0.14 + fringe * 0.20);
   let edge = smoothstep(0.03, 0.22, s.a);
-  return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), edge);
+  return vec4f(clamp(c, vec3f(0.0), vec3f(1.0)), edge);
 }
 @vertex fn vsContact(@builtin(vertex_index) vi: u32) -> CO {
   var q = array<vec2f, 6>(vec2f(-1, -1), vec2f(1, -1), vec2f(1, 1), vec2f(-1, -1), vec2f(1, 1), vec2f(-1, 1));
@@ -525,13 +531,13 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let r = sqrt(r2);
   let soft = 1.0 - smoothstep(0.15, 1.0, r);
   if (v.k < 0.5) {
-    return vec4f(0.16, 0.18, 0.26, soft * 0.46);
+    return vec4f(toLin(vec3f(0.16, 0.18, 0.26)), soft * 0.46);
   }
   if (v.k < 1.5) {
-    return vec4f(0.18, 0.20, 0.32, soft * 0.34);
+    return vec4f(toLin(vec3f(0.18, 0.20, 0.32)), soft * 0.34);
   }
   if (v.k < 2.5) {
-    return vec4f(0.14, 0.16, 0.24, soft * 0.40);
+    return vec4f(toLin(vec3f(0.14, 0.16, 0.24)), soft * 0.40);
   }
   // The still prefilter scores the snow. Prints stay out of that pass.
   if (u.sun.w > 29.5 && u.sun.w < 37.5) { discard; }
@@ -540,7 +546,7 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let fade = v.k - 3.0;
   let col = mix(vec3f(0.16, 0.20, 0.28), vec3f(0.78, 0.82, 0.88), rim);
   let a = (bowl * 0.62 + rim * 0.28) * fade;
-  return vec4f(col, a);
+  return vec4f(toLin(col), a);
 }
 struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fade: f32, @location(2) layer: f32, @location(3) seed: f32 };
 @vertex fn vsFlake(@builtin(vertex_index) vi: u32, @location(0) a: vec4f, @location(1) b: vec4f) -> FO {
@@ -588,7 +594,7 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   } else if (v.layer > 0.7) { gain = 0.55; }
   else if (v.layer > 0.2) { gain = 0.74; }
   let a = soft * v.fade * gain;
-  return vec4f(col, a);
+  return vec4f(toLin(col), a);
 }
 `;
 
@@ -878,13 +884,23 @@ async function main() {
     { shaderLocation: 0, offset: 0, format: 'float32x4' },
     { shaderLocation: 1, offset: 16, format: 'float32x4' },
   ] };
-  const SAMPLES = GLACIER.msaa;
+  const sceneFmt = 'rgba16float';
+  let SAMPLES = GLACIER.msaa;
+  try {
+    const probe = dev.createTexture({
+      size: [4, 4], format: sceneFmt, sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+    probe.destroy();
+  } catch (err) {
+    SAMPLES = 1;
+  }
+  window.__glacierHdrSamples = SAMPLES;
   const pipe = (vs, fs, alpha, depthWrite, depthCompare) => dev.createRenderPipeline({
     layout,
     vertex: { module: mod, entryPoint: vs, buffers: vs === 'vs' ? [vbuf] : [] },
-    fragment: { module: mod, entryPoint: fs, targets: [{ format: fmt, blend: alpha ? { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } : undefined }] },
+    fragment: { module: mod, entryPoint: fs, targets: [{ format: sceneFmt, blend: alpha ? { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } : undefined }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
-    multisample: { count: SAMPLES, alphaToCoverageEnabled: vs === 'vsBolt' },
+    multisample: { count: SAMPLES, alphaToCoverageEnabled: SAMPLES > 1 && vs === 'vsBolt' },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: depthWrite, depthCompare },
   });
   const instBuf = { arrayStride: 32, stepMode: 'instance', attributes: [
@@ -897,7 +913,7 @@ async function main() {
   const pWorld = dev.createRenderPipeline({
     layout,
     vertex: { module: mod, entryPoint: 'vsWorld', buffers: [vbuf, shadeBuf] },
-    fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
+    fragment: { module: mod, entryPoint: 'fs', targets: [{ format: sceneFmt }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
@@ -905,7 +921,7 @@ async function main() {
   const pInst = dev.createRenderPipeline({
     layout,
     vertex: { module: mod, entryPoint: 'vsInst', buffers: [vbuf, instBuf] },
-    fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
+    fragment: { module: mod, entryPoint: 'fs', targets: [{ format: sceneFmt }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
@@ -916,7 +932,7 @@ async function main() {
   const pContact = dev.createRenderPipeline({
     layout,
     vertex: { module: mod, entryPoint: 'vsContact', buffers: [] },
-    fragment: { module: mod, entryPoint: 'fsContact', targets: [{ format: fmt, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } }] },
+    fragment: { module: mod, entryPoint: 'fsContact', targets: [{ format: sceneFmt, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
     // The decal sits on the snow. A negative bias keeps it from losing the depth test.
@@ -929,7 +945,7 @@ async function main() {
   const pFlake = dev.createRenderPipeline({
     layout,
     vertex: { module: mod, entryPoint: 'vsFlake', buffers: [flakeStep] },
-    fragment: { module: mod, entryPoint: 'fsFlake', targets: [{ format: fmt, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } }] },
+    fragment: { module: mod, entryPoint: 'fsFlake', targets: [{ format: sceneFmt, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less' },
@@ -939,11 +955,40 @@ async function main() {
     size: flakeGpu.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
   });
-  const msaa = dev.createTexture({ size: [W, H], format: fmt, sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT });
+  const msaa = SAMPLES > 1 ? dev.createTexture({ size: [W, H], format: sceneFmt, sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT }) : null;
   const depth = dev.createTexture({ size: [W, H], format: 'depth24plus', sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT });
+  const hdr = dev.createTexture({
+    size: [W, H], format: sceneFmt,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC,
+  });
   const off = dev.createTexture({ size: [W, H], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
+  const gradeMod = dev.createShaderModule({ code: gradeWgsl(LIGHT) });
+  if (gradeMod.getCompilationInfo) {
+    const ginfo = await gradeMod.getCompilationInfo();
+    const gerrs = ginfo.messages.filter((m) => m.type === 'error').map((m) => m.message);
+    if (gerrs.length) throw new Error(gerrs.join('\n'));
+  }
+  const gradeBgl = dev.createBindGroupLayout({ entries: [
+    { binding: 0, visibility: GPUShaderStage.FRAGMENT, buffer: {} },
+    { binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'unfilterable-float' } },
+  ] });
+  const gradeBg = dev.createBindGroup({
+    layout: gradeBgl,
+    entries: [
+      { binding: 0, resource: { buffer: ub } },
+      { binding: 1, resource: hdr.createView() },
+    ],
+  });
+  const pGrade = dev.createRenderPipeline({
+    layout: dev.createPipelineLayout({ bindGroupLayouts: [gradeBgl] }),
+    vertex: { module: gradeMod, entryPoint: 'vsGrade' },
+    fragment: { module: gradeMod, entryPoint: 'fsGrade', targets: [{ format: fmt }] },
+    primitive: { topology: 'triangle-list' },
+  });
   const bpr = Math.ceil(W * 4 / 256) * 256;
   const rb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const hdrBpr = Math.ceil(W * 8 / 256) * 256;
+  const hdrRb = dev.createBuffer({ size: hdrBpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
   const U = new Float32Array(128);
   let lastEye = [0, 0, 0];
   const worldVerts = world.verts.length / 8;
@@ -997,10 +1042,23 @@ async function main() {
   }
 
   function beginPass(enc, clear) {
+    const color = SAMPLES > 1
+      ? { view: msaa.createView(), resolveTarget: hdr.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear }
+      : { view: hdr.createView(), loadOp: 'clear', storeOp: 'store', clearValue: clear };
     return enc.beginRenderPass({
-      colorAttachments: [{ view: msaa.createView(), resolveTarget: off.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear }],
+      colorAttachments: [color],
       depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
     });
+  }
+
+  function gradePass(enc) {
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: off.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] }],
+    });
+    pass.setPipeline(pGrade);
+    pass.setBindGroup(0, gradeBg);
+    pass.draw(3);
+    pass.end();
   }
 
   function renderFixed(t) {
@@ -1043,6 +1101,7 @@ async function main() {
       pass.setPipeline(pBolt); pass.draw(6);
     }
     pass.end();
+    gradePass(enc);
     enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
     if (!CAP) {
       const show = enc2(dev, ctx, off, W, H);
@@ -1059,6 +1118,10 @@ async function main() {
     visualKeep: false,
     W, H,
     msaa: SAMPLES,
+    hdr: 'rgba16float',
+    tonemap: LIGHT.tonemap,
+    exposureEv: LIGHT.exposureEv,
+    presentPass: 1,
     tris: world.budget.totalTris,
     worldTris: world.budget.worldTris,
     icicleTris: world.budget.icicleTris,
@@ -1209,6 +1272,7 @@ async function main() {
     pass.setPipeline(pBolt);
     pass.draw(6);
     pass.end();
+    gradePass(enc);
     enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
     dev.queue.submit([enc.finish()]);
   }
@@ -1565,6 +1629,73 @@ async function main() {
     snowDiag = 0;
     drawBg = bg;
     return { t, z: live.z, rows };
+  };
+  function f16toF32(u) {
+    const s = (u & 0x8000) >> 15;
+    const e = (u & 0x7c00) >> 10;
+    const f = u & 0x03ff;
+    if (e === 0) return (s ? -1 : 1) * (2 ** -14) * (f / 1024);
+    if (e === 31) return f ? NaN : (s ? -Infinity : Infinity);
+    return (s ? -1 : 1) * (2 ** (e - 15)) * (1 + f / 1024);
+  }
+  window.__glacierHdr = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    gateMode = 0;
+    dev.pushErrorScope('validation');
+    renderFixed(simClock);
+    const gpuErr = await dev.popErrorScope();
+    const enc = dev.createCommandEncoder();
+    enc.copyTextureToBuffer({ texture: hdr }, { buffer: hdrRb, bytesPerRow: hdrBpr }, [W, H]);
+    dev.queue.submit([enc.finish()]);
+    await dev.queue.onSubmittedWorkDone();
+    await hdrRb.mapAsync(GPUMapMode.READ);
+    const src = new Uint16Array(hdrRb.getMappedRange().slice(0));
+    hdrRb.unmap();
+    const step = 4;
+    const sw = Math.floor(W / step);
+    const sh = Math.floor(H / step);
+    const out = new Float32Array(sw * sh * 3);
+    const row = hdrBpr / 2;
+    let k = 0;
+    for (let y = 0; y < sh; y++) {
+      for (let x = 0; x < sw; x++) {
+        const o = (y * step) * row + (x * step) * 4;
+        out[k++] = f16toF32(src[o]);
+        out[k++] = f16toF32(src[o + 1]);
+        out[k++] = f16toF32(src[o + 2]);
+      }
+    }
+    const bytes = new Uint8Array(out.buffer);
+    let s = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return {
+      w: W, h: H, step, sw, sh, rgb: btoa(s),
+      gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null,
+      tris: world.budget.totalTris, draws: DRAWS.length,
+      tonemap: LIGHT.tonemap, exposureEv: LIGHT.exposureEv,
+    };
+  };
+  window.__glacierMean = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const frame = await readFrame();
+    let sum = 0;
+    const src = frame.src;
+    const n = W * H;
+    for (let y = 0; y < H; y++) {
+      const row = y * bpr;
+      for (let x = 0; x < W; x++) {
+        const i = row + x * 4;
+        sum += src[i] * 0.2126 + src[i + 1] * 0.7152 + src[i + 2] * 0.0722;
+      }
+    }
+    return {
+      t, meanY: sum / n / 255,
+      gpuErr: frame.gpuErr,
+      tris: world.budget.totalTris,
+      draws: DRAWS.length,
+    };
   };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;
