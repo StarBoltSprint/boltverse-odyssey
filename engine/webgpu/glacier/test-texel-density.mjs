@@ -11,8 +11,11 @@ import { MAT, PLANET } from './biome.js';
 import { IMAGINE, MIN_PX_PER_M, MAX_UV_STRETCH, MAG_MAX, MIN_LARGE_VARIANTS, TILE_M } from './texel-density.js';
 import {
   gateBiome, stretchByMaterial, formatTable, triangleStretch as gateStretch, triangleArea as gateArea, imageSize,
+  decodeImage, mirrorCorrelation,
   MIN_PX_PER_M as GATE_MIN, MIN_LARGE_VARIANTS as GATE_LARGE, MIN_PROP_VARIANTS, STRETCH_P99_MAX, MAG_MAX as GATE_MAG,
+  MIRROR_STRIP_R, MIRROR_FLIP_R,
 } from '../biome-factory/texel-gate.mjs';
+import { foregroundReport } from './screen-texel.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PHONE_H = 1280;
@@ -167,9 +170,41 @@ const stretchById = new Map([
   ['arch-ice', groupStretch([MAT.arch])],
 ]);
 const page = fs.readFileSync(path.join(here, 'glacier.js'), 'utf8') + '\n' + fs.readFileSync(path.join(here, 'albedo.js'), 'utf8');
+const mirrorFixtures = [
+  ['tex/snow-v2/snow-v2-0.png', false],
+  ['tex/snow-v2/snow-v2-1.png', false],
+  ['tex/snow-v2/snow-v2-2.png', true],
+  ['tex/snow-v2/snow-v2-3.png', true],
+];
+for (const [file, expectPass] of mirrorFixtures) {
+  const img = decodeImage(fs.readFileSync(path.join(here, file)));
+  if (!img) bad('mirror unread ' + file);
+  else {
+    const m = mirrorCorrelation(img.luma, img.w, img.h);
+    const verdict = m.pass ? 'PASS' : 'FAIL';
+    console.log(`fixture ${path.basename(file)} strip ${m.stripX.toFixed(3)}/${m.stripY.toFixed(3)} flip ${m.flipX.toFixed(3)}/${m.flipY.toFixed(3)} ${verdict}`);
+    if (m.pass !== expectPass) bad(`${file} mirror ${verdict}, expected ${expectPass ? 'PASS' : 'FAIL'}`);
+    if (m.stripX > MIRROR_STRIP_R || m.stripY > MIRROR_STRIP_R || m.flipX > MIRROR_FLIP_R || m.flipY > MIRROR_FLIP_R) {
+      if (expectPass) bad(file + ' crossed a mirror floor');
+    }
+  }
+}
+
 const result = gateBiome({ id: 'glacier-abyss', materials }, fileBytes, { pageSource: page, stretchById });
 console.log(formatTable(result));
-if (!result.ok) bad(result.message);
+const crust = result.rows.find((r) => r.id === 'crust');
+if (!crust || crust.pass) bad('crust must FAIL: only two clean snow stills');
+else if (crust.variants !== 2) bad('clean snow variants ' + crust.variants + ' (want 2)');
+else console.log('HOLD crust variants ' + crust.variants + ' < 4. Mirrored tiles are not clean. No procedural fill.');
+for (const row of result.rows) {
+  if (row.id === 'crust') continue;
+  if (!row.pass) bad(row.id + ' ' + (row.reasons || []).join('; '));
+}
+const screen = foregroundReport(5.1);
+console.log(screen.text);
+console.log('chase z ' + screen.z.toFixed(2) + ' eye ' + screen.eye.map((n) => n.toFixed(2)).join(','));
+const snowFg = screen.rows.find((r) => r.name === 'snow');
+if (!snowFg || !snowFg.n) bad('no foreground snow footprint');
 
 function dominantUv(p, n, m) {
   const ax = Math.abs(n[0]), ay = Math.abs(n[1]), az = Math.abs(n[2]);

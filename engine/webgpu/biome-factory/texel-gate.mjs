@@ -1,8 +1,10 @@
 // House texture rule. Blocking. The density floor is not a biome setting.
 // SmiR: every Imagine texture is used at its native resolution. Never upscale, never stretch.
 import crypto from 'crypto';
+import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import zlib from 'zlib';
 import { FOV_Y } from '../engine/bricks/follow-cam.js';
 
 // Native Imagine pixels per metre. A config that sets a lower number is refused.
@@ -12,6 +14,17 @@ export const MAG_MAX = 1;
 export const MIN_LARGE_VARIANTS = 4;
 export const MIN_PROP_VARIANTS = 3;
 export const PHONE_VIEW_H = 1280;
+
+// Mirror row. Blocking. These three numbers are not a biome setting.
+// Written before the run-32 trial. A 48 px mid-tile strip whose detail correlates
+// with its own flip above 0.30, or a whole-still flip above 0.02, is a mirrored
+// tile. Pearson is on the detail field (a radius-4 box mean removed) so a broad
+// ice shade is not scored as a seam. r equal to the floor still passes; only r
+// above the floor fails.
+export const MIRROR_STRIP_PX = 48;
+export const MIRROR_STRIP_R = 0.30;
+export const MIRROR_FLIP_R = 0.02;
+export const MIRROR_DETAIL_R = 4;
 
 // Follow camera on flat ground. Eye height 1.12 m, target 0.66 m, boom 2.35 + look 2.2.
 const EYE_H = 1.12;
@@ -72,6 +85,206 @@ export function imageSize(buf) {
     }
   }
   return null;
+}
+
+function paeth(a, b, c) {
+  const p = a + b - c;
+  const pa = Math.abs(p - a);
+  const pb = Math.abs(p - b);
+  const pc = Math.abs(p - c);
+  if (pa <= pb && pa <= pc) return a;
+  if (pb <= pc) return b;
+  return c;
+}
+
+function lumaOf(rgb, n, channels) {
+  const out = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const o = i * channels;
+    const r = rgb[o];
+    const g = channels > 1 ? rgb[o + 1] : r;
+    const b = channels > 2 ? rgb[o + 2] : r;
+    out[i] = r * 0.2126 + g * 0.7152 + b * 0.0722;
+  }
+  return out;
+}
+
+function unfilterPng(raw, w, h, channels) {
+  const bpp = channels;
+  const stride = w * bpp;
+  const out = Buffer.alloc(h * stride);
+  let src = 0;
+  for (let y = 0; y < h; y++) {
+    const filter = raw[src++];
+    const row = y * stride;
+    const prev = row - stride;
+    for (let i = 0; i < stride; i++) {
+      const x = raw[src++];
+      const a = i >= bpp ? out[row + i - bpp] : 0;
+      const b = y > 0 ? out[prev + i] : 0;
+      const c = y > 0 && i >= bpp ? out[prev + i - bpp] : 0;
+      let v = x;
+      if (filter === 1) v = x + a;
+      else if (filter === 2) v = x + b;
+      else if (filter === 3) v = x + Math.floor((a + b) / 2);
+      else if (filter === 4) v = x + paeth(a, b, c);
+      else if (filter !== 0) return null;
+      out[row + i] = v & 255;
+    }
+  }
+  return out;
+}
+
+function decodePng(buf) {
+  if (!buf || buf.length < 8 || buf[0] !== 0x89 || buf[1] !== 0x50) return null;
+  let o = 8;
+  let w = 0;
+  let h = 0;
+  let color = -1;
+  let depth = 0;
+  let interlace = 0;
+  const idat = [];
+  while (o + 8 <= buf.length) {
+    const len = buf.readUInt32BE(o);
+    const type = buf.toString('ascii', o + 4, o + 8);
+    const data = buf.subarray(o + 8, o + 8 + len);
+    if (type === 'IHDR') {
+      w = data.readUInt32BE(0);
+      h = data.readUInt32BE(4);
+      depth = data[8];
+      color = data[9];
+      interlace = data[12];
+    } else if (type === 'IDAT') idat.push(data);
+    else if (type === 'IEND') break;
+    o += 12 + len;
+  }
+  const channels = color === 6 ? 4 : color === 2 ? 3 : color === 0 ? 1 : color === 4 ? 2 : 0;
+  if (!(w > 0 && h > 0) || depth !== 8 || !channels || interlace !== 0) return null;
+  let raw;
+  try {
+    raw = zlib.inflateSync(Buffer.concat(idat));
+  } catch {
+    return null;
+  }
+  const pix = unfilterPng(raw, w, h, channels);
+  if (!pix) return null;
+  return { w, h, luma: lumaOf(pix, w * h, channels) };
+}
+
+function decodeJpeg(buf) {
+  const size = imageSize(buf);
+  if (!size) return null;
+  const run = spawnSync('ffmpeg', [
+    '-v', 'error', '-i', 'pipe:0', '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1',
+  ], { input: buf, maxBuffer: size.w * size.h * 3 + 65536 });
+  if (run.status !== 0 || !run.stdout || run.stdout.length < size.w * size.h * 3) return null;
+  return { w: size.w, h: size.h, luma: lumaOf(run.stdout, size.w * size.h, 3) };
+}
+
+export function decodeImage(buf) {
+  if (!buf || buf.length < 8) return null;
+  if (buf[0] === 0x89 && buf[1] === 0x50) return decodePng(buf);
+  if (buf[0] === 0xff && buf[1] === 0xd8) return decodeJpeg(buf);
+  return null;
+}
+
+function pearson(a, b, n) {
+  let ma = 0;
+  let mb = 0;
+  for (let i = 0; i < n; i++) { ma += a[i]; mb += b[i]; }
+  ma /= n;
+  mb /= n;
+  let da = 0;
+  let db = 0;
+  let dot = 0;
+  for (let i = 0; i < n; i++) {
+    const xa = a[i] - ma;
+    const xb = b[i] - mb;
+    da += xa * xa;
+    db += xb * xb;
+    dot += xa * xb;
+  }
+  if (!(da > 1e-12) || !(db > 1e-12)) return 0;
+  return dot / Math.sqrt(da * db);
+}
+
+function detailField(luma, w, h, radius) {
+  const iw = w + 1;
+  const ii = new Float64Array(iw * (h + 1));
+  for (let y = 0; y < h; y++) {
+    let row = 0;
+    for (let x = 0; x < w; x++) {
+      row += luma[y * w + x];
+      ii[(y + 1) * iw + (x + 1)] = ii[y * iw + (x + 1)] + row;
+    }
+  }
+  const out = new Float64Array(w * h);
+  for (let y = 0; y < h; y++) {
+    const y0 = Math.max(0, y - radius);
+    const y1 = Math.min(h, y + radius + 1);
+    for (let x = 0; x < w; x++) {
+      const x0 = Math.max(0, x - radius);
+      const x1 = Math.min(w, x + radius + 1);
+      const sum = ii[y1 * iw + x1] - ii[y0 * iw + x1] - ii[y1 * iw + x0] + ii[y0 * iw + x0];
+      out[y * w + x] = luma[y * w + x] - sum / ((y1 - y0) * (x1 - x0));
+    }
+  }
+  return out;
+}
+
+function stripMirror(field, w, h, axis) {
+  const span = MIRROR_STRIP_PX;
+  if (axis === 'x') {
+    const x0 = Math.floor((w - span) / 2);
+    const n = h * span;
+    const a = new Float64Array(n);
+    const b = new Float64Array(n);
+    for (let y = 0; y < h; y++) {
+      for (let i = 0; i < span; i++) {
+        a[y * span + i] = field[y * w + x0 + i];
+        b[y * span + i] = field[y * w + x0 + (span - 1 - i)];
+      }
+    }
+    return pearson(a, b, n);
+  }
+  const y0 = Math.floor((h - span) / 2);
+  const n = span * w;
+  const a = new Float64Array(n);
+  const b = new Float64Array(n);
+  for (let i = 0; i < span; i++) {
+    for (let x = 0; x < w; x++) {
+      a[i * w + x] = field[(y0 + i) * w + x];
+      b[i * w + x] = field[(y0 + (span - 1 - i)) * w + x];
+    }
+  }
+  return pearson(a, b, n);
+}
+
+function flipMirror(field, w, h, axis) {
+  const n = w * h;
+  const b = new Float64Array(n);
+  if (axis === 'x') {
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) b[y * w + x] = field[y * w + (w - 1 - x)];
+    }
+  } else {
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) b[y * w + x] = field[(h - 1 - y) * w + x];
+    }
+  }
+  return pearson(field, b, n);
+}
+
+// Blocking mirror row. strip r > 0.30 on X or Y, or global flip r > 0.02, fails.
+export function mirrorCorrelation(luma, w, h) {
+  const field = detailField(luma, w, h, MIRROR_DETAIL_R);
+  const stripX = stripMirror(field, w, h, 'x');
+  const stripY = stripMirror(field, w, h, 'y');
+  const flipX = flipMirror(field, w, h, 'x');
+  const flipY = flipMirror(field, w, h, 'y');
+  const stripFail = stripX > MIRROR_STRIP_R || stripY > MIRROR_STRIP_R;
+  const flipFail = flipX > MIRROR_FLIP_R || flipY > MIRROR_FLIP_R;
+  return { stripX, stripY, flipX, flipY, pass: !stripFail && !flipFail };
 }
 
 export function pngHeader(w, h) {
@@ -269,13 +482,6 @@ export function gateSlot(slot, files, opts = {}) {
   const reasons = [];
   const variants = variantList(slot).map((entry) => readVariant(entry, files));
   const present = variants.filter((v) => v.bytes && v.size);
-  const unique = [];
-  const seen = new Set();
-  for (const v of present) {
-    if (seen.has(v.hash)) continue;
-    seen.add(v.hash);
-    unique.push(v);
-  }
   if (!variants.length) reasons.push('no Imagine file');
   for (const v of variants) {
     if (!v.bytes) reasons.push(`missing file ${v.name}`);
@@ -286,7 +492,37 @@ export function gateSlot(slot, files, opts = {}) {
     }
     if (v.hashMismatch) reasons.push(`provenance sha256 mismatch ${v.name}`);
   }
-  const native = unique[0]?.size || null;
+  const mirrors = [];
+  for (const v of present) {
+    const img = decodeImage(files[v.name]);
+    if (!img || img.w !== v.size.w || img.h !== v.size.h) {
+      v.mirrorFail = true;
+      reasons.push(`mirror unread ${v.name}`);
+      continue;
+    }
+    const m = mirrorCorrelation(img.luma, img.w, img.h);
+    mirrors.push({ name: v.name, ...m });
+    if (!m.pass) {
+      v.mirrorFail = true;
+      const bits = [];
+      if (m.stripX > MIRROR_STRIP_R || m.stripY > MIRROR_STRIP_R) {
+        bits.push(`48px strip r ${m.stripX.toFixed(3)}/${m.stripY.toFixed(3)} > ${MIRROR_STRIP_R}`);
+      }
+      if (m.flipX > MIRROR_FLIP_R || m.flipY > MIRROR_FLIP_R) {
+        bits.push(`flip r ${m.flipX.toFixed(3)}/${m.flipY.toFixed(3)} > ${MIRROR_FLIP_R}`);
+      }
+      reasons.push(`mirror ${v.name}: ${bits.join('; ')}`);
+    }
+  }
+  const unique = [];
+  const seen = new Set();
+  for (const v of present) {
+    if (v.mirrorFail) continue;
+    if (seen.has(v.hash)) continue;
+    seen.add(v.hash);
+    unique.push(v);
+  }
+  const native = unique[0]?.size || present[0]?.size || null;
   const tileMetres = tileMetresOf(slot) ?? Number.NaN;
   let pxPerM = null;
   if (native && tileMetres > 0) {
@@ -322,6 +558,7 @@ export function gateSlot(slot, files, opts = {}) {
     variants: unique.length,
     stretch,
     magnification: mag,
+    mirrors,
     pass: reasons.length === 0,
     reasons,
   };
@@ -398,6 +635,15 @@ export function formatTable(result) {
     lines.push(`${r.material} | ${r.native} | ${r.tileMetres} | ${r.pxPerM} | ${r.variants} | ${r.stretch} | ${r.verdict}`);
   }
   if (!result.ok) lines.push(result.message);
+  for (const row of result.rows) {
+    for (const m of row.mirrors || []) {
+      const verdict = m.pass ? 'PASS' : 'FAIL';
+      lines.push(
+        `mirror ${row.id} ${m.name} | strip ${m.stripX.toFixed(3)}/${m.stripY.toFixed(3)} | flip ${m.flipX.toFixed(3)}/${m.flipY.toFixed(3)} | ${verdict}`,
+      );
+    }
+  }
+  if (result.screen) lines.push(result.screen);
   return lines.join('\n');
 }
 
@@ -579,7 +825,16 @@ async function auditGlacier(webgpu) {
     stretchById = new Map();
   }
   const config = { id: 'glacier-abyss', materials: slots };
-  return gateBiome(config, files, { pageSource: page, stretchById });
+  const result = gateBiome(config, files, { pageSource: page, stretchById });
+  try {
+    const { foregroundReport } = await import('../glacier/screen-texel.mjs');
+    const screen = foregroundReport();
+    result.screen = screen.text;
+    result.screenRows = screen.rows;
+  } catch (err) {
+    result.screen = `onscreen unread: ${err && err.message || err}`;
+  }
+  return result;
 }
 
 function printAudit(biome, result) {

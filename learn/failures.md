@@ -1316,3 +1316,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Branch `terrace/fix-door-ghost` (off dd80963f): ground = plain snow `Color(0.78, 0.84, 0.9)` like the offline render; rebuilt materials keep `side` from the GLB material. Page-only, 3 lines, to merge into Engine Core's `engine/bench-load-1013` (b1e99d2e; textual conflict on the adjacent `parseAsync` line only). |
 | Guard | `python3 -m tools.gate.playgate <served_url> <out>` renders the SERVED page headless at 412x915 CSS x1.5 (door-3m, threshold-3m/8m-30d, wall-end-left/right), runs per-region no-grey, and inventories the live scene: FAIL on any undeclared node, a ground that maps an object plate, an object material whose GLB is doubleSided but runtime side != DoubleSide, unexpected transparency, page errors, and camera vs spine.json beyond tolerance. Self-test `python3 -m tools.gate.selftest_playgate`: current build FAILs both (a) and (b); fixed build PASSes the scene checks. Known gap: `nogrey` skips luma <= 20, so a dark flat band is not flagged; the scene check is what catches (a). |
 | Sources | `tools/gate/playgate.py`, `tools/gate/playgate.mjs`, `tools/gate/playgate.views.json`, `tools/gate/selftest_playgate.py`. |
+
+### 2026-11-14 — mirrored snow stills are not a fourth variant
+
+| | |
+| --- | --- |
+| Take | Glacier abyss run 32, texel mirror row |
+| Defect | snow-v2-0 and snow-v2-1 are mirrored across the mid-tile seam (48 px strip r 0.95, whole-still flip r 0.04). After they are refused, only snow-v2-2 and snow-v2-3 are clean. A large snow surface needs 4. |
+| Root cause | Those two stills were made seamless with a 512 px offset and a 64 px cross-blend. The blend mirrors the grain. Padding the slot with a flip, a rotate, or a generated tile would fake the count. |
+| Fix | The mirror row fails those two files. The play shader samples only the two clean stills. The crust slot stays FAIL at variants 2 < 4 until new Imagine stills exist. |
+| Guard | `node engine/webgpu/glacier/test-texel-density.mjs` fixture rows: snow-v2-0 and snow-v2-1 FAIL, snow-v2-2 and snow-v2-3 PASS. `node engine/webgpu/biome-factory/texel-gate.mjs --biome glacier` exits 2, `variants 2 < 4`. Strip floor 0.30, flip floor 0.02, detail box radius 4. |
+| Sources | `engine/webgpu/biome-factory/texel-gate.mjs`, `engine/webgpu/glacier/tex/snow-v2/`. |
