@@ -1,5 +1,5 @@
 // CIE76 with lightness. The limit is 10. It is not a knob.
-// Lab uses the IEC sRGB curve. The renderer and the predictor share a 2.2 present.
+// Lab uses the IEC sRGB curve. The renderer and the predictor share one grade.
 
 export const DE76_MAX = 10;
 

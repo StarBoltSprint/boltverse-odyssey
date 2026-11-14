@@ -10,6 +10,8 @@
     "direction": [0.72, 0.28, -0.63]
   },
   "flatScale": 1.45,
+  "exposureEv": 0.32,
+  "tonemap": "agx",
   "sky": {
     "zenith": [0.16, 0.22, 0.46],
     "horizon": [0.62, 0.34, 0.28],

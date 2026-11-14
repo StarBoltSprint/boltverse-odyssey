@@ -1,0 +1,29 @@
+{
+  "writtenBeforeTrial": "2026-11-14",
+  "note": "Thresholds are fixed before the graded trial. They are not relaxed after the pictures come back.",
+  "lumaDeltaMax": 0.05,
+  "clipAt": 0.98,
+  "clipFracMax": 0.005,
+  "crushAt": 0.02,
+  "crushFracMax": 0.005,
+  "meanYStdMax": 0.015,
+  "greyBrightMax": 0.15,
+  "iceBlueMin": 0,
+  "brightLuma": 0.45,
+  "greyChroma": 0.04,
+  "de76Max": 10,
+  "sceneDraws": 9,
+  "presentPass": 1,
+  "tris": 195634,
+  "trisNote": "Scene triangle count is the branch-head budget from test-cpu, 195634, which is the run-31 number. It must not move.",
+  "texelMinPxPerM": 2048,
+  "key": {
+    "snow": "The four live snow stills, pooled. Exposure is fixed so snow-pixel p50 matches that p50 within lumaDeltaMax.",
+    "frame": "The run-31 gamma-2.2 frame at the same time is the frame key. Full-frame luma p1, p50, and p99 must each stay within lumaDeltaMax of that frame. A gameplay frame is not a flat still, so snow p1 and p99 are reported and are not the pass line.",
+    "keyscore": "100 - (CIE76 snow median vs snow stills + CIE76 ice median vs glacier-ice stills) / 2. Higher is better. The floor is run31Keyscore, measured on the baseline frames and written before the graded trial."
+  },
+  "greyBright": "Among ice pixels (fall, arch, icicle, wall, serac) with display luma above brightLuma, the fraction whose max-min is below greyChroma.",
+  "iceBlue": "Mean (b - r) over those ice pixels. Must be above iceBlueMin.",
+  "crushed": "Fraction of pixels that are not the planet and have luma below crushAt.",
+  "run31Keyscore": 85.84
+}

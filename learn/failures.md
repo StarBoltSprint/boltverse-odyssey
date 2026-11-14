@@ -1316,3 +1316,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Branch `terrace/fix-door-ghost` (off dd80963f): ground = plain snow `Color(0.78, 0.84, 0.9)` like the offline render; rebuilt materials keep `side` from the GLB material. Page-only, 3 lines, to merge into Engine Core's `engine/bench-load-1013` (b1e99d2e; textual conflict on the adjacent `parseAsync` line only). |
 | Guard | `python3 -m tools.gate.playgate <served_url> <out>` renders the SERVED page headless at 412x915 CSS x1.5 (door-3m, threshold-3m/8m-30d, wall-end-left/right), runs per-region no-grey, and inventories the live scene: FAIL on any undeclared node, a ground that maps an object plate, an object material whose GLB is doubleSided but runtime side != DoubleSide, unexpected transparency, page errors, and camera vs spine.json beyond tolerance. Self-test `python3 -m tools.gate.selftest_playgate`: current build FAILs both (a) and (b); fixed build PASSes the scene checks. Known gap: `nogrey` skips luma <= 20, so a dark flat band is not flagged; the scene check is what catches (a). |
 | Sources | `tools/gate/playgate.py`, `tools/gate/playgate.mjs`, `tools/gate/playgate.views.json`, `tools/gate/selftest_playgate.py`. |
+
+### 2026-11-14 — AgX at the snow-key exposure misses t=30 p99 and bright-ice grey
+
+| | |
+| --- | --- |
+| Take | Glacier D1 HDR. Not a KEEP. |
+| Defect | At t=30 s the frame p99 is 0.0501 from the gamma-2.2 key (limit 0.05) and bright-ice grey_bright is 0.189 (limit 0.15). |
+| Root cause | AgX's shoulder pulls the top 1% down by about one code value versus gamma 2.2. Bright ice is the warm dawn sun times blue albedo, so sunlit faces sit near grey; the spec cap does not touch faces that point at the camera. ACES and Khronos PBR Neutral matched the snow median and were less grey, and both moved frame p1 by more than 0.05. |
+| Fix | Not applied. The limits were not moved. AgX at exposureEv 0.32 remains the pick because it was the only operator inside the other limits. |
+| Guard | `node engine/webgpu/glacier/tonemap-gate.mjs` against `tonemap-limits.json`. Floor keyscore 85.84. |
+| Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/dawn-light.json`, `engine/webgpu/glacier/artifacts/run32-hdr/tonemap-gate.json`. |
