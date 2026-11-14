@@ -15,7 +15,9 @@ export const IMAGINE = [
     role: 'snow',
     surfaceClass: 'snow',
     tileMetres: TILE_M,
-    files: ['tex/snow-v2/snow-v2-0.png', 'tex/snow-v2/snow-v2-2.png', 'tex/snow-v2/snow-v2-3.png', 'tex/crust/v4.jpg'],
+    // All four Texture-bot stills. The mirror row drops snow-v2-0 and snow-v2-1.
+    // Two clean stills remain. That is under the floor of 4. Do not pad the list.
+    files: ['tex/snow-v2/snow-v2-0.png', 'tex/snow-v2/snow-v2-1.png', 'tex/snow-v2/snow-v2-2.png', 'tex/snow-v2/snow-v2-3.png'],
     worldMats: [MAT.snow, MAT.drift],
     instances: ['drift', 'chunk'],
   },

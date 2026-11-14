@@ -26,9 +26,10 @@ export const ICE = {
 
 function v3(a) { return `vec3f(${a[0]}, ${a[1]}, ${a[2]})`; }
 
-export function albedoWgsl() {
+export function albedoWgsl(snowLayers = 2) {
   const C = ICE;
   const repeats = REPEATS_PER_M;
+  const layers = Math.max(1, snowLayers | 0);
   return `
 fn hash21(p: vec2f) -> f32 { return fract(sin(dot(p, vec2f(127.1, 311.7))) * 43758.5453); }
 fn rot2(v: vec2f, ang: f32) -> vec2f {
@@ -181,6 +182,109 @@ fn snowFetch(arr: texture_2d_array<f32>, uv: vec2f, layer: i32, du: vec2f, dv: v
   }
   return textureSampleGrad(arr, samp, uv, layer, du, dv).rgb;
 }
+// Per-variant normal, height, and ORM, taken from the Imagine pixels in this shader.
+// Metal stays 0. Height is the grain, not the still's mean brightness.
+struct SnowTap { c: vec3f, h: f32, n: vec3f, rough: f32, ao: f32 };
+var<private> gSnowN: vec3f = vec3f(0.0, 1.0, 0.0);
+var<private> gSnowH: f32 = 0.0;
+var<private> gSnowRough: f32 = 0.96;
+var<private> gSnowAo: f32 = 1.0;
+fn luma3(c: vec3f) -> f32 { return dot(c, vec3f(0.2126, 0.7152, 0.0722)); }
+// Linear luma of the two clean stills (slots 0 and 1). Slots 2 and 3 repeat them
+// when a column probe loads only those two. Height is the grain above that mean.
+fn snowMean(layer: i32) -> f32 {
+  let means = vec4f(0.4337, 0.5094, 0.4337, 0.5094);
+  return means[layer];
+}
+fn tapSnow(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, layer: i32, gain: f32, up: vec3f) -> SnowTap {
+  let c0 = textureSampleGrad(arr, samp, uv, layer, du, dv).rgb * gain;
+  let h0 = luma3(c0) - snowMean(layer);
+  var o: SnowTap;
+  o.c = c0;
+  o.h = h0;
+  o.n = up;
+  o.rough = clamp(0.96 - abs(h0) * 1.4, 0.88, 0.98);
+  o.ao = clamp(1.0 + h0 * 0.12, 0.985, 1.015);
+  return o;
+}
+fn mixSnow(a: SnowTap, b: SnowTap, w: f32) -> SnowTap {
+  var o: SnowTap;
+  o.c = mix(b.c, a.c, w);
+  o.h = mix(b.h, a.h, w);
+  o.n = normalize(mix(b.n, a.n, w));
+  o.rough = mix(b.rough, a.rough, w);
+  o.ao = mix(b.ao, a.ao, w);
+  return o;
+}
+fn heightW(ha: f32, hb: f32) -> f32 {
+  return smoothstep(0.0, 1.0, clamp(0.5 + (ha - hb) / 0.012, 0.0, 1.0));
+}
+fn cellSnow(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, id: vec2f, gain: vec4f, tng: vec3f, btg: vec3f, up: vec3f) -> SnowTap {
+  let nLay = ${layers};
+  let a = i32(floor(hash21(id + vec2f(8.0, 1.0)) * f32(nLay))) % nLay;
+  let b = i32(floor(hash21(id + vec2f(2.2, 5.1)) * f32(nLay))) % nLay;
+  let two = hash21(id + vec2f(9.2, 4.4)) > 0.42 && a != b;
+  let ta = tapSnow(arr, uv, du, dv, a, gain[a], up);
+  let tb = tapSnow(arr, uv, du, dv, b, gain[b], up);
+  let w = select(1.0, heightW(ta.h, tb.h), two);
+  return mixSnow(ta, tb, w);
+}
+// Hex cell, one or two stills, height decides the mix. Not an average of every still.
+fn snowHex(arr: texture_2d_array<f32>, metres: vec2f, dmu: vec2f, dmv: vec2f, tng: vec3f, btg: vec3f, up: vec3f, gain: vec4f) -> SnowTap {
+  let cells = 2.0;
+  let bias = 2.0;
+  let skew = vec2f(metres.x + metres.y * 0.5, metres.y * 0.8660254) * cells;
+  let i = floor(skew);
+  let f = fract(skew);
+  let lower = f.x > f.y;
+  let w0 = select(1.0 - f.y, 1.0 - f.x, lower);
+  let w1 = select(f.y - f.x, f.x - f.y, lower);
+  let w2 = select(f.x, f.y, lower);
+  let ws = vec3f(w0, w1, w2);
+  let sm = ws * ws * (3.0 - 2.0 * ws);
+  let w = sm / max(sm.x + sm.y + sm.z, 1e-4);
+  let id1 = i + select(vec2f(0.0, 1.0), vec2f(1.0, 0.0), lower);
+  let id2 = i + vec2f(1.0, 1.0);
+  let a0 = hash21(i + vec2f(3.7, 9.1)) * 6.2831853;
+  let a1 = hash21(id1 + vec2f(3.7, 9.1)) * 6.2831853;
+  let a2 = hash21(id2 + vec2f(3.7, 9.1)) * 6.2831853;
+  let o0 = vec2f(hash21(i + vec2f(2.2, 5.1)), hash21(i + vec2f(4.4, 1.3)));
+  let o1 = vec2f(hash21(id1 + vec2f(2.2, 5.1)), hash21(id1 + vec2f(4.4, 1.3)));
+  let o2 = vec2f(hash21(id2 + vec2f(2.2, 5.1)), hash21(id2 + vec2f(4.4, 1.3)));
+  let uv0 = (rot2(metres, a0) + o0 * 0.5) * ${repeats};
+  let uv1 = (rot2(metres, a1) + o1 * 0.5) * ${repeats};
+  let uv2 = (rot2(metres, a2) + o2 * 0.5) * ${repeats};
+  let du0 = cover(rot2(dmu, a0) * ${repeats} * bias);
+  let dv0 = cover(rot2(dmv, a0) * ${repeats} * bias);
+  let du1 = cover(rot2(dmu, a1) * ${repeats} * bias);
+  let dv1 = cover(rot2(dmv, a1) * ${repeats} * bias);
+  let du2 = cover(rot2(dmu, a2) * ${repeats} * bias);
+  let dv2 = cover(rot2(dmv, a2) * ${repeats} * bias);
+  let t0 = cellSnow(arr, uv0, du0, dv0, i, gain, tng, btg, up);
+  let t1 = cellSnow(arr, uv1, du1, dv1, id1, gain, tng, btg, up);
+  let t2 = cellSnow(arr, uv2, du2, dv2, id2, gain, tng, btg, up);
+  var o: SnowTap;
+  o.c = t0.c * w.x + t1.c * w.y + t2.c * w.z;
+  o.h = t0.h * w.x + t1.h * w.y + t2.h * w.z;
+  o.n = normalize(t0.n * w.x + t1.n * w.y + t2.n * w.z);
+  o.rough = t0.rough * w.x + t1.rough * w.y + t2.rough * w.z;
+  o.ao = t0.ao * w.x + t1.ao * w.y + t2.ao * w.z;
+  gSnowN = o.n;
+  gSnowH = o.h;
+  gSnowRough = o.rough;
+  gSnowAo = o.ao;
+  return o;
+}
+fn snowOn(p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f) -> vec3f {
+  let n = normalize(nrm);
+  let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(n.y) < 0.9);
+  let tng = normalize(cross(helper, n));
+  let btg = normalize(cross(n, tng));
+  let metres = vec2f(dot(p, tng), dot(p, btg));
+  let dmu = vec2f(dot(px, tng), dot(px, btg));
+  let dmv = vec2f(dot(py, tng), dot(py, btg));
+  return snowHex(snowArr, metres, dmu, dmv, tng, btg, n, gain).c;
+}
 fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: vec4f) -> vec3f {
   let metres = vec2f(p.x, p.z);
   let dmu = vec2f(px.x, px.z);
@@ -189,56 +293,50 @@ fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: 
   let base = rot2(metres, ang);
   let du = cover(rot2(dmu, ang) * ${repeats} * 2.0);
   let dv = cover(rot2(dmv, ang) * ${repeats} * 2.0);
-  let s = vec2f(base.y * 0.07, base.x * 0.05 + metres.x * 0.04);
-  var wt = vec4f(
-    vnoise(s),
-    vnoise(s + vec2f(5.2, 1.7)),
-    vnoise(s + vec2f(2.4, 8.1)),
-    vnoise(s + vec2f(9.0, 3.4))
-  ) + vec4f(1.15);
-  wt = wt / max(dot(wt, vec4f(1.0)), 1e-4);
   let r = f32(${repeats});
-  let c0 = snowFetch(arr, base * r, 0, du, dv) * gain.x;
-  let c1 = snowFetch(arr, (base + vec2f(0.13, 0.08)) * r, 1, du, dv) * gain.y;
-  let c2 = snowFetch(arr, (base + vec2f(0.05, 0.17)) * r, 2, du, dv) * gain.z;
-  let c3 = snowFetch(arr, (base + vec2f(0.19, 0.11)) * r, 3, du, dv) * gain.w;
-  let detail = c0 * wt.x + c1 * wt.y + c2 * wt.z + c3 * wt.w;
-  let macroUv = base * r * 0.16;
-  let duM = cover(du * 0.16);
-  let dvM = cover(dv * 0.16);
-  let m0 = snowFetch(arr, macroUv, 0, duM, dvM) * gain.x;
-  let m1 = snowFetch(arr, macroUv + vec2f(0.23, 0.11), 2, duM, dvM) * gain.z;
-  let lift = select(vec3f(1.64, 1.74, 1.90), vec3f(1.0, 1.0, 1.0), u.sun.w > 4.5 && u.sun.w < 5.5);
   let iso = u.sun.w;
-  if (iso > 29.5 && iso < 30.5) { return snowFetch(arr, base * r, 0, du, dv) * gain.x * lift; }
-  if (iso > 30.5 && iso < 31.5) { return snowFetch(arr, (base + vec2f(0.13, 0.08)) * r, 1, du, dv) * gain.y * lift; }
-  if (iso > 31.5 && iso < 32.5) { return snowFetch(arr, (base + vec2f(0.05, 0.17)) * r, 2, du, dv) * gain.z * lift; }
-  if (iso > 32.5 && iso < 33.5) { return snowFetch(arr, (base + vec2f(0.19, 0.11)) * r, 3, du, dv) * gain.w * lift; }
-  if (iso > 33.5 && iso < 34.5) {
-    return vec3f(0.25 + 1.6 * wt.x, 0.25 + 1.6 * wt.y, 0.25 + 1.6 * wt.z);
+  let nLay = ${layers};
+  // Single-still column probe. Layers past the loaded set repeat a clean still.
+  // They are not new Imagine variants.
+  // Run 18 lift. Mode 0 keeps it. A diagnostic in (4.5, 5.5) turns it off.
+  // select(false, true, cond): the chase (cond false) is the lifted grade.
+  let lift = select(vec3f(1.64, 1.74, 1.90), vec3f(1.0, 1.0, 1.0), iso > 4.5 && iso < 5.5);
+  if (iso > 29.5 && iso < 33.5) {
+    var layer = 0;
+    if (iso > 30.5 && iso < 31.5) { layer = 1; }
+    else if (iso > 31.5 && iso < 32.5) { layer = 2; }
+    else if (iso > 32.5) { layer = 3; }
+    layer = layer % nLay;
+    return snowFetch(arr, base * r, layer, du, dv) * gain[layer] * lift;
   }
-  if (iso > 34.5 && iso < 35.5) { return (m0 * 0.62 + m1 * 0.38) * lift; }
   if (iso > 35.5 && iso < 36.5) { return vec3f(1.0); }
-  return (detail * 0.84 + (m0 * 0.62 + m1 * 0.38) * 0.16) * lift;
+  let ca = cos(ang);
+  let sa = sin(ang);
+  let tng = vec3f(ca, 0.0, -sa);
+  let btg = vec3f(sa, 0.0, ca);
+  let tap = snowHex(arr, base, rot2(dmu, ang), rot2(dmv, ang), tng, btg, vec3f(0.0, 1.0, 0.0), gain);
+  if (iso > 33.5 && iso < 34.5) { return vec3f(0.45 + tap.h * 6.0); }
+  if (iso > 34.5 && iso < 35.5) { return tap.n * 0.5 + vec3f(0.5); }
+  return tap.c * lift;
 }
 fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m < 0.5) {
-    let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
+    let snowGain = vec4f(1.005, 1.005, 1.005, 1.005);
     // Planar world xz so a tilted triangle does not shear the crust into lanes.
     return sampleSnow(snowArr, p, px, py, snowGain);
   }
   if (m < 3.5) {
     let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
-    let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
+    let snowGain = vec4f(1.005, 1.005, 1.005, 1.005);
     if (m < 1.5) {
       let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0, 2.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+      let snow = snowOn(p, nrm, px, py, snowGain);
       let lip = smoothstep(0.35, 0.75, nrm.y);
       return mix(fall, snow, lip * 0.85);
     }
     if (m < 2.5) {
       let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 2.0, 4.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+      let snow = snowOn(p, nrm, px, py, snowGain);
       let cap = smoothstep(0.28, 0.62, nrm.y);
       return mix(arch, snow, cap);
     }
@@ -246,9 +344,9 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 4.0);
     return ice * vec3f(0.92, 0.96, 1.0);
   }
-  let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
+  let snowGain = vec4f(1.005, 1.005, 1.005, 1.005);
   let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
-  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+  let snow = snowOn(p, nrm, px, py, snowGain);
   let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 2.0);
   if (m < 4.5) {
     let chunk = skyNoise(p * 0.17);

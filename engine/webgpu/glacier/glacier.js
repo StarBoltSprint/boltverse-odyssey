@@ -296,6 +296,23 @@ function stepLive(dt) {
   return live;
 }
 
+// Play loads only the stills that pass the mirror row. snow=v2 keeps all four
+// Texture-bot files so the column probe can still name them. Slots are not
+// filled by a flip, a rotate, or a generated tile.
+function snowFileList(query) {
+  if (query === 'v2') {
+    return ['./tex/snow-v2/snow-v2-0.png', './tex/snow-v2/snow-v2-1.png', './tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png'];
+  }
+  if (query === 'shoulder') {
+    return ['./tex/ice-v2/shoulder-ice/shoulder-ice-0.png', './tex/ice-v2/shoulder-ice/shoulder-ice-1.png', './tex/ice-v2/shoulder-ice/shoulder-ice-2.png', './tex/ice-v2/shoulder-ice/shoulder-ice-3.png'];
+  }
+  if (query === 'serac') {
+    return ['./tex/ice-v2/range-serac/range-serac-0.png', './tex/ice-v2/range-serac/range-serac-1.png', './tex/ice-v2/range-serac/range-serac-2.png', './tex/ice-v2/range-serac/range-serac-3.png'];
+  }
+  return ['./tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png'];
+}
+const SNOW_FILES = snowFileList(qs.get('snow'));
+
 const WGSL = /* wgsl */`
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
@@ -317,7 +334,7 @@ struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k:
 
 ${lightWgsl(LIGHT)}
 ${skyWgsl(LIGHT.sky)}
-${albedoWgsl()}
+${albedoWgsl(SNOW_FILES.length)}
 ${IDLE.wgsl}
 
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
@@ -393,13 +410,22 @@ fn darken15(c: vec3f) -> vec3f {
   }
   var nLit = n;
   // Derivatives stay outside the material branch. Uniform control flow.
-  let gAlb = dpdx(alb) + dpdy(alb);
+  let hx = dpdx(gSnowH);
+  let hy = dpdy(gSnowH);
   if (m < 0.5) {
-    // Grain from the still. A world-space sine at this scale became corduroy.
-    nLit = normalize(n + vec3f(gAlb.r, 0.0, gAlb.g) * 0.45);
+    // Screen derivative of the still's grain height. A constant tilt would
+    // walk the dawn light off the snow, so this is only the pixel variation.
+    nLit = normalize(n - vec3f(hx, 0.0, hy) * 6.0);
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
-  var col = litIce(alb, nLit, view);
+  var col = litIce(alb, n, view);
+  if (m < 0.5) {
+    // Same dawn lobe as every other surface. The grain normal only leans it.
+    // Roughness keeps that lean small. AO is the grain height, metal stays 0.
+    let grain = litIce(alb, nLit, view);
+    let lean = clamp(0.12 + (1.0 - gSnowRough) * 1.5, 0.08, 0.22);
+    col = mix(col, grain, lean) * gSnowAo;
+  }
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
@@ -790,19 +816,9 @@ async function main() {
     }
     return tex;
   }
-  // Four passers. v2-1 (worst 1.613) is the one left out: v2-2 stays for colour,
-  // and v2-0, v2-3, and old still 3 score lower. The run 18 sampler is unchanged.
-  // snow=v2 still loads all four Texture-bot stills for the column gate.
-  // shoulder / serac load the ice-v2 stills onto the snow plane for the column prefilter only.
-  const snowQuery = qs.get('snow');
-  const snowFiles = snowQuery === 'v2'
-    ? ['./tex/snow-v2/snow-v2-0.png', './tex/snow-v2/snow-v2-1.png', './tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png']
-    : snowQuery === 'shoulder'
-    ? ['./tex/ice-v2/shoulder-ice/shoulder-ice-0.png', './tex/ice-v2/shoulder-ice/shoulder-ice-1.png', './tex/ice-v2/shoulder-ice/shoulder-ice-2.png', './tex/ice-v2/shoulder-ice/shoulder-ice-3.png']
-    : snowQuery === 'serac'
-    ? ['./tex/ice-v2/range-serac/range-serac-0.png', './tex/ice-v2/range-serac/range-serac-1.png', './tex/ice-v2/range-serac/range-serac-2.png', './tex/ice-v2/range-serac/range-serac-3.png']
-    : ['./tex/snow-v2/snow-v2-0.png', './tex/snow-v2/snow-v2-2.png', './tex/snow-v2/snow-v2-3.png', './tex/crust/v4.jpg'];
-  const snowTex = await loadArray(snowFiles);
+  // Clean snow stills only, unless a column prefilter asked for another set.
+  // snow-v2-0 and snow-v2-1 fail the mirror row. They are not sampled here.
+  const snowTex = await loadArray(SNOW_FILES);
   let snowAstc = null;
   try {
     snowAstc = await loadAstcArray(['./tex/crust-diag/v1.astcpack', './tex/crust-diag/v2.astcpack', './tex/crust-diag/v3.astcpack', './tex/crust-diag/v4.astcpack']);
