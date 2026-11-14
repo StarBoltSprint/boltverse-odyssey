@@ -8,6 +8,7 @@ import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
 import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
+import { LOD } from './lod.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
@@ -25,6 +26,7 @@ canvas.height = H;
 let gatePose = null;
 let gateMode = 0;
 let gateBreak = 0;
+let hideFlakes = false;
 let skySwim = 0;
 let skyYaw = 0;
 let simClock = 0;
@@ -310,7 +312,7 @@ struct U {
 @group(0) @binding(6) var fallArr: texture_2d_array<f32>;
 @group(0) @binding(7) var archArr: texture_2d_array<f32>;
 @group(0) @binding(8) var seracArr: texture_2d_array<f32>;
-struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
+struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f, @location(5) err: f32 };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
 struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
@@ -323,13 +325,13 @@ ${IDLE.wgsl}
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
   var o: VO;
   o.p = u.vp * vec4f(a.xyz, 1.0);
-  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = b.xyz;
+  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = b.xyz; o.err = 0.0;
   return o;
 }
-@vertex fn vsWorld(@location(0) a: vec4f, @location(1) b: vec4f, @location(4) shade: vec3f) -> VO {
+@vertex fn vsWorld(@location(0) a: vec4f, @location(1) b: vec4f, @location(4) shade: vec4f) -> VO {
   var o: VO;
   o.p = u.vp * vec4f(a.xyz, 1.0);
-  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = shade;
+  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = shade.xyz; o.err = shade.w;
   return o;
 }
 @vertex fn vsInst(@location(0) a: vec4f, @location(1) b: vec4f, @location(2) i0: vec4f, @location(3) i1: vec4f) -> VO {
@@ -343,7 +345,7 @@ ${IDLE.wgsl}
   let nr = normalize(vec3f(c * nL.x + s * nL.z, nL.y, -s * nL.x + c * nL.z));
   var o: VO;
   o.p = u.vp * vec4f(pr, 1.0);
-  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w;
+  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w; o.err = 0.0;
   return o;
 }
 @vertex fn vsSky(@builtin(vertex_index) vi: u32) -> SO {
@@ -362,6 +364,7 @@ fn darken15(c: vec3f) -> vec3f {
   return c * (y2 / y);
 }
 @fragment fn fsSky(v: SO) -> @location(0) vec4f {
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(0.0, 0.0, 0.0, 1.0); }
   let hw = u.ivp * vec4f(v.ndc, 1.0, 1.0);
   var sky = skyColour(normalize(hw.xyz / hw.w - u.cam.xyz));
   if (u.spin.z > 0.5) {
@@ -378,6 +381,11 @@ fn darken15(c: vec3f) -> vec3f {
   var n = normalize(v.lit);
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
+  // G-buffer for the no-fog / flicker gate. Not the picture.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) {
+    let ndlG = clamp(dot(normalize(v.lit), sunN()), 0.0, 1.0);
+    return vec4f((m + 0.5) / 8.0, clamp(dist / 4000.0, 0.0, 1.0), 0.08 + 0.92 * ndlG, 1.0);
+  }
   let alb = albedoOf(m, v.w, nUv, gx, gy);
   let iso = u.sun.w;
   if (iso > 29.5 && iso < 35.5) { return present(alb); }
@@ -408,23 +416,30 @@ fn darken15(c: vec3f) -> vec3f {
     col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
     col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7;
   }
-  // Run 11 dither. Walls, arches, falls, and distant rock fade in by noise.
-  // Snow is not discarded, so the horizon ridge stays solid. No fog.
+  // Value layer on the ice masses. A scalar, so the ice chroma stays.
+  // Near crests stay on the dawn rig. Far crests sit darker. Not a sky mix.
   if ((m > 0.5 && m < 2.5) || (m > 5.5 && m < 7.5)) {
-    let cover = smoothstep(460.0, 160.0, dist);
-    let n = fract(sin(dot(v.p.xy, vec2f(12.9898, 78.233))) * 43758.5453);
-    if (cover < n) { discard; }
+    let reach = smoothstep(${LOD.valueNear.toFixed(1)}, ${LOD.valueFar.toFixed(1)}, dist);
+    col = col * mix(1.0, ${LOD.valueScale.toFixed(1)}, reach);
   }
-  let aerial = smoothstep(280.0, 6200.0, dist);
-  let horizon = skyColour(normalize(v.w - u.cam.xyz));
-  col = mix(col, horizon, aerial * 0.62);
   if (m > 6.5 && m < 7.5) {
     let rim = pow(1.0 - ndv, 1.6) * smoothstep(0.0, 0.35, ndl);
     let head = max(col.r, max(col.g, col.b));
-    col = col + vec3f(0.9, 0.36, 0.22) * rim * clamp(1.15 - head, 0.0, 1.0) * (1.0 - aerial * 0.25);
+    col = col + vec3f(0.9, 0.36, 0.22) * rim * clamp(1.15 - head, 0.0, 1.0);
   }
   if (u.misc.w > 0.5 && abs(m - (u.misc.w - 1.0)) < 0.25) { col = darken15(col); }
-  return present(col);
+  // Screen-error LOD. Derivatives were taken above, in uniform flow.
+  // Zero is the terminal surface. Positive is the coarse sibling.
+  // Negative is the fine sibling of that coarse surface.
+  // Coverage crossfades across one pixel of error. Alpha-to-coverage,
+  // not a screen-space hash. Snow stays at zero, so the ridge stays solid.
+  let geom = v.err;
+  let errPx = abs(geom) / max(max(length(gx), length(gy)), 1e-4);
+  let fade = smoothstep(${LOD.errLo.toFixed(1)}, ${LOD.errHi.toFixed(1)}, errPx);
+  var cover = 1.0;
+  if (geom > 0.0) { cover = 1.0 - fade; }
+  else if (geom < 0.0) { cover = fade; }
+  return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), cover);
 }
 @fragment fn fsPlanet(v: VO) -> @location(0) vec4f {
   let n = normalize(v.n);
@@ -824,6 +839,9 @@ async function main() {
   };
   const vb = mk(world.verts, GPUBufferUsage.VERTEX);
   const shadeVb = mk(world.shadeNormals, GPUBufferUsage.VERTEX);
+  const lodVb = mk(world.lod.verts, GPUBufferUsage.VERTEX);
+  const lodShade = mk(world.lod.shade, GPUBufferUsage.VERTEX);
+  const lodVerts = world.lod.verts.length / 8;
   const mkInst = (slot) => ({
     proto: mk(slot.proto, GPUBufferUsage.VERTEX),
     inst: mk(slot.data, GPUBufferUsage.VERTEX),
@@ -891,8 +909,8 @@ async function main() {
     { shaderLocation: 2, offset: 0, format: 'float32x4' },
     { shaderLocation: 3, offset: 16, format: 'float32x4' },
   ] };
-  const shadeBuf = { arrayStride: 12, attributes: [
-    { shaderLocation: 4, offset: 0, format: 'float32x3' },
+  const shadeBuf = { arrayStride: 16, attributes: [
+    { shaderLocation: 4, offset: 0, format: 'float32x4' },
   ] };
   const pWorld = dev.createRenderPipeline({
     layout,
@@ -901,6 +919,14 @@ async function main() {
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
+  });
+  const pLod = dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: 'vsWorld', buffers: [vbuf, shadeBuf] },
+    fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    multisample: { count: SAMPLES, alphaToCoverageEnabled: true },
+    depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less', depthBias: 2, depthBiasSlopeScale: 2, depthBiasClamp: 0 },
   });
   const pInst = dev.createRenderPipeline({
     layout,
@@ -1029,13 +1055,14 @@ async function main() {
     pass.setPipeline(pSky); pass.draw(3);
     pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
     pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.setVertexBuffer(1, shadeVb); pass.draw(worldVerts);
+    pass.setPipeline(pLod); pass.setVertexBuffer(0, lodVb); pass.setVertexBuffer(1, lodShade); pass.draw(lodVerts);
     pass.setPipeline(pInst);
     pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
     pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
     pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
     if (!gatePose) {
       pass.setPipeline(pContact); pass.draw(96);
-      if (!(snowDiag > 29.5 && snowDiag < 37.5)) {
+      if (!(snowDiag > 29.5 && snowDiag < 37.5) && !hideFlakes) {
         pass.setPipeline(pFlake);
         pass.setVertexBuffer(0, flakeBuf);
         pass.draw(6, FLAKE_N);
@@ -1565,6 +1592,145 @@ async function main() {
     snowDiag = 0;
     drawBg = bg;
     return { t, z: live.z, rows };
+  };
+  function lumaAt(src, i) {
+    return src[i] * 0.2126 + src[i + 1] * 0.7152 + src[i + 2] * 0.0722;
+  }
+  function matOf(src, i) {
+    if (src[i] === 0 && src[i + 1] === 0 && src[i + 2] === 0) return -1;
+    return Math.round(src[i] / 255 * 8 - 0.5);
+  }
+  function ndlOf(src, i) {
+    return Math.max(0, (src[i + 2] / 255 - 0.08) / 0.92);
+  }
+  function distOf(src, i) {
+    return src[i + 1] / 255 * 4000;
+  }
+  const SPIRE = new Set([1, 2, 6, 7]);
+  window.__glacierD8 = async (t) => {
+    const step = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(step, t - sim); stepLive(h); sim += h; }
+    hideFlakes = true;
+    gateMode = window.__glacierAlbedo ? 2 : 0;
+    const colourA = await readFrame();
+    gateMode = 3;
+    const geoA = await readFrame();
+    const t2 = t + 1 / 30;
+    while (sim < t2 - 1e-5) { const h = Math.min(step, t2 - sim); stepLive(h); sim += h; }
+    gateMode = window.__glacierAlbedo ? 2 : 0;
+    const colourB = await readFrame();
+    gateMode = 3;
+    const geoB = await readFrame();
+    gateMode = 0;
+    hideFlakes = false;
+    let flicker = 0;
+    let flickerN = 0;
+    let mid = 0;
+    let midN = 0;
+    let nearSum = 0;
+    let nearN = 0;
+    let farSum = 0;
+    let farN = 0;
+    const farPx = [];
+    const nearPx = [];
+    const skyPx = [];
+    const spire = [];
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = y * bpr + x * 4;
+        const ma = matOf(geoA.src, i);
+        const mb = matOf(geoB.src, i);
+        const da = distOf(geoA.src, i);
+        const db = distOf(geoB.src, i);
+        if (SPIRE.has(ma) && SPIRE.has(mb) && da >= 100 && da <= 300 && db >= 100 && db <= 300) {
+          const dlt = Math.abs(lumaAt(colourA.src, i) - lumaAt(colourB.src, i));
+          flicker += dlt;
+          flickerN++;
+          if (da >= 220 && da <= 320 && db >= 220 && db <= 320) { mid += dlt; midN++; }
+          spire.push((y << 16) | x);
+        }
+        if (!SPIRE.has(ma)) {
+          if (ma < 0 && y < H * 0.42 && skyPx.length < 800 && (x + y) % 37 === 0) skyPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]);
+          continue;
+        }
+        const lum = lumaAt(colourA.src, i);
+        let solid = x > 1 && y > 1 && x < W - 2 && y < H - 2;
+        if (solid && (da < 140 || da > 400)) {
+          for (let oy = -1; oy <= 1 && solid; oy++) {
+            for (let ox = -1; ox <= 1; ox++) {
+              const j = (y + oy) * bpr + (x + ox) * 4;
+              if (!SPIRE.has(matOf(geoA.src, j)) || Math.abs(distOf(geoA.src, j) - da) > 50) { solid = false; break; }
+            }
+          }
+        } else solid = false;
+        if (!solid) continue;
+        const ndl = ndlOf(geoA.src, i);
+        if (ndl < 0.2 || ndl > 0.55) continue;
+        if (da >= 50 && da <= 110) { nearSum += lum; nearN++; if (nearPx.length < 800 && (x * 3 + y) % 29 === 0) nearPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]); }
+        if (da >= 450 && da <= 1400) { farSum += lum; farN++; if (farPx.length < 800 && (x + y * 5) % 31 === 0) farPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]); }
+      }
+    }
+    const delta = new Float32Array(W * H);
+    delta.fill(NaN);
+    for (let k = 0; k < spire.length; k++) {
+      const packed = spire[k];
+      const x = packed & 65535;
+      const y = packed >>> 16;
+      const i = y * bpr + x * 4;
+      delta[y * W + x] = lumaAt(colourB.src, i) - lumaAt(colourA.src, i);
+    }
+    let shimmer = 0;
+    let shimmerN = 0;
+    for (let k = 0; k < spire.length; k++) {
+      const packed = spire[k];
+      const x = packed & 65535;
+      const y = packed >>> 16;
+      const dl = delta[y * W + x];
+      const l = delta[y * W + Math.max(0, x - 4)];
+      const r = delta[y * W + Math.min(W - 1, x + 4)];
+      if (Number.isNaN(l) || Number.isNaN(r)) continue;
+      shimmer += Math.abs(dl - (l + r) * 0.5);
+      shimmerN++;
+    }
+    shimmer = shimmerN ? shimmer / shimmerN : null;
+    const rowStep = [];
+    for (let y = 420; y < 680 && y + 1 < H; y++) {
+      const diffs = [];
+      for (let x = 0; x < W; x++) {
+        if (x > 280 && x < 440) continue;
+        const i = y * bpr + x * 4;
+        const j = (y + 1) * bpr + x * 4;
+        diffs.push(Math.abs(lumaAt(colourA.src, i) - lumaAt(colourA.src, j)));
+      }
+      diffs.sort((p, q) => p - q);
+      rowStep.push(diffs[diffs.length >> 1] || 0);
+    }
+    rowStep.sort((p, q) => p - q);
+    const horizon = rowStep.length ? rowStep[rowStep.length - 1] : 0;
+    return {
+      t,
+      z: live.z,
+      flicker: flickerN ? flicker / flickerN : null,
+      flickerN,
+      mid: midN ? mid / midN : null,
+      midN,
+      shimmer,
+      nearLuma: nearN ? nearSum / nearN : null,
+      nearN,
+      farLuma: farN ? farSum / farN : null,
+      farN,
+      contrast: nearN && farN ? (nearSum / nearN) / (farSum / farN) : null,
+      horizon,
+      nearPx,
+      farPx,
+      skyPx,
+      gpuErr: colourA.gpuErr || colourB.gpuErr || geoA.gpuErr || geoB.gpuErr,
+      tris: world.budget.totalTris,
+      worldTris: world.budget.worldTris,
+      lodTris: world.budget.lodTris || 0,
+      particleTris: world.budget.particleTris,
+      draws: DRAWS.length,
+    };
   };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;

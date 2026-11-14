@@ -20,7 +20,7 @@ export const LIMITS = {
   draws: 12,
 };
 
-export const DRAWS = ['sky', 'planet', 'world', 'icicle', 'chunk', 'drift', 'contact', 'flake', 'bolt'];
+export const DRAWS = ['sky', 'planet', 'world', 'range-lod', 'icicle', 'chunk', 'drift', 'contact', 'flake', 'bolt'];
 
 // One instanced draw. Near, mid, and far fill the camera frustum. Blow is
 // snow lifted off the sastrugi. Puffs stay a small paw burst.

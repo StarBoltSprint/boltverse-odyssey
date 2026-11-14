@@ -1,6 +1,7 @@
 // Frozen rift. Noise-displaced sheets, arches, and peaks. No box primitives.
 import { createMesh } from '../engine/bricks/facet-mesh.js';
 import { MAT, GLACIER, planetCenter, PLANET, DRAWS, FLAKES } from './biome.js';
+import { LOD, crestSagitta } from './lod.js';
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
@@ -561,9 +562,9 @@ function addFarFloor(mesh) {
   }
 }
 
-function addRange(mesh, x0, z0, x1, z1, height, halfW, fine) {
-  const segs = fine ? 28 : 16;
-  const sides = fine ? 11 : 6;
+function addRange(mesh, x0, z0, x1, z1, height, halfW, fine, density) {
+  const segs = density ? density.segs : (fine ? 28 : 16);
+  const sides = density ? density.sides : (fine ? 11 : 6);
   const dx = x1 - x0;
   const dz = z1 - z0;
   const len = Math.hypot(dx, dz) || 1;
@@ -832,6 +833,27 @@ function shadeNormalsFor(verts) {
   return out;
 }
 
+function packShade(nrm, errors) {
+  const n = nrm.length / 3;
+  const out = new Float32Array(n * 4);
+  for (let i = 0; i < n; i++) {
+    out[i * 4] = nrm[i * 3];
+    out[i * 4 + 1] = nrm[i * 3 + 1];
+    out[i * 4 + 2] = nrm[i * 3 + 2];
+    out[i * 4 + 3] = errors && errors[i] ? errors[i] : 0;
+  }
+  return out;
+}
+
+function insetMesh(verts, dist) {
+  stampFaceNormals(verts);
+  for (let i = 0; i < verts.length; i += 8) {
+    verts[i] -= verts[i + 4] * dist;
+    verts[i + 1] -= verts[i + 5] * dist;
+    verts[i + 2] -= verts[i + 6] * dist;
+  }
+}
+
 // One geometric normal on all three corners. Smoothing across a shared
 // vertex mixes projection axes and the texel gate then sees a skewed UV.
 function stampFaceNormals(verts) {
@@ -922,10 +944,25 @@ export function buildWorld() {
     { side: 1, z: -8600, reach: 1800, len: 2600, h: 520, w: 560 },
     { side: 0, z: -9800, reach: 0, len: 4200, h: 340, w: 700 },
   ];
+  const worldErr = [];
+  const lodMesh = createMesh();
+  const lodErr = [];
   for (const r of ranges) {
     const x = pathX(r.z) + r.side * r.reach;
     const fine = r.z > -2800;
-    addRange(mesh, x - r.len * 0.5, r.z + r.len * 0.15, x + r.len * 0.5, r.z - r.len * 0.2, r.h, r.w, fine);
+    const x0 = x - r.len * 0.5;
+    const z0 = r.z + r.len * 0.15;
+    const x1 = x + r.len * 0.5;
+    const z1 = r.z - r.len * 0.2;
+    addRange(mesh, x0, z0, x1, z1, r.h, r.w, fine);
+    // The fine surface stays the terminal LOD (error 0, coverage 1).
+    // A second copy with partial coverage opened holes onto the sky.
+    if (!fine) continue;
+    const sag = crestSagitta(r.h, LOD.coarseSegs);
+    const lodFrom = lodMesh.count;
+    addRange(lodMesh, x0, z0, x1, z1, r.h, r.w, false, { segs: LOD.coarseSegs, sides: LOD.coarseSides });
+    while (lodErr.length < lodFrom) lodErr.push(0);
+    for (let i = lodFrom; i < lodMesh.count; i++) lodErr.push(sag);
   }
 
   const icicles = [];
@@ -1000,7 +1037,11 @@ export function buildWorld() {
   stampFaceNormals(icicleProto);
   stampFaceNormals(driftProto);
   stampFaceNormals(chunkProto);
-  const shadeNormals = shadeNormalsFor(verts);
+  const shadeNormals = packShade(shadeNormalsFor(verts), worldErr);
+  const lodVerts = lodMesh.finish();
+  while (lodErr.length < lodVerts.length / 8) lodErr.push(0);
+  insetMesh(lodVerts, LOD.inset);
+  const lodShade = packShade(shadeNormalsFor(lodVerts), lodErr);
   const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   const worldTris = verts.length / 24;
   const planetTris = planet.length / 24;
@@ -1010,16 +1051,18 @@ export function buildWorld() {
     icicleTris: instTris(icicleProto, icicles),
     driftTris: instTris(driftProto, drifts),
     chunkTris: instTris(chunkProto, chunks),
+    lodTris: lodVerts.length / 24,
     draws: DRAWS.length,
     drawNames: DRAWS,
   };
   budget.particleTris = (FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow + FLAKES.puff) * 2;
   budget.particles = FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow;
   budget.puffs = FLAKES.puff;
-  budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris + budget.particleTris;
+  budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris + budget.lodTris + budget.particleTris;
   return {
     verts,
     shadeNormals,
+    lod: { verts: lodVerts, shade: lodShade },
     planet,
     instances: {
       icicle: { proto: icicleProto, data: new Float32Array(icicles), count: icicles.length / 8 },

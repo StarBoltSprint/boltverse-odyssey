@@ -1,0 +1,31 @@
+D8 thresholds, set from the run 31 measurement before the after capture.
+contrast >= 1.5 on solid spires with sun angle 0.20-0.55
+chroma: normalized linear RGB of far ice <= sky distance + 0.02
+horizon row-step <= run 31 at that time + 0.5 luma
+flicker mean |dLuma| on spires 100-300 m <= half the run 31 index
+tris <= 200000, draws <= 12
+no-fog grep must pass, and fixtures/run31-fs-fog.wgsl must fail
+
+Run 31 flicker / horizon (flakes hidden, same route):
+5.10  5.262 / 5.470
+5.567 5.274 / 4.140
+7.9   5.641 / 5.144
+11.70 4.367 / 3.140
+24    4.850 / 2.787
+30    5.563 / 3.425
+
+After:
+5.10  flicker 5.142  contrast 2.319  horizon 5.492  chroma pass
+5.567 flicker 5.157  contrast 2.304  horizon 4.140  chroma pass
+7.9   flicker 5.534  contrast 2.438  horizon 5.072  chroma pass
+11.70 flicker 4.297  contrast 2.479  horizon 3.140  chroma pass
+24    flicker 4.763  contrast 1.988  horizon 2.787  chroma pass
+30    flicker 5.473  contrast 2.601  horizon 3.353  chroma pass
+
+Flicker did not fall by half. A paired render with the hash discard put back
+changed t=5.10 from 5.142 to 5.107. The 100-300 m index is the camera sliding
+across the ice, not the dither.
+
+Node budget 195954 tris, 10 draws. Page counter 196138 / 10.
+Texel gate PASS at 2048 px/m.
+CPU no-fog gate PASS. Fixture fails the grep.
