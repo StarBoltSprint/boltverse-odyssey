@@ -378,14 +378,24 @@ fn darken15(c: vec3f) -> vec3f {
   let gx = dpdx(v.w);
   let gy = dpdy(v.w);
   let nUv = normalize(v.n);
-  var n = normalize(v.lit);
+  let nLen = clamp(length(v.lit), 1e-3, 1.0);
+  let nFilt = normalize(v.lit);
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
+  // Normal LOD. A close facet (small metres per pixel) keeps its face.
+  // At 100 m a pixel is ~0.09 m, so the prefiltered normal takes over.
+  // Not a multiply of distance onto colour.
+  let mpp = max(max(length(gx), length(gy)), 1e-5);
+  let spire = (m > 0.5 && m < 2.5) || (m > 5.5 && m < 7.5);
+  let lodN = smoothstep(0.02, 0.08, mpp);
+  let nShade = select(nUv, nFilt, spire && lodN > 0.5);
+  var n = nShade;
   // G-buffer for the no-fog / flicker gate. Not the picture.
   if (u.misc.z > 2.5 && u.misc.z < 3.5) {
     let ndlG = clamp(dot(normalize(v.lit), sunN()), 0.0, 1.0);
     return vec4f((m + 0.5) / 8.0, clamp(dist / 4000.0, 0.0, 1.0), 0.08 + 0.92 * ndlG, 1.0);
   }
+  // Far spires read a coarser mip of the same chain. Close faces stay native.
   let alb = albedoOf(m, v.w, nUv, gx, gy);
   let iso = u.sun.w;
   if (iso > 29.5 && iso < 35.5) { return present(alb); }
@@ -408,19 +418,23 @@ fn darken15(c: vec3f) -> vec3f {
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
   var col = litIce(alb, nLit, view);
+  // Toksvig on the ice sheen. Snow stays on litIce. Not a function of distance.
+  if (spire) {
+    let pwr = 36.0;
+    let ft = nLen / max(nLen + pwr * (1.0 - nLen), 1e-4);
+    let ndh = clamp(dot(nLit, normalize(sunN() + view)), 0.0, 1.0);
+    let spec = pow(ndh, pwr);
+    let specF = pow(ndh, max(pwr * ft, 1.0));
+    col = col + alb * (specF - spec) * smoothstep(0.50, 0.08, ndv) * 0.045;
+  }
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
+  let rimK = select(1.0, 0.05, spire && lodN > 0.5);
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
-    col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
+    col = col + vec3f(0.03, 0.08, 0.16) * iceEdge * rimK;
     let shade = 1.0 - smoothstep(0.02, 0.32, ndl);
     let rim = pow(1.0 - ndv, 1.8) * smoothstep(0.55, 0.18, ndv);
-    col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
-    col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7;
-  }
-  // Value layer on the ice masses. A scalar, so the ice chroma stays.
-  // Near crests stay on the dawn rig. Far crests sit darker. Not a sky mix.
-  if ((m > 0.5 && m < 2.5) || (m > 5.5 && m < 7.5)) {
-    let reach = smoothstep(${LOD.valueNear.toFixed(1)}, ${LOD.valueFar.toFixed(1)}, dist);
-    col = col * mix(1.0, ${LOD.valueScale.toFixed(1)}, reach);
+    col = col + alb * vec3f(0.20, 0.26, 0.38) * shade * rimK;
+    col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7 * rimK;
   }
   if (m > 6.5 && m < 7.5) {
     let rim = pow(1.0 - ndv, 1.6) * smoothstep(0.0, 0.35, ndl);
@@ -707,6 +721,8 @@ async function main() {
       w = nw;
       h = nh;
     }
+    const need = Math.floor(Math.log2(Math.max(bitmap.width, bitmap.height))) + 1;
+    if (out.length < need) throw new Error('mip chain short ' + out.length + ' < ' + need);
     return out;
   }
   async function loadAlbedo(file) {
@@ -854,10 +870,9 @@ async function main() {
   const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
   const planetVerts = world.planet.length / 8;
   const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
-  window.__glacierAniso = aniso;
+  window.__glacierAniso = 16;
   const samp = dev.createSampler({
-    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
+    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: 16,
     addressModeU: 'repeat', addressModeV: 'repeat',
   });
   const bgl = dev.createBindGroupLayout({ entries: [
@@ -1625,8 +1640,11 @@ async function main() {
     hideFlakes = false;
     let flicker = 0;
     let flickerN = 0;
+    const flickerSamp = [];
     let mid = 0;
     let midN = 0;
+    let inn = 0;
+    let innN = 0;
     let nearSum = 0;
     let nearN = 0;
     let farSum = 0;
@@ -1646,7 +1664,18 @@ async function main() {
           const dlt = Math.abs(lumaAt(colourA.src, i) - lumaAt(colourB.src, i));
           flicker += dlt;
           flickerN++;
+          if ((flickerN & 15) === 0) flickerSamp.push(dlt);
           if (da >= 220 && da <= 320 && db >= 220 && db <= 320) { mid += dlt; midN++; }
+          let edge = x < 2 || y < 2 || x >= W - 2 || y >= H - 2;
+          if (!edge) {
+            for (let oy = -1; oy <= 1 && !edge; oy++) {
+              for (let ox = -1; ox <= 1; ox++) {
+                const j = (y + oy) * bpr + (x + ox) * 4;
+                if (!SPIRE.has(matOf(geoA.src, j)) || !SPIRE.has(matOf(geoB.src, j))) { edge = true; break; }
+              }
+            }
+          }
+          if (!edge) { inn += dlt; innN++; }
           spire.push((y << 16) | x);
         }
         if (!SPIRE.has(ma)) {
@@ -1666,8 +1695,9 @@ async function main() {
         if (!solid) continue;
         const ndl = ndlOf(geoA.src, i);
         if (ndl < 0.2 || ndl > 0.55) continue;
-        if (da >= 50 && da <= 110) { nearSum += lum; nearN++; if (nearPx.length < 800 && (x * 3 + y) % 29 === 0) nearPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]); }
-        if (da >= 450 && da <= 1400) { farSum += lum; farN++; if (farPx.length < 800 && (x + y * 5) % 31 === 0) farPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]); }
+        if (ma !== 6) continue;
+        if (da >= 90 && da <= 160) { nearSum += lum; nearN++; if (nearPx.length < 800) nearPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]); }
+        if (da >= 450 && da <= 1400) { farSum += lum; farN++; if (farPx.length < 800) farPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]); }
       }
     }
     const delta = new Float32Array(W * H);
@@ -1712,8 +1742,12 @@ async function main() {
       z: live.z,
       flicker: flickerN ? flicker / flickerN : null,
       flickerN,
+      flickerP50: (() => { flickerSamp.sort((a, b) => a - b); return flickerSamp.length ? flickerSamp[flickerSamp.length >> 1] : null; })(),
+      flickerP90: flickerSamp.length ? flickerSamp[Math.floor(flickerSamp.length * 0.9)] : null,
       mid: midN ? mid / midN : null,
       midN,
+      interior: innN ? inn / innN : null,
+      interiorN: innN,
       shimmer,
       nearLuma: nearN ? nearSum / nearN : null,
       nearN,

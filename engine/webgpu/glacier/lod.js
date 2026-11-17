@@ -1,17 +1,18 @@
-// Screen-error LOD and the ice value layer. One rig. No sky mix.
+// Screen-error LOD. Colour is not a function of distance.
 import { FOV_Y } from '../engine/bricks/follow-cam.js';
 
 export const LOD = {
   errLo: 1,
   errHi: 2,
-  valueNear: 90,
-  valueFar: 360,
-  valueScale: 0.36,
   coarseSegs: 8,
   coarseSides: 4,
   inset: 0.25,
   screenH: 1280,
 };
+
+export function expectedMipLevels(w, h) {
+  return Math.floor(Math.log2(Math.max(1, w, h))) + 1;
+}
 
 export function mpp(dist, h = LOD.screenH) {
   return Math.max(1e-4, dist * 2 * Math.tan(FOV_Y / 2) / h);
@@ -35,7 +36,8 @@ export function lodCover(signedErr, dist) {
   return signedErr > 0 ? 1 - fade : fade;
 }
 
-export function valueAt(dist) {
-  const reach = smoothstep(LOD.valueNear, LOD.valueFar, dist);
-  return 1 + (LOD.valueScale - 1) * reach;
+// Toksvig 2004. s = length of the filtered normal. 1 means no variance.
+export function toksvigPower(power, s) {
+  const len = Math.min(1, Math.max(1e-3, s));
+  return power * len / (len + power * (1 - len));
 }

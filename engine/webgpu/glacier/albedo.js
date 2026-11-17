@@ -52,6 +52,13 @@ fn variantW(id: vec2f) -> vec4f {
     select(0.05, 0.85, lead == 3)
   );
 }
+fn farLevel(arr: texture_2d_array<f32>, uv: vec2f, w: vec4f, gain: vec4f) -> vec3f {
+  let s0 = textureSampleLevel(arr, samp, uv, 0, 10.0).rgb * gain.x;
+  let s1 = textureSampleLevel(arr, samp, uv, 1, 10.0).rgb * gain.y;
+  let s2 = textureSampleLevel(arr, samp, uv, 2, 10.0).rgb * gain.z;
+  let s3 = textureSampleLevel(arr, samp, uv, 3, 10.0).rgb * gain.w;
+  return s0 * w.x + s1 * w.y + s2 * w.z + s3 * w.w;
+}
 fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f, gain: vec4f) -> vec3f {
   let s0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb * gain.x;
   let s1 = textureSampleGrad(arr, samp, uv, 1, du, dv).rgb * gain.y;
@@ -106,6 +113,13 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let uv0 = m0 * ${repeats};
   let uv1 = m1 * ${repeats};
   let uv2 = m2 * ${repeats};
+  // Far pixels cover many texels. Same variant weights, top of the mip chain.
+  if (bias >= 3.5 && length(px) + length(py) > 0.06) {
+    let f0 = farLevel(arr, uv0, variantW(i), gain);
+    let f1 = farLevel(arr, uv1, variantW(id1), gain);
+    let f2 = farLevel(arr, uv2, variantW(id2), gain);
+    return f0 * w.x + f1 * w.y + f2 * w.z;
+  }
   let c0 = blend4(arr, uv0, du0, dv0, variantW(i), gain);
   let c1 = blend4(arr, uv1, du1, dv1, variantW(id1), gain);
   let c2 = blend4(arr, uv2, du2, dv2, variantW(id2), gain);
@@ -231,19 +245,19 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     if (m < 1.5) {
-      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0, 2.0);
+      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 0.5, 4.0);
       let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
       let lip = smoothstep(0.35, 0.75, nrm.y);
       return mix(fall, snow, lip * 0.85);
     }
     if (m < 2.5) {
-      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 0.5, 4.0);
       let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
       let cap = smoothstep(0.28, 0.62, nrm.y);
       return mix(arch, snow, cap);
     }
     // Mip bias 4 calms the spire speckle. The sheen stays the ice value, not chrome.
-    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 0.5, 4.0);
     return ice * vec3f(0.92, 0.96, 1.0);
   }
   let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
@@ -255,12 +269,12 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
   }
   if (m > 5.5 && m < 6.5) {
-    let wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+    let wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 0.5, 4.0);
     let cap = smoothstep(0.42, 0.75, nrm.y);
     return mix(wallIce, snow, cap);
   }
   let face = smoothstep(0.22, 0.62, nrm.y);
-  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 0.5, 4.0);
   return mix(serac, snow, face * 0.35);
 }
 fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {

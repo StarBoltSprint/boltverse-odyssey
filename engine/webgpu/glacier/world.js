@@ -830,6 +830,44 @@ function shadeNormalsFor(verts) {
     if (mat === 0 && !up(sy, sx, sz)) continue;
     out[i * 3] = sx; out[i * 3 + 1] = sy; out[i * 3 + 2] = sz;
   }
+  // Spire normal LOD. Shared vertices on one axis become one normal.
+  // The face normal stays on the geometry, so the texel gate is unchanged.
+  const spire = new Set([1, 2, 6, 7]);
+  const spireAcc = new Map();
+  for (let i = 0; i < nVerts; i++) {
+    const mat = Math.round(verts[i * 8 + 3]);
+    if (!spire.has(mat)) continue;
+    const x = out[i * 3], y = out[i * 3 + 1], z = out[i * 3 + 2];
+    const bin = 16;
+    const k = mat + ':' + axisOf(x, y, z)
+      + ':' + Math.round(verts[i * 8] / bin)
+      + ':' + Math.round(verts[i * 8 + 1] / bin)
+      + ':' + Math.round(verts[i * 8 + 2] / bin);
+    const a = spireAcc.get(k) || [0, 0, 0, 0];
+    a[0] += x; a[1] += y; a[2] += z; a[3] += 1;
+    spireAcc.set(k, a);
+  }
+  let bent = 0;
+  let spireN = 0;
+  for (let i = 0; i < nVerts; i++) {
+    const mat = Math.round(verts[i * 8 + 3]);
+    if (!spire.has(mat)) continue;
+    spireN++;
+    const x = out[i * 3], y = out[i * 3 + 1], z = out[i * 3 + 2];
+    const bin = 16;
+    const a = spireAcc.get(Math.round(verts[i * 8 + 3]) + ':' + axisOf(x, y, z)
+      + ':' + Math.round(verts[i * 8] / bin)
+      + ':' + Math.round(verts[i * 8 + 1] / bin)
+      + ':' + Math.round(verts[i * 8 + 2] / bin));
+    if (!a || a[3] < 2) continue;
+    const l = Math.hypot(a[0], a[1], a[2]) || 1;
+    const sx = a[0] / l, sy = a[1] / l, sz = a[2] / l;
+    const agree = sx * x + sy * y + sz * z;
+    if (agree < 0.15) continue;
+    if (agree < 0.995) bent++;
+    out[i * 3] = sx; out[i * 3 + 1] = sy; out[i * 3 + 2] = sz;
+  }
+  shadeNormalsFor.spireBent = spireN ? bent / spireN : 0;
   return out;
 }
 
@@ -1054,6 +1092,7 @@ export function buildWorld() {
     lodTris: lodVerts.length / 24,
     draws: DRAWS.length,
     drawNames: DRAWS,
+    spireBent: shadeNormalsFor.spireBent || 0,
   };
   budget.particleTris = (FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow + FLAKES.puff) * 2;
   budget.particles = FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow;
