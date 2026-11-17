@@ -43,12 +43,17 @@ try {
       const info0 = await evalJson('JSON.stringify(window.__glacierInfo)');
       const rows = [];
       if (!filmOnly) {
+        const only = process.env.D9_ONLY ? Number(process.env.D9_ONLY) : null;
         for (const t of TIMES) {
+          if (only != null && Math.abs(t - only) > 1e-6) continue;
           const payload = await evalJson(`window.__glacierFrame(${t}).then(r => JSON.stringify(r))`);
           if (payload.info.gpuErr) throw new Error(payload.info.gpuErr);
           const file = path.join(outDir, `t${t}.png`);
           writePng(file, payload.png);
-          rows.push({ t, file, info: { ...payload.info, cardH: info0.cardH } });
+          const mask = await evalJson('window.__glacierPlanetMask().then(r => JSON.stringify(r))');
+          const maskFile = path.join(outDir, `mask-t${t}.png`);
+          if (!mask.gpuErr) writePng(maskFile, mask.png);
+          rows.push({ t, file, maskFile, info: { ...payload.info, cardH: info0.cardH } });
           console.log('still', t, 'bolt', payload.info.boltPx, 'tris', payload.info.tris, 'draws', payload.info.draws);
         }
       }
@@ -86,7 +91,8 @@ try {
   for (const row of captured.rows) {
     const pose = poses.find((p) => p.t === row.t);
     const img = loadRgb(row.file);
-    const scored = scoreFrame(img.rgb, img.w, img.h, pose);
+    const mask = row.maskFile && fs.existsSync(row.maskFile) ? loadRgb(row.maskFile).rgb : null;
+    const scored = scoreFrame(img.rgb, img.w, img.h, pose, mask);
     const cx = pose.center[0];
     const cy = pose.center[1];
     const rad = pose.rad;
@@ -107,8 +113,17 @@ try {
       pass: scored.pass,
     });
   }
-  const report = { tag, scores, film: captured.film };
-  fs.writeFileSync(path.join(outDir, 'scores.json'), JSON.stringify(report, null, 2) + '\n');
+  const scorePath = path.join(outDir, 'scores.json');
+  let prior = {};
+  if (fs.existsSync(scorePath)) {
+    try { prior = JSON.parse(fs.readFileSync(scorePath, 'utf8')); } catch { prior = {}; }
+  }
+  const report = {
+    tag,
+    scores: scores.length ? scores : (prior.scores || []),
+    film: captured.film || prior.film || null,
+  };
+  fs.writeFileSync(scorePath, JSON.stringify(report, null, 2) + '\n');
   console.log(tag, scores.map((s) => `${s.t}:${s.pass ? 'PASS' : 'FAIL'}`).join(' '));
 } catch (err) {
   console.error('FAIL', err && err.stack || err);

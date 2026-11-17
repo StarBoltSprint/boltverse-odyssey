@@ -7,6 +7,8 @@ import { lightWgsl, norm3, sunOf } from '../biome-factory/light-rig.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
+import { sceneSunWgsl } from './scene-sun.js';
+import { blueNoiseWgsl } from './blue-noise.js';
 import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
 
 const qs = new URLSearchParams(location.search);
@@ -317,6 +319,8 @@ struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k:
 
 ${lightWgsl(LIGHT)}
 ${skyWgsl(LIGHT.sky)}
+${sceneSunWgsl()}
+${blueNoiseWgsl()}
 ${albedoWgsl()}
 ${IDLE.wgsl}
 
@@ -369,7 +373,7 @@ fn darken15(c: vec3f) -> vec3f {
     sky = sky + vec3f(0.045, 0.02, 0.07) * s + vec3f(0.03, 0.0, 0.05) * fract(u.spin.w * 0.37);
   }
   if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(5.5 / 8.0, 1.0, 1.0, 1.0); }
-  return present(sky);
+  return presentSky(sky, v.p.xy);
 }
 @fragment fn fs(v: VO) -> @location(0) vec4f {
   let gx = dpdx(v.w);
@@ -427,16 +431,15 @@ fn darken15(c: vec3f) -> vec3f {
   return present(col);
 }
 @fragment fn fsPlanet(v: VO) -> @location(0) vec4f {
-  let n = normalize(v.n);
+  if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(9.0 / 255.0, 0.0, 1.0, 1.0); }
   let q = normalize(v.w - u.planet.xyz);
   let uv = vec2f(atan2(q.z, q.x) * 0.1591549 + 0.5, asin(clamp(q.y, -1.0, 1.0)) * 0.31831 + 0.5);
   let alb = textureSampleGrad(planetTex, samp, uv, dpdx(uv), dpdy(uv)).rgb;
+  let low = textureSampleLevel(planetTex, samp, uv, 5.0).rgb;
+  let detail = alb / max(low, vec3f(0.08));
+  let surf = vec3f(0.46, 0.50, 0.58) * detail;
   let view = normalize(u.cam.xyz - v.w);
-  let ndv = clamp(dot(n, view), 0.0, 1.0);
-  var col = alb * dawnIrr(n);
-  let limb = smoothstep(0.0, 0.22, ndv);
-  col = col * mix(0.22, 1.0, limb);
-  return present(min(col, vec3f(0.9)));
+  return present(planetShade(surf, q, view));
 }
 @vertex fn vsBolt(@builtin(vertex_index) vi: u32) -> BO {
   var q = array<vec2f, 6>(vec2f(-0.5, 0), vec2f(0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 0), vec2f(0.5, 1), vec2f(-0.5, 1));
@@ -949,6 +952,7 @@ async function main() {
   const worldVerts = world.verts.length / 8;
 
   let snowDiag = 0;
+  let hideActors = false;
   function fillU(t) {
     const bp = [live.x, pawGround(), live.z];
     let { eye, tgt } = followEye(bp, live.cam, world.heightAt, 0);
@@ -1033,7 +1037,7 @@ async function main() {
     pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
     pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
     pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
-    if (!gatePose) {
+    if (!gatePose && !hideActors) {
       pass.setPipeline(pContact); pass.draw(96);
       if (!(snowDiag > 29.5 && snowDiag < 37.5)) {
         pass.setPipeline(pFlake);
@@ -1566,6 +1570,14 @@ async function main() {
     drawBg = bg;
     return { t, z: live.z, rows };
   };
+  window.__glacierPlanetMask = async () => {
+    hideActors = true;
+    gateMode = 1;
+    const frame = await readFrame();
+    gateMode = 0;
+    hideActors = false;
+    return { png: await blobOf(frame.src, 'image/png'), gpuErr: frame.gpuErr };
+  };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;
     while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
@@ -1587,6 +1599,7 @@ async function main() {
         v: live.v, y: bp[1], eye: lastEye,
         boltPx: pix, W, H,
         tris: world.budget.totalTris, particleTris: world.budget.particleTris, draws: DRAWS.length,
+        budget: world.budget,
         flakes: flakeCoverage(),
         gpuErr: frame.gpuErr,
       },

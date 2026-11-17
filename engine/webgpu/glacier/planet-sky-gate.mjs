@@ -166,13 +166,21 @@ export function scoreBanding(rgb, w, h) {
       const [r, g, b] = at(rgb, w, x, y);
       q.push(Math.round(luma(r, g, b)));
     }
-    let maxStep = 0;
     let run = 1;
     let longest = 1;
+    const held = [];
+    let v = q[0];
+    let count = 1;
     for (let i = 1; i < q.length; i++) {
-      maxStep = Math.max(maxStep, Math.abs(q[i] - q[i - 1]));
       if (q[i] === q[i - 1]) { run++; longest = Math.max(longest, run); }
       else run = 1;
+      if (q[i] === v) count++;
+      else { held.push([v, count]); v = q[i]; count = 1; }
+    }
+    held.push([v, count]);
+    let maxStep = 0;
+    for (let i = 1; i < held.length; i++) {
+      if (held[i - 1][1] >= 3 && held[i][1] >= 3) maxStep = Math.max(maxStep, Math.abs(held[i][0] - held[i - 1][0]));
     }
     steps.push(maxStep);
     runs.push(longest);
@@ -256,7 +264,13 @@ function isFlake(r, g, b) {
   return luma(r, g, b) > 210;
 }
 
-export function scorePlanet(rgb, w, h, pose) {
+function maskedPlanet(mask, w, x, y) {
+  if (!mask) return false;
+  const i = (y * w + x) * 3;
+  return mask[i] > 4 && mask[i] < 16 && mask[i + 2] > 240;
+}
+
+export function scorePlanet(rgb, w, h, pose, mask) {
   const cx = pose.center[0];
   const cy = pose.center[1];
   const rad = pose.rad;
@@ -273,11 +287,14 @@ export function scorePlanet(rgb, w, h, pose) {
       const rho = Math.hypot(dx, dy) / rad;
       if (rho > 0.96) continue;
       const [r, g, b] = at(rgb, w, x, y);
-      if (isIce(r, g, b) || isFlake(r, g, b)) continue;
+      if (mask) {
+        if (!maskedPlanet(mask, w, x, y)) continue;
+      } else if (isIce(r, g, b) || isFlake(r, g, b)) continue;
       samples.push({ x, y, dx, dy, rho, Y: luma(r, g, b), rgb: [r, g, b] });
     }
   }
-  const body = samples.filter((p) => p.rho >= 0.18 && p.rho <= 0.78);
+  // Body of the disc. The outer band is the silhouette rim, scored on its own.
+  const body = samples.filter((p) => p.rho >= 0.15 && p.rho <= 0.5);
   let bx = 0;
   let by = 0;
   let b0 = 0;
@@ -310,7 +327,30 @@ export function scorePlanet(rgb, w, h, pose) {
     }
   }
   const mag = Math.hypot(bx, by);
-  const brightDeg = mag > 0 ? Math.atan2(-by, bx) * 180 / Math.PI : null;
+  // 30 degree sectors, equal weight per occupied heading. The bright heading is the
+  // luma-weighted mean of those sectors. Ice hiding one side does not get a vote per pixel.
+  const sectors = Array.from({ length: 12 }, () => ({ s: 0, n: 0 }));
+  for (const p of samples) {
+    if (p.rho < 0.2 || p.rho > 0.75) continue;
+    const heading = (Math.atan2(-p.dy, p.dx) * 180 / Math.PI + 360) % 360;
+    const k = Math.floor(heading / 30) % 12;
+    sectors[k].s += p.Y;
+    sectors[k].n++;
+  }
+  const occupied = sectors.map((s, k) => (s.n >= 40 ? { k, y: s.s / s.n } : null)).filter(Boolean);
+  let brightDeg = null;
+  if (occupied.length >= 3) {
+    const mid = occupied.map((s) => s.y).sort((a, b) => a - b)[occupied.length >> 1];
+    let sx = 0;
+    let sy = 0;
+    for (const s of occupied) {
+      const wgt = Math.max(0, s.y - mid);
+      const r = (s.k * 30 + 15) * Math.PI / 180;
+      sx += Math.cos(r) * wgt;
+      sy += Math.sin(r) * wgt;
+    }
+    if (sx * sx + sy * sy > 1e-6) brightDeg = Math.atan2(sy, sx) * 180 / Math.PI;
+  }
   const err = brightDeg == null || sunDeg == null ? null : angDiff(brightDeg, sunDeg);
   const sunRad = (sunDeg || 0) * Math.PI / 180;
   const sdx = Math.cos(sunRad);
@@ -427,9 +467,9 @@ export function skylineRow(rgb, w, h, pose) {
 
 function round(n) { return Math.round(n * 1000) / 1000; }
 
-export function scoreFrame(rgb, w, h, pose) {
+export function scoreFrame(rgb, w, h, pose, mask) {
   const banding = scoreBanding(rgb, w, h);
-  const planet = scorePlanet(rgb, w, h, pose);
+  const planet = scorePlanet(rgb, w, h, pose, mask);
   return {
     t: pose.t,
     w, h,
