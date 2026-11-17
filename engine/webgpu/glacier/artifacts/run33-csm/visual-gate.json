@@ -17,7 +17,12 @@
     {
       "tag": "51",
       "contact": 0.134,
-      "shadeB": -13.04,
+      "shadeB": {
+        "clean": -12.7,
+        "mixed": -12.66,
+        "tainted": 3.71,
+        "nClean": 3761
+      },
       "penumbra": {
         "thin": 1,
         "near": 6,
@@ -27,7 +32,12 @@
     {
       "tag": "5567",
       "contact": 0.139,
-      "shadeB": 2.31,
+      "shadeB": {
+        "clean": -9.67,
+        "mixed": 2.49,
+        "tainted": 4.32,
+        "nClean": 380
+      },
       "penumbra": {
         "thin": 2,
         "near": 6,
@@ -37,7 +47,12 @@
     {
       "tag": "79",
       "contact": 0.169,
-      "shadeB": -12.03,
+      "shadeB": {
+        "clean": -12.67,
+        "mixed": -12.53,
+        "tainted": 3.87,
+        "nClean": 3356
+      },
       "penumbra": {
         "thin": 0,
         "near": 7,
@@ -47,7 +62,12 @@
     {
       "tag": "117",
       "contact": 0.14,
-      "shadeB": -12,
+      "shadeB": {
+        "clean": -12.66,
+        "mixed": -12.14,
+        "tainted": 4.06,
+        "nClean": 3254
+      },
       "penumbra": {
         "thin": 1,
         "near": 2,
@@ -57,7 +77,12 @@
     {
       "tag": "24",
       "contact": 0.14,
-      "shadeB": 2.26,
+      "shadeB": {
+        "clean": -9.66,
+        "mixed": 2.3,
+        "tainted": 4.45,
+        "nClean": 210
+      },
       "penumbra": {
         "thin": 0,
         "near": 7,
@@ -67,7 +92,12 @@
     {
       "tag": "30",
       "contact": 0.132,
-      "shadeB": -13.03,
+      "shadeB": {
+        "clean": -13.18,
+        "mixed": -12.64,
+        "tainted": 3.67,
+        "nClean": 3070
+      },
       "penumbra": {
         "thin": 4,
         "near": 6,
@@ -82,12 +112,42 @@
         "slopeKey": 0.07930533347569135
       },
       "shadeB": {
-        "24": 2.26,
-        "30": -13.03,
-        "51": -13.04,
-        "79": -12.03,
-        "117": -12,
-        "5567": 2.31
+        "24": {
+          "clean": -9.66,
+          "mixed": 2.3,
+          "tainted": 4.45,
+          "nClean": 210
+        },
+        "30": {
+          "clean": -13.18,
+          "mixed": -12.64,
+          "tainted": 3.67,
+          "nClean": 3070
+        },
+        "51": {
+          "clean": -12.7,
+          "mixed": -12.66,
+          "tainted": 3.71,
+          "nClean": 3761
+        },
+        "79": {
+          "clean": -12.67,
+          "mixed": -12.53,
+          "tainted": 3.87,
+          "nClean": 3356
+        },
+        "117": {
+          "clean": -12.66,
+          "mixed": -12.14,
+          "tainted": 4.06,
+          "nClean": 3254
+        },
+        "5567": {
+          "clean": -9.67,
+          "mixed": 2.49,
+          "tainted": 4.32,
+          "nClean": 380
+        }
       }
     }
   ],

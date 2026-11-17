@@ -120,18 +120,42 @@ function penumbra(mask, mat, info) {
   const med = (arr) => { if (!arr.length) return 0; const s = arr.slice().sort((p, q) => p - q); return s[s.length >> 1]; };
   return { thin, near: med(near), far: med(far) };
 }
-function shadeB(im) {
-  const vals = [];
+function med(arr) {
+  if (!arr.length) return null;
+  const s = arr.slice().sort((a, b) => a - b);
+  return s[s.length >> 1];
+}
+// The lower-center crop also holds Bolt, the contact decals, prints, and flakes.
+// Those draws write a non-zero blue into the mask. Snow's mask blue stays 0.
+// A luma window with no mask test reports the dog once the path snow is too
+// bright to enter the window. Clean shade is shadow factor under 0.35 and mask blue under 0.03.
+function shadeB(im, mask) {
+  const mixed = [];
+  const clean = [];
+  const tainted = [];
   for (let y = im.h * 0.62 | 0; y < im.h * 0.82; y += 3) {
     for (let x = im.w * 0.35 | 0; x < im.w * 0.65; x += 3) {
       const o = (y * im.w + x) * 3;
       const r = im.raw[o] / 255, g = im.raw[o + 1] / 255, b = im.raw[o + 2] / 255;
       const yv = luma(r, g, b);
-      if (yv > 0.35 && yv < 0.75) vals.push(labB(r, g, b));
+      if (!(yv > 0.35 && yv < 0.75)) continue;
+      const bb = labB(r, g, b);
+      mixed.push(bb);
+      if (!mask) continue;
+      const mo = (y * mask.w + x) * 3;
+      const sh = mask.raw[mo] / 255;
+      const mb = mask.raw[mo + 2] / 255;
+      if (sh >= 0.35) continue;
+      (mb < 0.03 ? clean : tainted).push(bb);
     }
   }
-  vals.sort((a, b) => a - b);
-  return vals.length ? vals[vals.length >> 1] : null;
+  return {
+    mixed: med(mixed),
+    clean: med(clean),
+    tainted: med(tainted),
+    nClean: clean.length,
+    nTainted: tainted.length,
+  };
 }
 
 const root = arg('--root');
@@ -177,12 +201,19 @@ for (const tag of ['51', '5567', '79', '117', '24', '30']) {
   const im = load(path.join(root, 'after', `t${tag}.jpg`));
   const info = JSON.parse(fs.readFileSync(path.join(root, 'after', `t${tag}.json`), 'utf8'));
   const c = contact(im, info);
-  bStar[tag] = +shadeB(im).toFixed(2);
+  const maskPath = path.join(root, 'mask', `t${tag}.png`);
+  const pngPath = path.join(root, 'after', `t${tag}.png`);
+  const shade = shadeB(fs.existsSync(pngPath) ? load(pngPath) : im, fs.existsSync(maskPath) ? load(maskPath) : null);
+  bStar[tag] = {
+    clean: shade.clean == null ? null : +shade.clean.toFixed(2),
+    mixed: shade.mixed == null ? null : +shade.mixed.toFixed(2),
+    tainted: shade.tainted == null ? null : +shade.tainted.toFixed(2),
+    nClean: shade.nClean,
+  };
   if (!c) bad(`contact missing ${tag}`);
   else if (c.dark < CONTACT_MIN) bad(`contact ${tag} ${c.dark.toFixed(3)} < ${CONTACT_MIN}`);
   else if (Math.abs((c.px ?? 360) - 360) > 8) bad(`bolt x ${tag} ${c.px}`);
   if (c) console.log('contact', tag, c.dark.toFixed(3), SHADE.has(tag) ? 'shade' : 'sun');
-  const maskPath = path.join(root, 'mask', `t${tag}.png`);
   const matPath = path.join(root, 'after', `t${tag}-mat.png`);
   if (fs.existsSync(maskPath)) {
     const pen = penumbra(load(maskPath), load(matPath), info);
