@@ -1,0 +1,146 @@
+{
+  "blobLimit": 1106,
+  "ringLimit": 12,
+  "pawPx": 48,
+  "contact": {
+    "cx": 360,
+    "cy": 1009,
+    "rx": 60,
+    "ry": 16,
+    "name": "t24.jpg",
+    "preD": 0.829,
+    "tol": 0.045
+  },
+  "fixture": {
+    "prints": [
+      {
+        "name": "t5_1.jpg",
+        "rings": 167,
+        "blob": 7272,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t5_567.jpg",
+        "rings": 211,
+        "blob": 5776,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t7_9.jpg",
+        "rings": 239,
+        "blob": 5894,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t11_7.jpg",
+        "rings": 176,
+        "blob": 7019,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t24.jpg",
+        "rings": 270,
+        "blob": 3974,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t30.jpg",
+        "rings": 155,
+        "blob": 6382,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "FAIL"
+      }
+    ],
+    "contact": {
+      "ratio": 0.902,
+      "pixels": 1905,
+      "preD": 0.829,
+      "tol": 0.045,
+      "verdict": "FAIL"
+    },
+    "verdict": "FAIL"
+  },
+  "preD": {
+    "prints": [
+      {
+        "name": "t5_1.jpg",
+        "rings": 0,
+        "blob": 0,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t5_567.jpg",
+        "rings": 0,
+        "blob": 0,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t7_9.jpg",
+        "rings": 0,
+        "blob": 0,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t11_7.jpg",
+        "rings": 0,
+        "blob": 0,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t24.jpg",
+        "rings": 0,
+        "blob": 501,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t30.jpg",
+        "rings": 0,
+        "blob": 0,
+        "pawPx": 48,
+        "blobLimit": 1106,
+        "ringLimit": 12,
+        "verdict": "PASS"
+      }
+    ],
+    "contact": {
+      "ratio": 0.829,
+      "pixels": 2988,
+      "preD": 0.829,
+      "tol": 0.045,
+      "verdict": "PASS"
+    },
+    "verdict": "PASS"
+  }
+}
