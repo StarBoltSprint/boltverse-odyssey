@@ -105,7 +105,7 @@ function analyse(pair) {
   const all = [];
   const snow = [];
   const ice = [];
-  const iceRgb = [];
+  const wall = [];
   let clip = 0;
   let crush = 0;
   let crushN = 0;
@@ -132,6 +132,7 @@ function analyse(pair) {
     if (id === 0) snow.push(y);
     if (ICE_MATS.has(id)) {
       ice.push([colour.raw[o], colour.raw[o + 1], colour.raw[o + 2]]);
+      if (id === 6) wall.push([colour.raw[o], colour.raw[o + 1], colour.raw[o + 2]]);
       iceN++;
       blue += b - r;
       if (y > limits.brightLuma) {
@@ -151,6 +152,7 @@ function analyse(pair) {
     crush: crushN ? crush / crushN : 0,
     snow: snow.length ? { p1: percentile(snow, 0.01), p50: percentile(snow, 0.50), p99: percentile(snow, 0.99), n: snow.length } : null,
     iceLab: ice.length >= 8 ? medianLab(ice) : null,
+    wallLab: wall.length >= 8 ? medianLab(wall) : null,
     iceN,
     greyBright: bright ? grey / bright : null,
     blue: iceN ? blue / iceN : null,
@@ -202,9 +204,20 @@ for (const tag of tags) {
   if (a.blue == null || !(a.blue > limits.iceBlueMin)) bad(`ice b-r ${tag} ${a.blue}`);
   let dSnow = null;
   let dIce = null;
+  let iceChannels = null;
+  let wallChannels = null;
+  const split = (lab) => {
+    if (!lab) return null;
+    const dL = lab[0] - iceKey.lab[0];
+    const da = lab[1] - iceKey.lab[1];
+    const db = lab[2] - iceKey.lab[2];
+    return { dL: round4(dL), da: round4(da), db: round4(db), dE76: round4(Math.hypot(dL, da, db)) };
+  };
   if (a.iceLab) {
     dIce = dE76(a.iceLab, iceKey.lab);
+    iceChannels = split(a.iceLab);
   }
+  wallChannels = split(a.wallLab);
   const snowCols = [];
   const im = after.colour;
   const mat = after.mat;
@@ -227,6 +240,8 @@ for (const tag of tags) {
     blue: a.blue == null ? null : round4(a.blue),
     dE76snow: dSnow == null ? null : round4(dSnow),
     dE76ice: dIce == null ? null : round4(dIce),
+    iceChannels,
+    wallChannels,
     keyscore: keyscore == null ? null : round4(keyscore),
   });
 }

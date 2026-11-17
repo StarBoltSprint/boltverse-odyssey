@@ -1393,3 +1393,25 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Foot buried, envelope floor 0.5, yaw kept in the spread that clears the lip. All 61 chase frames from t=20 s to t=32 s pass the dark-row gate. dE76 and the repeat gate do not. |
 | Guard | `dark-row-gate.mjs` on the chase frames. `repeat-gate.mjs` on `fixture-r4/` must fail. |
 | Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/repeat-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/fixture-r4/`. |
+
+### 2026-11-17 — A peak anywhere in the autocorrelation is the photograph
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 6. Not a KEEP. |
+| Defect | The repeat bar of 0.31 failed a glacier-ice still at 0.44. Round-4 crops failed the same way. That is texture, not a tile lattice. |
+| Root cause | The strongest peak outside a 20 px disc sits inside the ice photograph. A tiled face and an untilled still both have it. |
+| Fix | Score only the on-screen tile period and its second harmonic, against the same lags on the still. Fail above the still by 0.10, or when both harmonics clear that margin. A plain single-variant tile fails (over +0.74). The still passes. Round-4 crops pass. Round-5 crops fail, over about +0.18, with a lattice. |
+| Guard | `node engine/webgpu/glacier/repeat-gate.mjs --native tex/glacier-ice/v1.jpg --period 64 artifacts/run33-horizon/fixture-repeat/plain-tile.jpg` must fail. The same command on `tex/glacier-ice/v1.jpg` must pass. |
+| Sources | `engine/webgpu/glacier/repeat-gate.mjs`, `engine/webgpu/glacier/repeat-measure.py`, `engine/webgpu/glacier/artifacts/run33-horizon/fixture-repeat/plain-tile.jpg`. |
+
+### 2026-11-17 — Matching the wall sun-dot does not lift ice L*
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 6. Not a KEEP. |
+| Defect | Ice dE76 stays 12.45–13.60. The split is dL about −12, da about +2, db about −4. |
+| Root cause | The new wall pixels grade to L* 57 at ndl 0.00 and at ndl 0.32. Their unlit albedo grades to L* 68, near the key. The round-3 walls that matched were a smaller set at L* 67. The sun term and the shade fill land on the same displayed lightness after the grade. Serac stills are dE 5.17 from the ice key, and sampling them on the teeth made one frame dE 14.14. The shade fill is a constant, not the sky, and the sky zenith is not brighter than that constant. |
+| Fix | None kept. The tooth mesh and the glacier-ice sample stay. Exposure, the fill, and the ambient were not moved. Snow p50 stays with the grade. |
+| Guard | `tonemap-gate.mjs` writes `iceChannels` and `wallChannels` (dL, da, db). The dE76 bar stays 10. |
+| Sources | `engine/webgpu/glacier/tonemap-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/tonemap-gate.json`, `engine/webgpu/glacier/artifacts/run33-horizon/notes.md`. |

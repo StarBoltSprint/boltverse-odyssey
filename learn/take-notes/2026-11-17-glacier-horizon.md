@@ -47,3 +47,20 @@ Pushing wall vertices one at a time sheared them into a grazing edge and the for
 - Accepted because: `horizon-gate.mjs` PASS, closed 1 / 1 / 1, corridor hits 0, sheets 0, caps 0, CPU tris 196234, page tris 196866, draws 9, texel PASS, card 1.15 m, Bolt x 360.00. `follow-horizon-gate.mjs` fails `fixture-r3/t24.jpg` (window 0.757, stairs 2) and `t30.jpg` (window 0.860, stairs 6). The six new stills pass (window ≤ 0.024, stairs ≤ 1). Dark-row fails `fixture-r2-t30.jpg` and passes the six stills. Chase dark-row fails one frame, t=24.6. Tonemap FAIL: ice dE76 12.86–13.42, 11.70 s snow p50 delta 0.0508. Limits not moved.
 - Recipe appended: none.
 - Failure appended: `learn/failures.md` heading `2026-11-17 — The level horizon row is snow in the follow frame`.
+
+## This step
+
+- Step: round 6. Redefine the repeat gate, and split the ice error before moving a tooth.
+- Accepted because: the plain-tile fixture fails the new gate (over +0.74, lattice) and `tex/glacier-ice/v1.jpg` passes the same lag. Round-4 crops pass (over −0.003 and −0.057). Round-5 crops fail (over +0.178 and +0.179, lattice). The split holds from period 12 px through 32 px. Tonemap still FAIL. Ice channels are dL −11.8 to −13.1, da about +2, db about −4. A slope at ndl 0.32 and a slope at ndl 0.00 both displayed near L* 57. Serac on the teeth made one frame dE 14.14. Those trials were reverted. The tooth mesh is the round-5 mesh. Dark-row, follow, corridor, and texel floors were not moved. Snow p50 was not tuned.
+- Recipe appended: none. The gate is `engine/webgpu/glacier/repeat-gate.mjs`.
+- Failure appended: `learn/failures.md` headings `2026-11-17 — A peak anywhere in the autocorrelation is the photograph` and `2026-11-17 — Matching the wall sun-dot does not lift ice L*`.
+
+## Biggest waste
+
+Two full-frame slopes and one serac swap, each a render, none of which moved L*. The albedo was already near the key. The displayed lightness is the grade on the irradiance, and it lands near L* 57 whether the face is shaded or lit.
+
+## Reuse next time
+
+- Do not set an autocorrelation bar the source still fails. Compare the tile-period lag to that lag on the still.
+- ndl mean is not the ice median. These teeth grade to the same L* at ndl 0 and at ndl 0.32.
+- Serac stills are further from the glacier-ice key than the glacier-ice albedo is. They do not close this dE.

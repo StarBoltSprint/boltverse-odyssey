@@ -1,0 +1,17 @@
+{
+  "margin": 0.1,
+  "periodPx": 18.58,
+  "distanceM": 86,
+  "cropScale": 3,
+  "tileM": 0.5,
+  "native": "tex/glacier-ice/v1.jpg",
+  "note": "Period is focal * 0.5 / 86 * 3. Camera z at t=24 is -164, tooth row z is -250. The same pass/fail split holds at periods 12, 15, 19, 24, and 32.",
+  "rows": [
+    {"file": "plain-tile.jpg", "period": 64, "crop1": 1, "native1": 0.2611, "over": 0.7389, "crop2": 1, "native2": 0.1298, "lattice": true, "pass": false},
+    {"file": "glacier-ice-v1.jpg", "period": 64, "crop1": 0.2611, "native1": 0.2611, "over": 0, "crop2": 0.1298, "native2": 0.1298, "lattice": false, "pass": true},
+    {"file": "fixture-r4/t24-ice-3x.jpg", "period": 18.58, "crop1": 0.4572, "native1": 0.4597, "over": -0.0025, "crop2": 0.2779, "native2": 0.3414, "lattice": false, "pass": true},
+    {"file": "fixture-r4/t30-ice-3x.jpg", "period": 18.58, "crop1": 0.4031, "native1": 0.4597, "over": -0.0566, "crop2": 0.1681, "native2": 0.3414, "lattice": false, "pass": true},
+    {"file": "crops/t24-ice-3x.jpg", "period": 18.58, "crop1": 0.6372, "native1": 0.4597, "over": 0.1775, "crop2": 0.4827, "native2": 0.3414, "lattice": true, "pass": false},
+    {"file": "crops/t30-ice-3x.jpg", "period": 18.58, "crop1": 0.6387, "native1": 0.4597, "over": 0.179, "crop2": 0.4848, "native2": 0.3414, "lattice": true, "pass": false}
+  ]
+}
