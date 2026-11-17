@@ -254,6 +254,7 @@ trail.fill(32768);
 const stamps = [];
 const trailPending = [];
 let edgeMark = null;
+let trailMark = null;
 const LEG_DEF = [
   { across: 0.12, along: 0.02, offset: 0.0, rad: 0.065 },
   { across: -0.12, along: 0.02, offset: 0.5, rad: 0.065 },
@@ -391,13 +392,13 @@ function clearAdvanced() {
   edgeMark = { x: live.x, z: live.z };
 }
 function stampAt(wx, wz, yaw) {
-  const radX = 0.055;
-  const radZ = 0.09;
+  const radX = 0.09;
+  const radZ = 0.15;
   const fx = -Math.sin(yaw);
   const fz = -Math.cos(yaw);
   const rx = fz;
   const rz = -fx;
-  const reach = 0.16;
+  const reach = 0.24;
   paintTrail(wx - reach, wz - reach, wx + reach, wz + reach, (x, z) => {
     const ox = x - wx;
     const oz = z - wz;
@@ -429,7 +430,12 @@ function dropPrint(side) {
   const n = pawHit.n++;
   const j = Math.sin(n * 12.9898) * 43758.5453;
   const a = j - Math.floor(j);
-  stampAt(best.x - fx * (0.02 + (a - 0.5) * 0.03), best.z - fz * (0.02 + (a - 0.5) * 0.03), yaw);
+  // Bowls every 0.22 m back from the paw. The follow lens only keeps about
+  // a metre of snow behind Bolt, so the chain has to reach that strip.
+  for (let k = 0; k < 5; k++) {
+    const back = 0.12 + k * 0.22 + (a - 0.5) * 0.04;
+    stampAt(best.x - fx * back, best.z - fz * back, yaw);
+  }
 }
 function notePaw() {
   const frac = PAW_FRAC[Math.floor((live.phase % 1) * 32) % 32];
@@ -447,6 +453,17 @@ function stepLive(dt) {
   IDLE.stepMotion(live, dt, input.run);
   integrate(live, dt, input);
   notePaw();
+  // A bowl every third of a metre, 0.4 m behind the paws. That is the strip
+  // the follow camera still has on screen. Paw-down stamps stay as well.
+  if (live.v > 1.2) {
+    const fx = -Math.sin(live.psi);
+    const fz = -Math.cos(live.psi);
+    if (!trailMark) trailMark = { x: live.x, z: live.z };
+    if (Math.hypot(live.x - trailMark.x, live.z - trailMark.z) > 0.28) {
+      stampAt(live.x - fx * 0.38, live.z - fz * 0.38, live.psi);
+      trailMark = { x: live.x, z: live.z };
+    }
+  }
   clearAdvanced();
   stepFlakes(dt);
   return live;
@@ -573,9 +590,10 @@ fn darken15(c: vec3f) -> vec3f {
   if (snowLive) {
     let bowl = clamp(-h * 1.45, 0.0, 1.0);
     let rimH = clamp(h * 2.1, 0.0, 1.0);
-    alb = alb * (1.0 - bowl * 0.52);
-    alb = alb + vec3f(0.70, 0.76, 0.84) * rimH * 0.34;
-    nLit = normalize(nLit + vec3f(-hdx, 0.0, -hdz) * 14.0);
+    // The bowl and the packed rim are the Imagine snow, darker and brighter. No paint.
+    alb = alb * (1.0 - bowl * 0.58);
+    alb = alb * (1.0 + rimH * 0.32);
+    nLit = normalize(nLit + vec3f(-hdx, 0.0, -hdz) * 6.0);
     alb = alb * capsuleShade(v.w);
   }
   var col = litIce(alb, nLit, view);
@@ -638,23 +656,25 @@ fn distCell(f: u32, uv: vec2f) -> f32 {
   return textureSampleLevel(dtex, samp, uvA, 0.0).r;
 }
 fn cardNormal(f: u32, uv: vec2f, right: vec3f, up: vec3f, face: vec3f) -> vec3f {
-  let s = vec2f(4.0 / 224.0, 4.0 / 652.0);
+  let s = vec2f(12.0 / 224.0, 12.0 / 652.0);
+  let h = distCell(f, uv);
   let dx = distCell(f, uv + vec2f(s.x, 0.0)) - distCell(f, uv - vec2f(s.x, 0.0));
-  let dy = distCell(f, uv + vec2f(0.0, s.y)) - distCell(f, uv - vec2f(0.0, s.y));
-  let n = normalize(vec3f(-dx * 7.0, dy * 7.0, 0.035));
+  // Lateral slope from the blurred SDF. Vertical slope is the dome of that
+  // same height: the back (above the chest) rolls up, the belly rolls down.
+  let sx = clamp(-dx * 4.0, -0.42, 0.42);
+  let sy = clamp((0.50 - uv.y) * max(h * 6.0, 2.4), -0.48, 0.48);
+  let n = normalize(vec3f(sx, sy, 0.78));
   return normalize(right * n.x + up * n.y + face * n.z);
 }
 fn boltIrr(n: vec3f) -> vec3f {
+  // Dawn ambient and dawn sun, the same record as the snow. The sun lands on
+  // upward normals only, so the belly stays on the ambient. No extra tint.
+  let up = clamp(n.y, 0.0, 1.0);
+  let amb = vec3f(${LIGHT.ambient.rgb[0]}, ${LIGHT.ambient.rgb[1]}, ${LIGHT.ambient.rgb[2]});
+  let sunCol = vec3f(${LIGHT.sun.rgb[0]}, ${LIGHT.sun.rgb[1]}, ${LIGHT.sun.rgb[2]}) * ${LIGHT.sun.intensity};
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
-  let warm = vec3f(${LIGHT.sun.rgb[0]}, ${LIGHT.sun.rgb[1]}, ${LIGHT.sun.rgb[2]}) * ${LIGHT.sun.intensity};
-  let cool = vec3f(0.42, 0.52, 0.68);
-  let zen = vec3f(${LIGHT.sky.zenith[0]}, ${LIGHT.sky.zenith[1]}, ${LIGHT.sky.zenith[2]});
-  let hor = vec3f(${LIGHT.sky.horizon[0]}, ${LIGHT.sky.horizon[1]}, ${LIGHT.sky.horizon[2]});
-  let w = smoothstep(0.05, 0.40, n.y);
-  let c = smoothstep(0.0, 0.16, -n.y);
-  let grade = vec3f(1.18, 1.02, 0.72) * w + vec3f(0.38, 0.66, 1.70) * c + vec3f(1.0) * (1.0 - w - c);
-  let sky = mix(hor, zen, clamp(n.y, 0.0, 1.0));
-  return grade + warm * ndl * 0.08 + sky * 0.04 + cool * clamp(-n.y, 0.0, 1.0) * 0.06;
+  let face = mix(1.0, ${LIGHT.flatScale}, up * up);
+  return amb + sunCol * (ndl * face + 0.45) * up;
 }
 fn trailRaw(p: vec3f) -> f32 {
   let uv = fract(p.xz / u.trail.x);
@@ -722,11 +742,11 @@ fn capsuleShade(p: vec3f) -> f32 {
   let view = normalize(u.cam.xyz - v.w);
   let irr = boltIrr(n);
   let basis = boltIrr(face);
-  var col = alb * irr / max(basis, vec3f(0.04)) * 0.94;
+  var col = alb * irr / max(basis, vec3f(0.04)) * 0.5;
   let ndv = clamp(dot(n, view), 0.0, 1.0);
-  let rim = pow(1.0 - ndv, 2.2);
+  let rim = pow(1.0 - ndv, 2.4);
   let skyRim = vec3f(${LIGHT.sky.nebulaViolet[0]}, ${LIGHT.sky.nebulaViolet[1]}, ${LIGHT.sky.nebulaViolet[2]});
-  col = col + alb * skyRim * rim * 0.22;
+  col = col + alb * skyRim * rim * 0.1;
   let outc = present(col);
   return vec4f(outc.rgb, edge);
 }
@@ -793,7 +813,6 @@ function buildBoltDistance(data, width, height) {
   const fh = height / 4;
   const out = new Uint8Array(width * height);
   const INF = 1e6;
-  const NORM = 42;
   for (let f = 0; f < 32; f++) {
     const c = f % 8;
     const r = (f / 8) | 0;
@@ -825,10 +844,44 @@ function buildBoltDistance(data, width, height) {
       }
     }
     for (let y = 0; y < fh; y++) {
+      for (let x = 0; x < fw; x++) if (dist[y * fw + x] > 1e5) dist[y * fw + x] = 0;
+    }
+    // Wide blur before the gradient. The clamped raw distance was a flat plateau
+    // on the back; the blur is a dome, so the back rolls off.
+    const dome = boxBlur(boxBlur(dist, fw, fh, 14), fw, fh, 10);
+    let peak = 1e-4;
+    for (let i = 0; i < dome.length; i++) if (dome[i] > peak) peak = dome[i];
+    for (let y = 0; y < fh; y++) {
       for (let x = 0; x < fw; x++) {
-        const d = dist[y * fw + x];
-        out[(y0 + y) * width + (x0 + x)] = Math.round((d >= INF * 0.5 ? 0 : Math.min(1, d / NORM)) * 255);
+        const n = Math.max(0, Math.min(1, dome[y * fw + x] / peak));
+        out[(y0 + y) * width + (x0 + x)] = Math.round(n * 255);
       }
+    }
+  }
+  return out;
+}
+
+function boxBlur(src, fw, fh, rad) {
+  const tmp = new Float32Array(src.length);
+  const out = new Float32Array(src.length);
+  for (let y = 0; y < fh; y++) {
+    for (let x = 0; x < fw; x++) {
+      let s = 0;
+      let n = 0;
+      const x0 = Math.max(0, x - rad);
+      const x1 = Math.min(fw - 1, x + rad);
+      for (let xx = x0; xx <= x1; xx++) { s += src[y * fw + xx]; n++; }
+      tmp[y * fw + x] = s / n;
+    }
+  }
+  for (let y = 0; y < fh; y++) {
+    for (let x = 0; x < fw; x++) {
+      let s = 0;
+      let n = 0;
+      const y0 = Math.max(0, y - rad);
+      const y1 = Math.min(fh - 1, y + rad);
+      for (let yy = y0; yy <= y1; yy++) { s += tmp[yy * fw + x]; n++; }
+      out[y * fw + x] = s / n;
     }
   }
   return out;
@@ -2065,7 +2118,7 @@ async function main() {
       live.v = 7;
       snowDiag = 41;
       const albedo = await readFrame();
-      snowDiag = 0;
+      snowDiag = window.__ny ? 43 : 0;
       const lit = await readFrame();
       fillU(simClock);
       const pushBand = (name, y0, y1, src) => {
@@ -2089,6 +2142,9 @@ async function main() {
       };
       pushBand('albedo', 0.30, 0.75, albedo.src);
       bands.push({ frame, back: pushBand('back', 0.28, 0.48, lit.src), belly: pushBand('belly', 0.58, 0.78, lit.src) });
+    }
+    if (window.__coatOnly) {
+      return { samples, bands, paws: [], seen: [], at10: null, stamps: 0, cardH: IDLE.cfg.cardH, draws: DRAWS.length, tris: world.budget.totalTris, boltPx: null, useR16 };
     }
     const paws = [];
     skipBolt = true;
