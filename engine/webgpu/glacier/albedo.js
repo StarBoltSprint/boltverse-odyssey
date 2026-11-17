@@ -117,9 +117,19 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   // 7.5 is only a ceiling so the chain cannot go flat. Both axes scale together.
   let farIce = bias >= 3.5 && length(px) + length(py) > 0.05;
   if (farIce) {
-    let k0 = lodScale(du0 / 4.0, dv0 / 4.0, 0.0, 7.5);
-    let k1 = lodScale(du1 / 4.0, dv1 / 4.0, 0.0, 7.5);
-    let k2 = lodScale(du2 / 4.0, dv2 / 4.0, 0.0, 7.5);
+    // spin.y above 20 is the run 31 gradient (30) or that gradient with a
+    // mip bias (28 = bias -2). The live path undoes bias 4 and caps at 7.5.
+    if (u.spin.y > 20.0) {
+      let s = exp2(u.spin.y - 30.0);
+      let h0 = blend4(arr, uv0, du0 * s, dv0 * s, variantW(i), gain);
+      let h1 = blend4(arr, uv1, du1 * s, dv1 * s, variantW(id1), gain);
+      let h2 = blend4(arr, uv2, du2 * s, dv2 * s, variantW(id2), gain);
+      return h0 * w.x + h1 * w.y + h2 * w.z;
+    }
+    let cap = select(7.5, u.spin.y, u.spin.y > 0.5 && u.spin.y < 20.0);
+    let k0 = lodScale(du0 / 4.0, dv0 / 4.0, 0.0, cap);
+    let k1 = lodScale(du1 / 4.0, dv1 / 4.0, 0.0, cap);
+    let k2 = lodScale(du2 / 4.0, dv2 / 4.0, 0.0, cap);
     let h0 = blend4(arr, uv0, du0 / 4.0 * k0, dv0 / 4.0 * k0, variantW(i), gain);
     let h1 = blend4(arr, uv1, du1 / 4.0 * k1, dv1 / 4.0 * k1, variantW(id1), gain);
     let h2 = blend4(arr, uv2, du2 / 4.0 * k2, dv2 / 4.0 * k2, variantW(id2), gain);

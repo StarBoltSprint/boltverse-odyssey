@@ -9,6 +9,7 @@ import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
 import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
 import { LOD } from './lod.js';
+import { glacierResidual } from './motion-flicker.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
@@ -675,12 +676,16 @@ struct TaaOut { @location(0) color: vec4f, @location(1) hist: vec4f };
       let hc = clamp(rgbYCoCg(h), m1 - sigma * gamma, m1 + sigma * gamma);
       let hist = ycocgRgb(hc);
       let vel = length((puv - uv) * dim);
-      let histW = 0.9 * (1.0 - smoothstep(1.5, 6.0, vel));
       let lyC = dot(cur, vec3f(0.2126, 0.7152, 0.0722));
       let lyH = dot(hist, vec3f(0.2126, 0.7152, 0.0722));
       let wC = 1.0 / (1.0 + lyC);
-      let wH = histW / (1.0 + lyH);
-      out = (cur * wC + hist * wH) / max(wC + wH, 1e-4);
+      let wH = 1.0 / (1.0 + lyH);
+      // History is 0.9 while the pixel is still. Karis lets a darker
+      // current sample in a little more than a brighter one. A fast
+      // pixel drops the history instead of smearing it.
+      let velT = smoothstep(1.5, 6.0, vel);
+      let currentW = mix(0.1, 1.0, velT) * clamp(wC / max(wH, 1e-3), 0.5, 1.5);
+      out = mix(hist, cur, clamp(currentW, 0.0, 1.0));
     }
   }
   let blur = (
@@ -696,6 +701,9 @@ struct TaaOut { @location(0) color: vec4f, @location(1) hist: vec4f };
   o.color = vec4f(srgb, 1.0);
   o.hist = vec4f(out, 1.0);
   return o;
+}
+@fragment fn fsDepth(@builtin(position) pos: vec4f) -> @location(0) f32 {
+  return textureLoad(taaDepth, vec2i(pos.xy), 0);
 }
 `;
 
@@ -1105,8 +1113,19 @@ async function main() {
       { binding: 12, resource: depth.createView() },
     ],
   });
+  const pDepth = dev.createRenderPipeline({
+    layout: taaLayout,
+    vertex: { module: mod, entryPoint: 'vsSky' },
+    fragment: { module: mod, entryPoint: 'fsDepth', targets: [{ format: 'r32float' }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+  });
+  const depthOut = dev.createTexture({
+    size: [W, H], format: 'r32float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
   const bpr = Math.ceil(W * 4 / 256) * 256;
   const rb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const depthRb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
   const U = new Float32Array(128);
   const prevVp = new Float32Array(16);
   const currentVp = new Float32Array(16);
@@ -1123,6 +1142,18 @@ async function main() {
     const w = vp[3] * p[0] + vp[7] * p[1] + vp[11] * p[2] + vp[15];
     if (!(w > 0)) return null;
     return [(x / w * 0.5 + 0.5) * W, (1 - (y / w * 0.5 + 0.5)) * H];
+  }
+  function boltRectOf(vp) {
+    const y0 = pawGround();
+    const feet = projectFrom(vp, [live.x, y0, live.z]);
+    const head = projectFrom(vp, [live.x, y0 + 1.45, live.z]);
+    if (!feet || !head) return null;
+    return {
+      x0: feet[0] - 150,
+      y0: Math.min(feet[1], head[1]) - 40,
+      x1: feet[0] + 150,
+      y1: Math.max(feet[1], head[1]) + 40,
+    };
   }
   const worldVerts = world.verts.length / 8;
 
@@ -1141,8 +1172,10 @@ async function main() {
     }
     const view = lookAt(eye, tgt, [0, 1, 0]);
     const proj = persp(FOV_Y, W / H, 0.08, 14000);
-    const useTaa = gateMode === 0 && window.__glacierSingle !== true;
-    if (useTaa) {
+    const histMode = Number(window.__glacierMipBias) > 20 || window.__glacierSingle === true;
+    const useJitter = !histMode;
+    const useTaa = useJitter && gateMode === 0;
+    if (useJitter) {
       const j = (taaN % 16) + 1;
       const jx = (halton(j, 2) - 0.5) * (2 / W);
       const jy = (halton(j, 3) - 0.5) * (2 / H);
@@ -1184,6 +1217,7 @@ async function main() {
     U[53] = window.__glacierSharp == null ? 0.15 : Number(window.__glacierSharp);
     U[54] = gateMode;
     U[55] = gateBreak;
+    U[57] = Number(window.__glacierMipBias) || Number(window.__glacierMipCap) || 0;
     U[58] = skySwim;
     U[59] = skyYaw;
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 60);
@@ -1249,9 +1283,10 @@ async function main() {
       dev.queue.writeBuffer(flakeBuf, 0, flakeGpu);
     }
     const enc = dev.createCommandEncoder();
-    const useTaa = gateMode === 0 && window.__glacierSingle !== true;
+    const histMode = Number(window.__glacierMipBias) > 20 || window.__glacierSingle === true;
+    const useTaa = !histMode && gateMode === 0;
     const sceneTarget = useTaa ? raw : off;
-    const pass = beginPass(enc, [0, 0, 0, 1], sceneTarget, useTaa);
+    const pass = beginPass(enc, [0, 0, 0, 1], sceneTarget, useTaa || window.__glacierDepth === true);
     drawWorld(pass);
     drawActors(pass);
     pass.end();
@@ -1272,6 +1307,16 @@ async function main() {
       prevVp.set(currentVp);
       taaReady = true;
       taaN += 1;
+    }
+    if (window.__glacierDepth === true) {
+      const pd = enc.beginRenderPass({
+        colorAttachments: [{ view: depthOut.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [1, 0, 0, 1] }],
+      });
+      pd.setPipeline(pDepth);
+      pd.setBindGroup(0, taaGroup(histTex[histI]));
+      pd.draw(3);
+      pd.end();
+      enc.copyTextureToBuffer({ texture: depthOut }, { buffer: depthRb, bytesPerRow: bpr }, [W, H]);
     }
     enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
     if (!CAP) {
@@ -1435,7 +1480,21 @@ async function main() {
     renderFixed(simClock);
     const gpuErr = await dev.popErrorScope();
     const src = await readback();
-    return { src, gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
+    let depth = null;
+    if (window.__glacierDepth === true) {
+      await depthRb.mapAsync(GPUMapMode.READ);
+      depth = new Float32Array(depthRb.getMappedRange().slice(0));
+      depthRb.unmap();
+    }
+    return {
+      src,
+      depth,
+      vp: Float32Array.from(currentVp),
+      ivp: Float32Array.from(U.subarray(16, 32)),
+      cam: [U[32], U[33], U[34]],
+      bolt: boltRectOf(currentVp),
+      gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null,
+    };
   }
   function renderBoltMask() {
     const enc = dev.createCommandEncoder();
@@ -1843,22 +1902,31 @@ async function main() {
     const step = 1 / 60;
     await converge(t);
     hideFlakes = true;
-    gateMode = window.__glacierAlbedo ? 2 : 0;
-    const colourA = await readFrame();
-    gateMode = 3;
-    const geoA = await readFrame();
-    const t2 = t + 1 / 30;
+    window.__glacierDepth = true;
+    const shot = async () => {
+      const n = taaN;
+      gateMode = window.__glacierAlbedo ? 2 : 0;
+      const colour = await readFrame();
+      taaN = n;
+      gateMode = 3;
+      const geo = await readFrame();
+      taaN = n + 1;
+      return { colour, geo };
+    };
+    const A = await shot();
+    const colourA = A.colour;
+    const geoA = A.geo;
+    const pairDt = window.__glacierPair == null ? 1 / 30 : Number(window.__glacierPair);
+    const t2 = t + pairDt;
     while (sim < t2 - 1e-5) { const h = Math.min(step, t2 - sim); stepLive(h); sim += h; }
-    gateMode = window.__glacierAlbedo ? 2 : 0;
-    const colourB = await readFrame();
-    gateMode = 3;
-    const geoB = await readFrame();
+    const B = await shot();
+    const colourB = B.colour;
+    const geoB = B.geo;
     const t3 = t2 + 1 / 60;
     while (sim < t3 - 1e-5) { const h = Math.min(step, t3 - sim); stepLive(h); sim += h; }
-    gateMode = window.__glacierAlbedo ? 2 : 0;
-    const colourC = await readFrame();
-    gateMode = 3;
-    const geoC = await readFrame();
+    const C = await shot();
+    const colourC = C.colour;
+    const geoC = C.geo;
     gateMode = 0;
     hideFlakes = false;
     let flicker = 0;
@@ -1968,11 +2036,18 @@ async function main() {
     }
     rowStep.sort((p, q) => p - q);
     const horizon = rowStep.length ? rowStep[rowStep.length - 1] : 0;
+    const motion = glacierResidual({
+      colour: colourA.src, geo: geoA.src, depth: colourA.depth, vp: colourA.vp, ivp: colourA.ivp, cam: colourA.cam, bolt: colourA.bolt,
+    }, {
+      colour: colourB.src, geo: geoB.src, depth: colourB.depth, vp: colourB.vp, ivp: colourB.ivp, cam: colourB.cam, bolt: colourB.bolt,
+    });
     return {
       t,
       z: live.z,
       flicker: flickerN ? flicker / flickerN : null,
       flicker60: flicker60N ? flicker60 / flicker60N : null,
+      flickerMotion: motion.mean,
+      flickerMotionN: motion.n,
       pair: '1/30',
       pair60: '1/60',
       flickerN,

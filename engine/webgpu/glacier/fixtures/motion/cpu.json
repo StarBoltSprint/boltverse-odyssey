@@ -1,0 +1,17 @@
+{
+  "static": {
+    "mean": 4.5626072360475277e-14,
+    "n": 32922,
+    "disoccluded": 558
+  },
+  "translation": {
+    "mean": 0.000313871910928439,
+    "n": 32736,
+    "disoccluded": 924
+  },
+  "screenShimmer": {
+    "mean": 14.005901139310495,
+    "n": 32736,
+    "disoccluded": 924
+  }
+}
