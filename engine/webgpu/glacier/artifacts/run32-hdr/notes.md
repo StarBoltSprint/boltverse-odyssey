@@ -33,3 +33,13 @@ Same seed and route. `before/` is gamma 2.2. `after/` is this grade. Tags: 51 = 
 ## Still open
 
 The thin dark horizon line, the right-hand drop, and the flat grey slabs are unchanged. The page triangle count and the CPU budget still disagree by 184 triangles; neither moved.
+
+## Round 3 — stopped
+
+Look gate committed in `a561be5f` before the trial. Neither candidate passed, so neither was adopted and no new chase was made. The shipped grade stays AgX at EV 0.32.
+
+Khronos PBR Neutral, one exposure EV 0.36 calibrated to the snow key (mean |snow p50 − 0.708| = 0.024). Gate `neutral/tonemap-gate.json` FAIL. Contrast and saturation rise, peach sky is 0.179, and grey_bright passes. Frame luma misses on every still (p1 about 0.066, p99 about 0.06). Bolt torso sat is 0.03 to 0.06 above the before. Ice dE76 is 14.9 to 18.1.
+
+AgX punchy (log-space power 1.35, saturation 1.4), one exposure EV 1.7 (mean snow error 0.014). Gate `punchy/tonemap-gate.json` FAIL. Contrast and mean saturation rise. Peach sky is 0.142, under 0.15. p50 is 0.055 to 0.075 above the gamma key. Bolt torso Y is about 0.076 high. Ice dE76 is 9.1 to 11.8.
+
+Limits were not moved. Exposure was not refit after these numbers.

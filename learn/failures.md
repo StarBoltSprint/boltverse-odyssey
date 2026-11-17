@@ -1338,3 +1338,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Shoulder blends toward the exposed colour only above display-linear luma 0.46 (gain 0.7). After the sRGB OETF, bright ice with spread under 0.05 is lifted to 0.05, gain capped at 2.2. EV stays 0.32. |
 | Guard | `node engine/webgpu/glacier/tonemap-gate.mjs`. 30 s p99 delta 0.0061. 30 s grey_bright 0.1405. Ice dE76 6.48–8.24. 11.70 s p50 delta stayed 0.0479. |
 | Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/artifacts/run32-hdr/tonemap-gate.json`. |
+
+### 2026-11-17 — Neutral and AgX punchy both miss the look gate
+
+| | |
+| --- | --- |
+| Take | Glacier HDR round 3. Not adopted. |
+| Defect | One key-calibrated exposure of Khronos PBR Neutral and one of AgX punchy each fail the locked look gate plus the luma or ice dE76 gates. |
+| Root cause | Neutral at the snow-key exposure (EV 0.36) lifts the whole frame and the torso, and ice dE76 goes to 15–18. Punchy (log power 1.35, sat 1.4) at EV 1.7 restores contrast but the p50 and the torso rise, and the t30 peach sky is 0.142. |
+| Fix | None. Limits were not moved. The shipped grade stays AgX at EV 0.32. |
+| Guard | `node engine/webgpu/glacier/tonemap-gate.mjs` with the look block in `tonemap-limits.json`. |
+| Sources | `engine/webgpu/glacier/artifacts/run32-hdr/neutral/tonemap-gate.json`, `engine/webgpu/glacier/artifacts/run32-hdr/punchy/tonemap-gate.json`. |

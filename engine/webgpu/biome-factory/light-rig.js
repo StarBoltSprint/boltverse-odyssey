@@ -99,14 +99,26 @@ function agxContrast(x) {
   return 15.5 * x4 * x2 - 40.14 * x4 * x + 31.96 * x4 - 6.868 * x2 * x + 0.4298 * x2 + 0.1191 * x - 0.00232;
 }
 
-// AgX base (inset, log, sigmoid, outset, 2.2 back to linear). No look transform.
-// Returns display-linear in 0..1. The caller applies the sRGB OETF.
-export function tonemapAgx(color, exposure) {
+// Punchy look, applied in AgX log (before the sigmoid): CDL power contrast, then saturation.
+// Slope 1, offset 0, power 1.35, sat 1.4. Locked before the trial. Not fitted per frame.
+const PUNCH_POWER = 1.35;
+const PUNCH_SAT = 1.4;
+
+function punchyLog(c) {
+  const powered = c.map((v) => Math.max(v, 0) ** PUNCH_POWER);
+  const y = 0.2126 * powered[0] + 0.7152 * powered[1] + 0.0722 * powered[2];
+  return powered.map((v) => Math.min(1, Math.max(0, y + PUNCH_SAT * (v - y))));
+}
+
+// AgX base (inset, log, sigmoid, outset, 2.2 back to linear).
+// punchy adds the log-space look. Returns display-linear in 0..1.
+export function tonemapAgx(color, exposure, punchy = false) {
   let c = color.map((v) => Math.max(0, v) * exposure);
   c = mulCols(SRGB_TO_2020, c);
   c = mulCols(AGX_INSET, c);
   c = c.map((v) => Math.log2(Math.max(v, 1e-10)));
   c = c.map((v) => Math.min(1, Math.max(0, (v - MIN_EV) / (MAX_EV - MIN_EV))));
+  if (punchy) c = punchyLog(c);
   c = c.map(agxContrast);
   c = mulCols(AGX_OUTSET, c);
   c = c.map((v) => Math.max(0, v) ** 2.2);
@@ -140,7 +152,8 @@ export function tonemapNeutral(color, exposure) {
 }
 
 export const TONEMAPS = {
-  agx: tonemapAgx,
+  agx: (c, e) => tonemapAgx(c, e, false),
+  'agx-punchy': (c, e) => tonemapAgx(c, e, true),
   aces: tonemapAces,
   neutral: tonemapNeutral,
 };
@@ -190,9 +203,9 @@ export function gradeLinear(rgb, light, ice = false) {
   const exposed = rgb.map((v) => Math.max(0, v) * exposure);
   const op = TONEMAPS[light.tonemap] || tonemapNeutral;
   let graded = op(rgb, exposure);
-  if ((light.tonemap || 'neutral') === 'agx') graded = softenShoulder(exposed, graded);
+  if (light.tonemap === 'agx') graded = softenShoulder(exposed, graded);
   let display = graded.map(srgbOetf);
-  if (ice) display = iceChroma(display);
+  if (ice && light.tonemap === 'agx') display = iceChroma(display);
   return display;
 }
 
@@ -205,7 +218,7 @@ function mat3(cols) {
 // material ids pass through, albedo probes are sRGB of the linear sample.
 export function gradeWgsl(light) {
   const ev = light.exposureEv || 0;
-  const which = light.tonemap === 'agx' ? 0 : light.tonemap === 'aces' ? 1 : 2;
+  const which = light.tonemap === 'agx' ? 0 : light.tonemap === 'aces' ? 1 : light.tonemap === 'agx-punchy' ? 3 : 2;
   return `
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
@@ -227,12 +240,18 @@ fn agxContrast(x: vec3f) -> vec3f {
   let x4 = x2 * x2;
   return 15.5 * x4 * x2 - 40.14 * x4 * x + 31.96 * x4 - 6.868 * x2 * x + 0.4298 * x2 + 0.1191 * x - 0.00232;
 }
-fn tonemapAgx(color: vec3f) -> vec3f {
+fn punchyLog(c: vec3f) -> vec3f {
+  let powered = pow(max(c, vec3f(0.0)), vec3f(${PUNCH_POWER}));
+  let y = dot(powered, vec3f(0.2126, 0.7152, 0.0722));
+  return clamp(vec3f(y) + (powered - vec3f(y)) * ${PUNCH_SAT}, vec3f(0.0), vec3f(1.0));
+}
+fn tonemapAgx(color: vec3f, punchy: bool) -> vec3f {
   var c = color;
   c = ${mat3(SRGB_TO_2020)} * c;
   c = ${mat3(AGX_INSET)} * c;
   c = log2(max(c, vec3f(1e-10)));
   c = clamp((c - vec3f(${MIN_EV})) / vec3f(${MAX_EV - MIN_EV}), vec3f(0.0), vec3f(1.0));
+  if (punchy) { c = punchyLog(c); }
   c = agxContrast(c);
   c = ${mat3(AGX_OUTSET)} * c;
   c = pow(max(c, vec3f(0.0)), vec3f(2.2));
@@ -258,8 +277,9 @@ fn tonemapNeutral(color: vec3f) -> vec3f {
   return max(mix(c, vec3f(newPeak), g), vec3f(0.0));
 }
 fn tonemap(color: vec3f) -> vec3f {
-  if (${which} == 0) { return tonemapAgx(color); }
+  if (${which} == 0) { return tonemapAgx(color, false); }
   if (${which} == 1) { return tonemapAces(color); }
+  if (${which} == 3) { return tonemapAgx(color, true); }
   return tonemapNeutral(color);
 }
 fn luma3(c: vec3f) -> f32 { return dot(c, vec3f(0.2126, 0.7152, 0.0722)); }
@@ -297,7 +317,7 @@ fn iceChroma(c: vec3f) -> vec3f {
   var graded = tonemap(exposed);
   if (${which} == 0) { graded = softenShoulder(exposed, graded); }
   var display = srgbOetf(graded);
-  if (abs(textureLoad(hdrTex, vec2i(p.xy), 0).a - 0.5) < 0.02) { display = iceChroma(display); }
+  if (${which} == 0 && abs(textureLoad(hdrTex, vec2i(p.xy), 0).a - 0.5) < 0.02) { display = iceChroma(display); }
   return vec4f(display, 1.0);
 }
 `;

@@ -429,7 +429,7 @@ fn darken15(c: vec3f) -> vec3f {
   }
   if (u.misc.w > 0.5 && abs(m - (u.misc.w - 1.0)) < 0.25) { col = darken15(col); }
   var out = present(col);
-  // Alpha 0.5 marks ice for the post-AgX chroma restore. Snow and Bolt stay at 1.
+  // Alpha 0.5 marks ice for the base-AgX chroma restore. Other grades ignore it.
   let ice = (m > 0.5 && m < 3.5) || (m > 5.5 && m < 7.5);
   if (ice) { out.a = 0.5; }
   return out;
