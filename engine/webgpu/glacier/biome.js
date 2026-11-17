@@ -13,6 +13,7 @@ export const MAT = {
   sky: 5,
   wall: 6,
   mountain: 7,
+  horizon: 8,
 };
 
 export const LIMITS = {

@@ -1338,3 +1338,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Shoulder blends toward the exposed colour only above display-linear luma 0.46 (gain 0.7). After the sRGB OETF, bright ice with spread under 0.05 is lifted to 0.05, gain capped at 2.2. EV stays 0.32. |
 | Guard | `node engine/webgpu/glacier/tonemap-gate.mjs`. 30 s p99 delta 0.0061. 30 s grey_bright 0.1405. Ice dE76 6.48–8.24. 11.70 s p50 delta stayed 0.0479. |
 | Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/artifacts/run32-hdr/tonemap-gate.json`. |
+
+### 2026-11-17 — Glacier horizon line is a dithered far face plus a vertical snow crest
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F. Not a KEEP. |
+| Defect | Every chase since run 31 shows a one-pixel dark row (t=30, screen row 512), a ~2.8 m ditch on camera-right, and flat snow sheets. |
+| Root cause | The eye-level row is wall and fall past ~180 m, which the LOD dither punches, plus the three `addHorizonRidge` sheets. Those sheets are vertical `MAT.snow`, so burying the foot does not move the crest. `floorH` cuts the ditch at positive lat. Plateau and far-ground quads run to a 922 m edge. |
+| Fix | A world-fixed berm and ring on material `horizon` (no dither, hex triplanar, mip bias 1, serac plus crust). The ditch term is gone. Near sheets and caps are 0. The tonemap gate still misses 11.70 s snow p50 by 0.001, 24 s p99 by 0.003, and 30 s grey_bright by 0.004. Limits were not moved. |
+| Guard | `node engine/webgpu/glacier/horizon-gate.mjs`. horizon_closed ≥ 0.98 at mcam 0, 0.9, 1.57. Shoulder drop ≤ 0.40 m. |
+| Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/albedo.js`, `engine/webgpu/glacier/artifacts/run33-horizon/DIAGNOSIS.md`. |

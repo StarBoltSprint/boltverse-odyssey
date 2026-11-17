@@ -2,6 +2,7 @@
 //   node horizon-gate.mjs
 // The camera position is the t=30 chase eye on the sealed route (speed 7, accel 9).
 // mcam is the level look yaw in radians: 0 is world -Z, 1.57 is world +X.
+import { MAT } from './biome.js';
 import { buildWorld, spawn, integrate, chaseInput, pathX, floorH } from './world.js';
 import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
 
@@ -152,7 +153,8 @@ function nearSlabs() {
   let sheets = 0;
   let caps = 0;
   for (let t = 0; t + 24 <= verts.length; t += 24) {
-    if (Math.round(verts[t + 3]) !== 0) continue;
+    const mat = Math.round(verts[t + 3]);
+    if (mat !== MAT.snow && mat !== MAT.horizon) continue;
     const z = (verts[t + 2] + verts[t + 10] + verts[t + 18]) / 3;
     if (z < -700) continue;
     const P = [0, 8, 16].map((k) => [verts[t + k], verts[t + k + 1], verts[t + k + 2]]);
