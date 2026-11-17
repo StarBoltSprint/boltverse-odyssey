@@ -40,6 +40,12 @@ function luma(r, g, b) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+function hsvSat(r, g, b) {
+  const hi = Math.max(r, g, b);
+  const lo = Math.min(r, g, b);
+  return hi <= 1e-6 ? 0 : (hi - lo) / hi;
+}
+
 function percentile(sorted, q) {
   return sorted[Math.min(sorted.length - 1, Math.floor(q * (sorted.length - 1)))];
 }
@@ -109,6 +115,7 @@ function analyse(pair) {
   let clip = 0;
   let crush = 0;
   let crushN = 0;
+  let satSum = 0;
   let grey = 0;
   let bright = 0;
   let blue = 0;
@@ -122,6 +129,7 @@ function analyse(pair) {
     const y = luma(r, g, b);
     all.push(y);
     sum += y;
+    satSum += hsvSat(r, g, b);
     if (r > limits.clipAt || g > limits.clipAt || b > limits.clipAt) clip++;
     const id = matOf(mat.raw[o], mat.raw[o + 1]);
     const planet = id === 'planet';
@@ -146,6 +154,8 @@ function analyse(pair) {
     p1: percentile(all, 0.01),
     p50: percentile(all, 0.50),
     p99: percentile(all, 0.99),
+    contrast: percentile(all, 0.99) - percentile(all, 0.01),
+    satMean: satSum / n,
     meanY: sum / n,
     clip: clip / n,
     crush: crushN ? crush / crushN : 0,
@@ -156,6 +166,26 @@ function analyse(pair) {
     blue: iceN ? blue / iceN : null,
     bright,
   };
+}
+
+function windowStat(im, box) {
+  const x1 = Math.min(im.w, box.x + box.w);
+  const y1 = Math.min(im.h, box.y + box.h);
+  let ySum = 0;
+  let sSum = 0;
+  let n = 0;
+  for (let y = box.y; y < y1; y++) {
+    for (let x = box.x; x < x1; x++) {
+      const o = (y * im.w + x) * 3;
+      const r = im.raw[o] / 255;
+      const g = im.raw[o + 1] / 255;
+      const b = im.raw[o + 2] / 255;
+      ySum += luma(r, g, b);
+      sSum += hsvSat(r, g, b);
+      n++;
+    }
+  }
+  return { y: n ? ySum / n : 0, sat: n ? sSum / n : 0, n };
 }
 
 function round4(n) { return Math.round(n * 10000) / 10000; }
@@ -200,6 +230,21 @@ for (const tag of tags) {
   if (a.greyBright == null) bad('no bright ice ' + tag);
   else if (!(a.greyBright < limits.greyBrightMax)) bad(`grey_bright ${tag} ${a.greyBright.toFixed(3)}`);
   if (a.blue == null || !(a.blue > limits.iceBlueMin)) bad(`ice b-r ${tag} ${a.blue}`);
+  const dContrast = a.contrast - b.contrast;
+  const dSat = a.satMean - b.satMean;
+  if (dContrast < limits.look.contrastDeltaMin) bad(`contrast ${tag} ${dContrast.toFixed(4)}`);
+  if (dSat < limits.look.satMeanDeltaMin) bad(`sat_mean ${tag} ${dSat.toFixed(4)}`);
+  const torsoA = windowStat(after.colour, limits.look.boltTorso);
+  const torsoB = windowStat(before.colour, limits.look.boltTorso);
+  const dTorsoY = torsoA.y - torsoB.y;
+  const dTorsoS = torsoA.sat - torsoB.sat;
+  if (Math.abs(dTorsoY) > limits.look.boltDeltaMax) bad(`bolt torso Y ${tag} ${dTorsoY.toFixed(4)}`);
+  if (Math.abs(dTorsoS) > limits.look.boltDeltaMax) bad(`bolt torso sat ${tag} ${dTorsoS.toFixed(4)}`);
+  let peach = null;
+  if (tag === limits.look.peachSky.tag) {
+    peach = windowStat(after.colour, limits.look.peachSky);
+    if (!(peach.sat >= limits.look.peachSkySatMin)) bad(`peach sky sat ${tag} ${peach.sat.toFixed(4)}`);
+  }
   let dSnow = null;
   let dIce = null;
   if (a.iceLab) {
@@ -228,6 +273,21 @@ for (const tag of tags) {
     dE76snow: dSnow == null ? null : round4(dSnow),
     dE76ice: dIce == null ? null : round4(dIce),
     keyscore: keyscore == null ? null : round4(keyscore),
+    look: {
+      contrast: round4(a.contrast),
+      contrastBefore: round4(b.contrast),
+      dContrast: round4(dContrast),
+      satMean: round4(a.satMean),
+      satMeanBefore: round4(b.satMean),
+      dSat: round4(dSat),
+      torsoY: round4(torsoA.y),
+      torsoYBefore: round4(torsoB.y),
+      dTorsoY: round4(dTorsoY),
+      torsoSat: round4(torsoA.sat),
+      torsoSatBefore: round4(torsoB.sat),
+      dTorsoSat: round4(dTorsoS),
+      peachSat: peach ? round4(peach.sat) : null,
+    },
   });
 }
 
@@ -261,6 +321,12 @@ const report = {
     greyBrightMax: limits.greyBrightMax,
     de76Max: limits.de76Max,
     run31Keyscore: limits.run31Keyscore,
+    look: {
+      contrastDeltaMin: limits.look.contrastDeltaMin,
+      satMeanDeltaMin: limits.look.satMeanDeltaMin,
+      peachSkySatMin: limits.look.peachSkySatMin,
+      boltDeltaMax: limits.look.boltDeltaMax,
+    },
   },
   snowKey: { p1: round4(snowKey.p1), p50: round4(snowKey.p50), p99: round4(snowKey.p99), lab: snowKey.lab.map(round4) },
   iceKeyLab: iceKey.lab.map(round4),

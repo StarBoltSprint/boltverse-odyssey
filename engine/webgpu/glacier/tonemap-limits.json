@@ -25,5 +25,19 @@
   "greyBright": "Among ice pixels (fall, arch, icicle, wall, serac) with display luma above brightLuma, the fraction whose max-min is below greyChroma.",
   "iceBlue": "Mean (b - r) over those ice pixels. Must be above iceBlueMin.",
   "crushed": "Fraction of pixels that are not the planet and have luma below crushAt.",
-  "run31Keyscore": 85.84
+  "run31Keyscore": 85.84,
+  "look": {
+    "writtenBeforeTrial": "2026-11-17",
+    "note": "Look gate locked before the Neutral / AgX-punchy trial. Thresholds are not relaxed after the pictures come back.",
+    "contrastDeltaMin": 0,
+    "satMeanDeltaMin": -0.005,
+    "peachSkySatMin": 0.15,
+    "boltDeltaMax": 0.02,
+    "peachSky": { "tag": "30", "x": 96, "y": 64, "w": 128, "h": 96, "note": "Left peach sky. On the gamma-2.2 t30 still this window is HSV sat 0.162 and Rec.709 Y 0.574, the director's 0.161 / 0.575." },
+    "boltTorso": { "x": 304, "y": 850, "w": 80, "h": 120, "note": "Torso on the follow view. On the gamma-2.2 t30 still this window is Y 0.513 and HSV sat 0.157, the director's 0.513 / 0.156." },
+    "contrast": "Per still, (p99 - p1) of Rec.709 encoded Y after, minus the same on the gamma-2.2 before. Must be >= contrastDeltaMin.",
+    "satMean": "Per still, mean HSV saturation (max-min)/max over every pixel, after minus before. Must be >= satMeanDeltaMin.",
+    "peach": "t30 only. Mean HSV saturation inside peachSky must be >= peachSkySatMin.",
+    "bolt": "Per still. Torso Rec.709 Y and HSV saturation must each stay within boltDeltaMax of that still's gamma-2.2 before."
+  }
 }
