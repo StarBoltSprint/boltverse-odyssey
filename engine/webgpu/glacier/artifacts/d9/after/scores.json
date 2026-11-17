@@ -12,7 +12,7 @@
       "cardH": 1.15,
       "x": 12.119318512450368,
       "z": -32.829025520434506,
-      "skyFraction": 0.2470592403628118,
+      "skyFraction": 0.247,
       "skylineRow": 189,
       "banding": {
         "pass": true,
@@ -27,14 +27,15 @@
         "hfLimit": 2.5
       },
       "planet": {
-        "pass": false,
-        "terminatorPass": false,
+        "pass": true,
+        "terminatorPass": true,
         "profilePass": true,
         "pixels": 4304,
-        "gradPerPx": 0.756,
-        "brightDeg": 33.596,
+        "bandN": 3892,
+        "gradPerPx": 0.652,
+        "brightDeg": 50.663,
         "sunDeg": 50.085,
-        "angleErr": 16.489,
+        "angleErr": 0.577,
         "angleLimit": 15,
         "litMean": 166.074,
         "unlitMean": 73.122,
@@ -53,9 +54,14 @@
           529.513,
           188.414
         ],
-        "rad": 170.98
+        "rad": 170.98,
+        "shaderDeg": 46.003,
+        "shaderErr": 4.083,
+        "visibleFraction": 0.41,
+        "terminatorOnScreen": 117,
+        "terminatorVisible": 48
       },
-      "pass": false
+      "pass": true
     },
     {
       "t": 5.567,
@@ -68,7 +74,7 @@
       "cardH": 1.15,
       "x": 11.750737523618582,
       "z": -36.077180231073264,
-      "skyFraction": 0.23436082766439909,
+      "skyFraction": 0.234,
       "skylineRow": 187,
       "banding": {
         "pass": true,
@@ -83,14 +89,15 @@
         "hfLimit": 2.5
       },
       "planet": {
-        "pass": false,
-        "terminatorPass": false,
+        "pass": true,
+        "terminatorPass": true,
         "profilePass": true,
         "pixels": 4585,
-        "gradPerPx": 0.758,
-        "brightDeg": 83.798,
+        "bandN": 3954,
+        "gradPerPx": 0.609,
+        "brightDeg": 49.308,
         "sunDeg": 50.108,
-        "angleErr": 33.69,
+        "angleErr": 0.8,
         "angleLimit": 15,
         "litMean": 165.865,
         "unlitMean": 73.731,
@@ -109,9 +116,14 @@
           530.068,
           184.206
         ],
-        "rad": 171.334
+        "rad": 171.334,
+        "shaderDeg": 45.74,
+        "shaderErr": 4.368,
+        "visibleFraction": 0.436,
+        "terminatorOnScreen": 117,
+        "terminatorVisible": 51
       },
-      "pass": false
+      "pass": true
     },
     {
       "t": 7.9,
@@ -124,7 +136,7 @@
       "cardH": 1.15,
       "x": 9.900627786381287,
       "z": -52.30304345794008,
-      "skyFraction": 0.22304421768707483,
+      "skyFraction": 0.223,
       "skylineRow": 137,
       "banding": {
         "pass": true,
@@ -143,10 +155,11 @@
         "terminatorPass": true,
         "profilePass": true,
         "pixels": 6108,
-        "gradPerPx": 0.705,
-        "brightDeg": 55.955,
+        "bandN": 4280,
+        "gradPerPx": 0.647,
+        "brightDeg": 49.198,
         "sunDeg": 50.414,
-        "angleErr": 5.54,
+        "angleErr": 1.216,
         "angleLimit": 15,
         "litMean": 167.836,
         "unlitMean": 75.162,
@@ -165,7 +178,12 @@
           534.834,
           131.071
         ],
-        "rad": 175.126
+        "rad": 175.126,
+        "shaderDeg": 42.773,
+        "shaderErr": 7.641,
+        "visibleFraction": 0.351,
+        "terminatorOnScreen": 111,
+        "terminatorVisible": 39
       },
       "pass": true
     },
@@ -180,7 +198,7 @@
       "cardH": 1.15,
       "x": 6.857952571763383,
       "z": -78.72844841633875,
-      "skyFraction": 0.1946523053665911,
+      "skyFraction": 0.195,
       "skylineRow": 190,
       "banding": {
         "pass": true,
@@ -195,14 +213,15 @@
         "hfLimit": 2.5
       },
       "planet": {
-        "pass": false,
-        "terminatorPass": false,
+        "pass": true,
+        "terminatorPass": true,
         "profilePass": true,
         "pixels": 3418,
-        "gradPerPx": 0.675,
-        "brightDeg": 34.928,
+        "bandN": 3779,
+        "gradPerPx": 0.66,
+        "brightDeg": 49.766,
         "sunDeg": 50.119,
-        "angleErr": 15.19,
+        "angleErr": 0.353,
         "angleLimit": 15,
         "litMean": 172.7,
         "unlitMean": 75.563,
@@ -221,9 +240,14 @@
           533.841,
           185.513
         ],
-        "rad": 172.682
+        "rad": 172.682,
+        "shaderDeg": 45.177,
+        "shaderErr": 4.942,
+        "visibleFraction": 0.453,
+        "terminatorOnScreen": 117,
+        "terminatorVisible": 53
       },
-      "pass": false
+      "pass": true
     },
     {
       "t": 24,
@@ -236,7 +260,7 @@
       "cardH": 1.15,
       "x": -3.185964875808409,
       "z": -164.24057759259256,
-      "skyFraction": 0.2454105253212396,
+      "skyFraction": 0.245,
       "skylineRow": 133,
       "banding": {
         "pass": true,
@@ -251,14 +275,15 @@
         "hfLimit": 2.5
       },
       "planet": {
-        "pass": false,
-        "terminatorPass": false,
+        "pass": true,
+        "terminatorPass": true,
         "profilePass": true,
         "pixels": 1079,
-        "gradPerPx": 0.809,
-        "brightDeg": 116.684,
+        "bandN": 2569,
+        "gradPerPx": 0.556,
+        "brightDeg": 63.709,
         "sunDeg": 50.513,
-        "angleErr": 66.171,
+        "angleErr": 13.197,
         "angleLimit": 15,
         "litMean": 144.632,
         "unlitMean": 71.28,
@@ -277,9 +302,14 @@
           544.404,
           118.829
         ],
-        "rad": 179.803
+        "rad": 179.803,
+        "shaderDeg": 35.869,
+        "shaderErr": 14.644,
+        "visibleFraction": 0.321,
+        "terminatorOnScreen": 109,
+        "terminatorVisible": 35
       },
-      "pass": false
+      "pass": true
     },
     {
       "t": 30,
@@ -292,7 +322,7 @@
       "cardH": 1.15,
       "x": -8.157497695002599,
       "z": -205.9452989327306,
-      "skyFraction": 0.26744850718065005,
+      "skyFraction": 0.267,
       "skylineRow": 176,
       "banding": {
         "pass": true,
@@ -311,10 +341,11 @@
         "terminatorPass": true,
         "profilePass": true,
         "pixels": 1543,
-        "gradPerPx": 0.751,
-        "brightDeg": 59.041,
+        "bandN": 2701,
+        "gradPerPx": 0.629,
+        "brightDeg": 50.667,
         "sunDeg": 50.287,
-        "angleErr": 8.754,
+        "angleErr": 0.38,
         "angleLimit": 15,
         "litMean": 155.313,
         "unlitMean": 74.646,
@@ -333,7 +364,12 @@
           543.966,
           160.473
         ],
-        "rad": 178.572
+        "rad": 178.572,
+        "shaderDeg": 42.43,
+        "shaderErr": 7.856,
+        "visibleFraction": 0.359,
+        "terminatorOnScreen": 117,
+        "terminatorVisible": 42
       },
       "pass": true
     }

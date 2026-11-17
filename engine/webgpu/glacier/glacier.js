@@ -373,6 +373,7 @@ fn darken15(c: vec3f) -> vec3f {
     sky = sky + vec3f(0.045, 0.02, 0.07) * s + vec3f(0.03, 0.0, 0.05) * fract(u.spin.w * 0.37);
   }
   if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(5.5 / 8.0, 1.0, 1.0, 1.0); }
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(0.0, 0.0, 0.0, 1.0); }
   return presentSky(sky, v.p.xy);
 }
 @fragment fn fs(v: VO) -> @location(0) vec4f {
@@ -390,6 +391,7 @@ fn darken15(c: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   let mode = u.misc.z;
+  if (mode > 2.5 && mode < 3.5) { return vec4f(0.0, 0.0, 0.0, 1.0); }
   if (mode > 1.5) { return present(alb); }
   if (mode > 0.5 && mode < 1.5) {
     let near = select(0.0, 1.0, dist < 40.0);
@@ -432,6 +434,11 @@ fn darken15(c: vec3f) -> vec3f {
 }
 @fragment fn fsPlanet(v: VO) -> @location(0) vec4f {
   if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(9.0 / 255.0, 0.0, 1.0, 1.0); }
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) {
+    let qn = normalize(v.w - u.planet.xyz);
+    let ndl = dot(qn, sceneSun());
+    return vec4f(clamp(ndl * 0.5 + 0.5, 0.0, 1.0), 1.0, 0.0, 1.0);
+  }
   let q = normalize(v.w - u.planet.xyz);
   let uv = vec2f(atan2(q.z, q.x) * 0.1591549 + 0.5, asin(clamp(q.y, -1.0, 1.0)) * 0.31831 + 0.5);
   let alb = textureSampleGrad(planetTex, samp, uv, dpdx(uv), dpdy(uv)).rgb;
@@ -1577,6 +1584,16 @@ async function main() {
     gateMode = 0;
     hideActors = false;
     return { png: await blobOf(frame.src, 'image/png'), gpuErr: frame.gpuErr };
+  };
+  window.__glacierNlAt = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    hideActors = true;
+    gateMode = 3;
+    const frame = await readFrame();
+    gateMode = 0;
+    hideActors = false;
+    return { png: await blobOf(frame.src, 'image/png'), gpuErr: frame.gpuErr, z: live.z };
   };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;

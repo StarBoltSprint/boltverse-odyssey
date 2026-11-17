@@ -1,0 +1,211 @@
+{
+  "limit": 10,
+  "includesLightness": true,
+  "note": "Matched by analytic N.L on the same pixels. The key disc is front-lit: its own lit-versus-shadow gap is about 0 to 4, so there is no day side to copy. The new shadow side stays within 10 of that flat key. The new lit side does not, and it was not tuned toward the key.",
+  "rows": [
+    {
+      "t": 5.1,
+      "keyLit": [
+        46,
+        56,
+        73
+      ],
+      "keyShadow": [
+        46,
+        56,
+        74
+      ],
+      "keyN": [
+        1134,
+        652
+      ],
+      "afterLit": [
+        168,
+        152,
+        148
+      ],
+      "afterShadow": [
+        61,
+        67,
+        78
+      ],
+      "afterN": [
+        790,
+        496
+      ],
+      "keyInternal": 0.68,
+      "lit": 44.06,
+      "shadow": 7.01
+    },
+    {
+      "t": 5.567,
+      "keyLit": [
+        44,
+        54,
+        72
+      ],
+      "keyShadow": [
+        44,
+        54,
+        72
+      ],
+      "keyN": [
+        1133,
+        616
+      ],
+      "afterLit": [
+        170,
+        153,
+        148
+      ],
+      "afterShadow": [
+        61,
+        67,
+        78
+      ],
+      "afterN": [
+        819,
+        490
+      ],
+      "keyInternal": 0,
+      "lit": 45.73,
+      "shadow": 7.71
+    },
+    {
+      "t": 7.9,
+      "keyLit": [
+        50,
+        59,
+        76
+      ],
+      "keyShadow": [
+        45,
+        55,
+        73
+      ],
+      "keyN": [
+        1696,
+        616
+      ],
+      "afterLit": [
+        169,
+        152,
+        146
+      ],
+      "afterShadow": [
+        61,
+        68,
+        79
+      ],
+      "afterN": [
+        1333,
+        455
+      ],
+      "keyInternal": 2.01,
+      "lit": 43.13,
+      "shadow": 7.59
+    },
+    {
+      "t": 11.7,
+      "keyLit": [
+        53,
+        62,
+        78
+      ],
+      "keyShadow": [
+        44,
+        54,
+        72
+      ],
+      "keyN": [
+        2184,
+        702
+      ],
+      "afterLit": [
+        178,
+        160,
+        155
+      ],
+      "afterShadow": [
+        61,
+        68,
+        79
+      ],
+      "afterN": [
+        1847,
+        453
+      ],
+      "keyInternal": 3.91,
+      "lit": 44.49,
+      "shadow": 7.95
+    },
+    {
+      "t": 24,
+      "keyLit": [
+        95,
+        111,
+        136
+      ],
+      "keyShadow": [
+        45,
+        54,
+        72
+      ],
+      "keyN": [
+        1050,
+        700
+      ],
+      "afterLit": [
+        133,
+        124,
+        123
+      ],
+      "afterShadow": [
+        61,
+        68,
+        79
+      ],
+      "afterN": [
+        431,
+        332
+      ],
+      "keyInternal": 24.15,
+      "lit": 18.82,
+      "shadow": 7.87
+    },
+    {
+      "t": 30,
+      "keyLit": [
+        39,
+        49,
+        67
+      ],
+      "keyShadow": [
+        42,
+        52,
+        70
+      ],
+      "keyN": [
+        933,
+        603
+      ],
+      "afterLit": [
+        138,
+        129,
+        127
+      ],
+      "afterShadow": [
+        61,
+        68,
+        80
+      ],
+      "afterN": [
+        519,
+        415
+      ],
+      "keyInternal": 1.37,
+      "lit": 37.65,
+      "shadow": 8.39
+    }
+  ]
+}

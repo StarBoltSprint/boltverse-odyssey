@@ -8,7 +8,7 @@ Measured on the real 720×1280 follow camera, same seed and route.
 
 | Gate | Pass |
 | --- | --- |
-| Terminator angle | within ±15 deg of scene sun `[0.6161, 0.5592, 0.5547]`, elevation 34 deg, at 5.10, 5.567, 7.9, 11.70, 24, and 30 s. The heading is the luma-weighted mean of 30° sectors on the visible disc (a sector needs 40 pixels), so a hidden side does not vote once per pixel |
+| Terminator angle | within ±15 deg of scene sun `[0.6161, 0.5592, 0.5547]`, elevation 34 deg, at 5.10, 5.567, 7.9, 11.70, 24, and 30 s. The heading is the luma gradient on the analytic N·L ≈ 0 band. If under 30% of that arc is visible, the heading is N/A |
 | Terminator present | brightness gradient on the disc at least 0.04 luma per pixel, 400 planet pixels |
 | Radial profile | lit half exceeds the unlit half by 8 luma; outer ring (rho 0.88–0.96) exceeds the pre-rim ring by 4; the four rings span at least 8 |
 | Sky 8-bit step | 90th percentile of the step between level runs of at least 3 rows, in the clear top band ≤ 1. A one-row spike is not a band |

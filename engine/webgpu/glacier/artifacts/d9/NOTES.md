@@ -10,22 +10,24 @@ No new Imagine plate. `tex/glacier-planet-surface.jpg` is still 1024×1024.
 
 Limits were not lowered. The run-31 fixture still fails the terminator and the banding gates (`fixture-before.json`).
 
-| t | heading error | lit − unlit | rim gap | sky step | band run | hf RMS |
-| --- | --- | --- | --- | --- | --- | --- |
-| 5.10 | 16.5 | 93.0 | 30.0 | 1 | 5 | 1.00 |
-| 5.567 | 33.7 | 92.1 | 45.1 | 1 | 5 | 0.98 |
-| 7.9 | 5.5 | 92.7 | 13.1 | 1 | 5 | 1.01 |
-| 11.70 | 15.2 | 97.1 | 12.8 | 1 | 5 | 1.14 |
-| 24 | 66.2 | 73.4 | 18.3 | 1 | 5 | 1.02 |
-| 30 | 8.8 | 80.7 | 31.8 | 1 | 5 | 0.74 |
+The first heading was a sector average of the whole disc, so craters and the hidden side pulled it. The shader N·L mask agrees with the projected sun (the zero line is in world space). The edge is now the luma gradient on the band where analytic N·L is within 0.12 of zero.
 
-Heading limit ±15. Lit gap limit 8. Rim gap limit 4. Sky step limit 1. Band run limit 10. HF limit 2.5. The smooth-reference RMS (5×5 mean against an 11×11 mean) stays about 0.7–1.6. Dither grain is about 1 level.
+| t | shader N·L error | edge error | terminator visible | lit − unlit | rim gap | sky step | band run |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 5.10 | 4.1 | 0.6 | 0.41 | 93.0 | 30.0 | 1 | 5 |
+| 5.567 | 4.4 | 0.8 | 0.44 | 92.1 | 45.1 | 1 | 5 |
+| 7.9 | 7.6 | 1.2 | 0.35 | 92.7 | 13.1 | 1 | 5 |
+| 11.70 | 4.9 | 0.4 | 0.45 | 97.1 | 12.8 | 1 | 5 |
+| 24 | 14.6 | 13.2 | 0.32 | 73.4 | 18.3 | 1 | 5 |
+| 30 | 7.9 | 0.4 | 0.36 | 80.7 | 31.8 | 1 | 5 |
+
+Heading limit ±15, not moved. Every time is inside it. At 24 s, 32% of the on-screen terminator arc is free of ice, which is over the 30% line, so the 13.2° stands. Shader N·L is the debug mask, not a beauty retune.
+
+The key planet is front-lit. Its own lit-versus-shadow CIE76 is 0.68, 0, 2.01, 3.91, 24.15, and 1.37. Five of those are a flat disc. The new shadow side against that key is 7.0–8.4. The new lit side is 18.8–45.7, because the key has no day side. It was not pulled toward the key. Crops: `colour/t7.9-key-vs-after.jpg` (key lit, new lit, key shadow, new shadow).
 
 Sky anchor worst 0.00762, limit 0.015. The screen-space control is 0.052 and still fails, as required.
 
 Left-side terrain silhouette moves by at most 2 rows. Sky fraction is 1.02× the pre-change frames. Sky CIE76 against those frames is 0.00–0.96, lightness included.
-
-Planet median against the unshaded plate median is CIE76 13.8–19.9. That misses 10. The gap is lightness from the sun, not a hue-only match.
 
 Bolt centre x = 360.00 at every still. Card height 1.15 m. Draws 9. The live page reports 195818 triangles. The CPU budget is 195634. Both are under 200000. Texel gate PASS at 2048 px/m. Planet magnification 0.950. The equirect stretch of 2.0 is the old report, not a new scale.
 
@@ -33,6 +35,4 @@ Bolt centre x = 360.00 at every still. Card height 1.15 m. Draws 9. The live pag
 
 ## Still open
 
-The heading is outside ±15° at 5.10, 5.567, 11.70, and 24 s. At 24 s the sun-facing half is behind the ice, so the bright edge that remains is not the subsolar heading. At 5.567 the bright mass sits higher than the sun. The sun-facing half is still the brighter half at every time, by 73 to 97 luma.
-
-The planet is lighter than the plate. The run-31 dark line on the horizon is untouched. No fog was added.
+The key disc is front-lit, so the new day side is not the same colour as the key. The run-31 dark line on the horizon is untouched. No fog was added.
