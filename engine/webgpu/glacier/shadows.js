@@ -2,7 +2,6 @@
 // atlas, 4-tap PCF near, 1 tap far, blended seam. Projections snap to the
 // world texel and use a fixed bounding-sphere radius. No polygon depth bias.
 // The receiver offset is along the normal, smaller than one shadow texel.
-import { lookAt, mul } from '../engine/bricks/follow-cam.js';
 
 export const SHADOW_DRAWS = ['casters', 'bolt'];
 const RADIUS_PAD = 1.08;
@@ -36,11 +35,28 @@ export function highSplits() {
   return s;
 }
 
+// Both maps are 2048², stacked. depth32float.
+// 2048 * 4096 * 4 = 33554432 bytes (32 MiB).
+export const PHONE_SHADOW = {
+  lambda: 0.7,
+  near: 2048,
+  far: 2048,
+  atlas: [2048, 4096],
+  memoryBytes: 2048 * 4096 * 4,
+  penumbraM: 0.11,
+};
+
 export function tierConfig(tier) {
   if (tier === 'high') {
-    return { tier: 'high', count: 4, atlas: [2048, 2048], tile: 1024, splits: highSplits(), lambda: 0.7 };
+    return { tier: 'high', count: 4, atlas: [2048, 2048], tile: 1024, tiles: [1024, 1024, 1024, 1024], splits: highSplits(), lambda: 0.7, memoryBytes: 2048 * 2048 * 4 };
   }
-  return { tier: 'phone', count: 2, atlas: [2048, 1024], tile: 1024, splits: [0, 25, 120], lambda: 0.7 };
+  const split = practicalSplit(1, 2, 1, 120, PHONE_SHADOW.lambda);
+  return {
+    tier: 'phone', count: 2, atlas: PHONE_SHADOW.atlas.slice(), tile: PHONE_SHADOW.near,
+    tiles: [PHONE_SHADOW.near, PHONE_SHADOW.far],
+    splits: [0, split, 120], lambda: PHONE_SHADOW.lambda,
+    memoryBytes: PHONE_SHADOW.memoryBytes, penumbraM: PHONE_SHADOW.penumbraM,
+  };
 }
 
 export function fixedRadius(fovY, aspect, d0, d1) {
@@ -72,24 +88,24 @@ export function snapCenter(center, sun, radius, tile) {
   return add(add(scale(s, lx), scale(u, ly)), scale(L, lz));
 }
 
-// z is 0 toward the sun and 1 at the far side of the sphere. The near plane
-// sits sunward of the sphere by more than the tallest wall, so a spire top
-// is not clipped into a triangle that covers the whole shadow map.
+// z is 0 on the sunward plane and 1 past the sphere. The light axes are fixed
+// by the sun, not by lookAt, and the ortho origin is the snapped centre so a
+// camera move smaller than one shadow texel does not move the map.
 const SUNWARD = 240;
 export function cascadeMatrix(center, radius, sun) {
-  const { L, up } = lightAxes(sun);
-  const dist = radius + SUNWARD;
-  const eye = add(center, scale(L, dist));
-  const view = lookAt(eye, center, up);
-  const n = dist - SUNWARD;
-  const f = dist + radius;
-  const ortho = [
-    1 / radius, 0, 0, 0,
-    0, 1 / radius, 0, 0,
-    0, 0, 1 / (n - f), 0,
-    0, 0, n / (n - f), 1,
+  const { s, u, L } = lightAxes(sun);
+  const range = SUNWARD + radius;
+  const lx = dot(center, s);
+  const ly = dot(center, u);
+  const lz = dot(center, L);
+  const invR = 1 / radius;
+  const invZ = 1 / range;
+  return [
+    s[0] * invR, u[0] * invR, -L[0] * invZ, 0,
+    s[1] * invR, u[1] * invR, -L[1] * invZ, 0,
+    s[2] * invR, u[2] * invR, -L[2] * invZ, 0,
+    -lx * invR, -ly * invR, (SUNWARD + lz) * invZ, 1,
   ];
-  return mul(ortho, view);
 }
 
 export function buildCascades({ eye, tgt, fovY, aspect, sun, tier = 'phone' }) {
@@ -104,14 +120,15 @@ export function buildCascades({ eye, tgt, fovY, aspect, sun, tier = 'phone' }) {
     const radius = fixedRadius(fovY, aspect, d0, d1);
     const mid = (d0 + d1) * 0.5;
     const raw = [eye[0] + forward[0] * mid, eye[1] + forward[1] * mid, eye[2] + forward[2] * mid];
-    const center = snapCenter(raw, sun, radius, cfg.tile);
+    const center = snapCenter(raw, sun, radius, cfg.tiles[i]);
     mats.push(cascadeMatrix(center, radius, sun));
     radii.push(radius);
     centers.push(center);
   }
   return {
     mats, radii, centers, splits: cfg.splits.slice(), count: cfg.count,
-    atlas: cfg.atlas.slice(), tile: cfg.tile, tier: cfg.tier, lambda: cfg.lambda,
+    atlas: cfg.atlas.slice(), tile: cfg.tile, tiles: cfg.tiles.slice(), tier: cfg.tier, lambda: cfg.lambda,
+    memoryBytes: cfg.memoryBytes, penumbraM: cfg.penumbraM || 0.11,
     draws: SHADOW_DRAWS.slice(),
   };
 }
@@ -134,118 +151,122 @@ fn cascadeOf(ci: u32) -> mat4x4f {
 }
 fn atlasClip(clip: vec4f, ci: u32) -> vec4f {
   var o = clip;
-  let nC = u32(u.csm.z + 0.5);
-  if (nC <= 2u) {
-    o.x = clip.x * 0.5 + select(-0.5, 0.5, ci == 1u) * clip.w;
+  if (u.csm.z > 3.5) {
+    let col = ci % 2u;
+    let row = ci / 2u;
+    o.x = clip.x * 0.5 + select(-0.5, 0.5, col == 1u) * clip.w;
+    o.y = clip.y * 0.5 + select(0.5, -0.5, row == 1u) * clip.w;
     return o;
   }
-  let col = ci % 2u;
-  let row = ci / 2u;
-  o.x = clip.x * 0.5 + select(-0.5, 0.5, col == 1u) * clip.w;
-  o.y = clip.y * 0.5 + select(0.5, -0.5, row == 1u) * clip.w;
+  // Phone atlas 2048 x 4096. Near is the top half, far the bottom half.
+  if (ci == 0u) {
+    o.y = clip.y * 0.5 + clip.w * 0.5;
+    return o;
+  }
+  o.y = clip.y * 0.5 - clip.w * 0.5;
   return o;
 }
 fn tileOf(ci: f32) -> vec4f {
-  if (u.csm.z < 3.0) { return vec4f(ci * 0.5, 0.0, ci * 0.5 + 0.5, 1.0); }
-  let col = ci % 2.0;
-  let row = floor(ci / 2.0);
-  return vec4f(col * 0.5, row * 0.5, col * 0.5 + 0.5, row * 0.5 + 0.5);
+  if (u.csm.z > 3.5) {
+    let col = ci % 2.0;
+    let row = floor(ci / 2.0);
+    return vec4f(col * 0.5, row * 0.5, col * 0.5 + 0.5, row * 0.5 + 0.5);
+  }
+  if (ci < 0.5) { return vec4f(0.0, 0.0, 1.0, 0.5); }
+  return vec4f(0.0, 0.5, 1.0, 1.0);
 }
 fn shadowUv(q: vec4f, ci: f32) -> vec2f {
   let ndc = vec2f(q.x * 0.5 + 0.5, 0.5 - q.y * 0.5);
   let tile = tileOf(ci);
   return vec2f(mix(tile.x, tile.z, ndc.x), mix(tile.y, tile.w, ndc.y));
 }
-fn csmOne(M: mat4x4f, ci: f32, bias: f32, w: vec3f, nrm: vec3f, o: vec2f) -> f32 {
-  let ws = w + nrm * 0.02;
-  let q = M * vec4f(ws, 1.0);
+fn clampTile(uv: vec2f, tile: vec4f) -> vec2f {
+  let dims = vec2f(textureDimensions(smap));
+  let h = 0.5 / dims;
+  return clamp(uv, tile.xy + h, tile.zw - h);
+}
+fn depthLit(pix: vec2i, zRef: f32) -> f32 {
+  let dims = vec2i(textureDimensions(smap));
+  let p = clamp(pix, vec2i(0), dims - vec2i(1));
+  return select(0.0, 1.0, textureLoad(smap, p, 0) >= zRef);
+}
+// Bilinear compare of the four depth texels. The comparison sampler on this
+// GPU does not match those texels, so the weights are applied here. The
+// sampler is still read so the binding stays live.
+fn cmpBilinear(uv: vec2f, zRef: f32) -> f32 {
+  let dims = vec2f(textureDimensions(smap));
+  let p = uv * dims - 0.5;
+  let i = vec2i(floor(p));
+  let f = fract(p);
+  let s00 = depthLit(i, zRef);
+  let s10 = depthLit(i + vec2i(1, 0), zRef);
+  let s01 = depthLit(i + vec2i(0, 1), zRef);
+  let s11 = depthLit(i + vec2i(1, 1), zRef);
+  let sw = mix(mix(s00, s10, f.x), mix(s01, s11, f.x), f.y);
+  let hw = textureSampleCompareLevel(smap, scmp, uv, zRef);
+  return select(sw, sw, hw >= 0.0);
+}
+// 3x3 of those taps. step is the spacing in atlas UV, from the world penumbra.
+fn pcf3(uv: vec2f, zRef: f32, step: vec2f, tile: vec4f) -> f32 {
+  var s = 0.0;
+  for (var j = -1; j <= 1; j++) {
+    for (var i = -1; i <= 1; i++) {
+      s += cmpBilinear(clampTile(uv + vec2f(f32(i), f32(j)) * step, tile), zRef);
+    }
+  }
+  return s / 9.0;
+}
+fn penumbraM(w: vec3f) -> f32 {
+  // World metres, the same at a fixed point for every camera. A camera-varying
+  // radius would shimmer. 12 cm hides a near texel without washing out a band.
+  return u.soft.z + w.x * 0.0;
+}
+fn shadeCascade(ci: f32, q: vec4f, bias: f32, texelM: f32, penM: f32) -> f32 {
   if (q.z < 0.0 || q.z > 1.0) { return 1.0; }
-  let uv = shadowUv(q, ci) + o;
+  let uv = shadowUv(q, ci);
   let tile = tileOf(ci);
   if (uv.x < tile.x || uv.y < tile.y || uv.x > tile.z || uv.y > tile.w) { return 1.0; }
   let dims = vec2f(textureDimensions(smap));
-  let stored = textureLoad(smap, vec2i(clamp(uv, vec2f(0.0), vec2f(0.999)) * dims), 0);
-  let zRef = q.z - bias;
-  let cmp = textureSampleCompareLevel(smap, scmp, uv, zRef);
-  let loadLit = select(0.0, 1.0, stored >= zRef);
-  // The comparison sampler on this GPU does not match the depth texel.
-  // A false 0 would paint an empty map as shadow, so the load decides.
-  return select(loadLit, loadLit, cmp >= 0.0);
+  let texels = max(penM * 0.5 / max(texelM, 1e-4), 0.5);
+  let step = vec2f(texels / dims.x, texels / dims.y);
+  return pcf3(uv, q.z - bias, step, tile);
 }
-fn csmStored(M: mat4x4f, ci: f32, w: vec3f, nrm: vec3f) -> vec4f {
-  let q = M * vec4f(w + nrm * 0.02, 1.0);
-  let uv = shadowUv(q, ci);
-  let dims = vec2f(textureDimensions(smap));
-  let stored = textureLoad(smap, vec2i(clamp(uv, vec2f(0.0), vec2f(0.999)) * dims), 0);
-  return vec4f(q.xyz, stored);
+fn slopeBias(z: f32) -> f32 {
+  let slope = min(max(abs(dpdx(z)), abs(dpdy(z))), 0.0004);
+  return slope + 0.00004;
 }
-fn csmTap(M: mat4x4f, ci: f32, bias: f32, w: vec3f, nrm: vec3f, four: bool, radius: f32) -> f32 {
-  let info = csmStored(M, ci, w, nrm);
-  let pen = clamp((info.z - info.w) * 80.0, 0.0, 1.0);
-  let rad = radius * mix(1.0, 2.6, pen);
-  if (!four) { return csmOne(M, ci, bias, w, nrm, vec2f(0.0)); }
-  let tx = select(vec2f(1.0 / 2048.0), vec2f(1.0 / 2048.0, 1.0 / 1024.0), u.csm.z < 3.0) * rad;
-  return 0.25 * (
-    csmOne(M, ci, bias, w, nrm, vec2f(-tx.x, -tx.y)) +
-    csmOne(M, ci, bias, w, nrm, vec2f(tx.x, -tx.y)) +
-    csmOne(M, ci, bias, w, nrm, vec2f(-tx.x, tx.y)) +
-    csmOne(M, ci, bias, w, nrm, vec2f(tx.x, tx.y))
-  );
-}
-fn poissonAt(i: i32) -> vec2f {
-  if (i == 0) { return vec2f(-0.94201624, -0.39906216); }
-  if (i == 1) { return vec2f(0.94558609, -0.76890725); }
-  if (i == 2) { return vec2f(-0.09418410, -0.92938870); }
-  if (i == 3) { return vec2f(0.34495938, 0.29387760); }
-  if (i == 4) { return vec2f(-0.91588581, 0.45771432); }
-  if (i == 5) { return vec2f(-0.81544232, -0.87912464); }
-  if (i == 6) { return vec2f(-0.38277543, 0.27676845); }
-  if (i == 7) { return vec2f(0.97484398, 0.75648379); }
-  if (i == 8) { return vec2f(0.44323325, -0.97511554); }
-  if (i == 9) { return vec2f(0.53742981, -0.47373420); }
-  if (i == 10) { return vec2f(-0.26496911, -0.41893023); }
-  if (i == 11) { return vec2f(0.79197514, 0.19090188); }
-  if (i == 12) { return vec2f(-0.24188840, 0.99706507); }
-  if (i == 13) { return vec2f(-0.81409955, 0.91437590); }
-  if (i == 14) { return vec2f(0.19984126, 0.78641367); }
-  return vec2f(0.14383161, -0.14100790);
-}
-fn csmPoisson(M: mat4x4f, ci: f32, w: vec3f, nrm: vec3f) -> f32 {
-  var s = 0.0;
-  let sc = vec2f(1.6 / 2048.0);
-  for (var i = 0; i < 16; i++) { s += csmOne(M, ci, 0.0008, w, nrm, poissonAt(i) * sc); }
-  return s / 16.0;
-}
-fn extentOf(M: mat4x4f, w: vec3f) -> f32 {
-  let q = M * vec4f(w, 1.0);
-  return max(abs(q.x), abs(q.y));
+fn cascadePair(w: vec3f, nrm: vec3f) -> vec4f {
+  let ws = w + nrm * 0.035;
+  let q0 = u.c0 * vec4f(ws, 1.0);
+  let q1 = u.c1 * vec4f(ws, 1.0);
+  let b0 = slopeBias(q0.z);
+  let b1 = slopeBias(q1.z);
+  let e0 = max(abs(q0.x), abs(q0.y));
+  let pen = penumbraM(w);
+  let s0 = shadeCascade(0.0, q0, b0, u.soft.x, pen);
+  let s1 = shadeCascade(1.0, q1, b1, u.soft.y, pen);
+  return vec4f(s0, s1, e0, max(abs(q1.x), abs(q1.y)));
 }
 fn shadowPhone(w: vec3f, nrm: vec3f) -> f32 {
-  let e0 = extentOf(u.c0, w);
-  let e1 = extentOf(u.c1, w);
-  // One bias. The near kernel widens to the far texel as the blend opens,
-  // so the two maps meet instead of stepping.
-  // Bias is about 2 cm on the near cascade and 4 cm on the far one, in the
-  // sunward depth range (240 m of caster plus the sphere).
-  let bias0 = 0.00008;
-  let bias1 = 0.00012;
-  let wBlend = smoothstep(0.40, 0.98, e0);
-  var s1 = 1.0;
-  if (e1 < 0.995) { s1 = mix(1.0, csmTap(u.c1, 1.0, bias1, w, nrm, false, 1.0), smoothstep(0.995, 0.86, e1)); }
-  if (e0 >= 0.995) { return s1; }
-  let s0 = csmTap(u.c0, 0.0, bias0, w, nrm, true, mix(1.0, 4.4, wBlend));
+  let p = cascadePair(w, nrm);
+  let s0 = p.x;
+  let s1 = p.y;
+  let e0 = p.z;
+  let e1 = p.w;
+  let wBlend = smoothstep(0.75, 0.97, e0);
+  if (e0 >= 0.995) { return select(1.0, s1, e1 < 0.995); }
   return mix(s0, s1, wBlend);
 }
 fn shadowHigh(w: vec3f, nrm: vec3f) -> f32 {
-  let e0 = extentOf(u.c0, w);
-  let e1 = extentOf(u.c1, w);
-  let e2 = extentOf(u.c2, w);
-  let e3 = extentOf(u.c3, w);
-  if (e0 < 0.95) { return mix(csmPoisson(u.c0, 0.0, w, nrm), select(1.0, csmPoisson(u.c1, 1.0, w, nrm), e1 < 0.99), smoothstep(0.75, 0.95, e0)); }
-  if (e1 < 0.95) { return mix(csmPoisson(u.c1, 1.0, w, nrm), select(1.0, csmPoisson(u.c2, 2.0, w, nrm), e2 < 0.99), smoothstep(0.75, 0.95, e1)); }
-  if (e2 < 0.95) { return mix(csmPoisson(u.c2, 2.0, w, nrm), select(1.0, csmPoisson(u.c3, 3.0, w, nrm), e3 < 0.99), smoothstep(0.75, 0.95, e2)); }
-  if (e3 < 0.99) { return mix(1.0, csmPoisson(u.c3, 3.0, w, nrm), smoothstep(0.99, 0.85, e3)); }
-  return 1.0;
+  let ws = w + nrm * 0.035;
+  let q0 = u.c0 * vec4f(ws, 1.0);
+  let q1 = u.c1 * vec4f(ws, 1.0);
+  let b0 = slopeBias(q0.z);
+  let b1 = slopeBias(q1.z);
+  let e0 = max(abs(q0.x), abs(q0.y));
+  let pen = penumbraM(w);
+  if (e0 < 0.98) { return shadeCascade(0.0, q0, b0, u.soft.x, pen); }
+  return shadeCascade(1.0, q1, b1, u.soft.y, pen);
 }
 fn shadowAt(w: vec3f, nrm: vec3f) -> f32 {
   if (u.csm.x > 0.5) { return 1.0; }
@@ -255,13 +276,11 @@ fn shadowAt(w: vec3f, nrm: vec3f) -> f32 {
 }
 fn cascadeMix(w: vec3f) -> f32 {
   if (u.csm.z > 3.5) {
-    let e0 = extentOf(u.c0, w);
-    if (e0 < 0.95) { return smoothstep(0.75, 0.95, e0) / 3.0; }
-    let e1 = extentOf(u.c1, w);
-    if (e1 < 0.95) { return (1.0 + smoothstep(0.75, 0.95, e1)) / 3.0; }
-    return 1.0;
+    let q = u.c0 * vec4f(w, 1.0);
+    return smoothstep(0.75, 0.95, max(abs(q.x), abs(q.y)));
   }
-  return smoothstep(0.40, 0.98, extentOf(u.c0, w));
+  let q = u.c0 * vec4f(w, 1.0);
+  return smoothstep(0.75, 0.97, max(abs(q.x), abs(q.y)));
 }
 struct SH {
   @builtin(position) p: vec4f,

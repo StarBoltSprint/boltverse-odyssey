@@ -307,7 +307,7 @@ struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
   prints: array<vec4f, 12>,
   c0: mat4x4f, c1: mat4x4f, c2: mat4x4f, c3: mat4x4f,
-  csm: vec4f,
+  csm: vec4f, soft: vec4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -867,7 +867,10 @@ async function main() {
     magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
     addressModeU: 'repeat', addressModeV: 'repeat',
   });
-  const scmp = dev.createSampler({ compare: 'greater-equal', magFilter: 'nearest', minFilter: 'nearest' });
+  const scmp = dev.createSampler({
+    compare: 'greater-equal', magFilter: 'linear', minFilter: 'linear',
+    addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge',
+  });
   const smTex = dev.createTexture({
     size: CSM_CFG.atlas,
     format: 'depth32float',
@@ -1147,6 +1150,11 @@ async function main() {
     U[177] = maskOn ? 1 : 0;
     U[178] = casc.count;
     U[179] = casc.tile;
+    const tex = (i) => (2 * casc.radii[Math.min(i, casc.radii.length - 1)]) / casc.tiles[Math.min(i, casc.tiles.length - 1)];
+    U[180] = tex(0);
+    U[181] = tex(1);
+    U[182] = 0.14;
+    U[183] = casc.memoryBytes || 0;
   }
 
   function beginPass(enc, clear) {
@@ -1256,6 +1264,7 @@ async function main() {
     shadowDrawNames: SHADOW_DRAWS,
     shadowCascades: nC,
     shadowAtlas: CSM_CFG.atlas,
+    shadowBytes: CSM_CFG.memoryBytes,
     shadowTier: CSM_TIER,
     shadowRasterTris: (world.budget.worldTris + world.budget.icicleTris + world.budget.chunkTris + world.budget.driftTris + 2) * (CSM_OFF ? 0 : nC),
     extentZ: world.extentZ,

@@ -1,71 +1,50 @@
-# Run 33 — cascaded sun shadows, round 3
+# Run 33 — cascaded sun shadows, round 4
 
-Not a KEEP. Not live. Not merged. The pictures are for the director and the critic.
+Not a KEEP. Not live. Not merged. The sun from round 3 is unchanged.
 
-## Sun
+## Shadow map
 
-Round 2 left the path inside the wall shadow. The sun was `[0.72, 0.28, -0.63]`, about 16° up and 49° off the run axis, firing across the canyon.
+Phone atlas is 2048×4096 `depth32float`, 33,554,432 bytes (32 MiB). Both cascades are 2048², near on top, far below. One depth pass, still 2 shadow draws, 11 draws with colour. Practical split lambda 0.7: 0–25.8 m and 25.8–120 m. Near texel is 2.3 cm (radius 23.8 m). Far texel is 10.0 cm (radius 103 m).
 
-The angle was chosen by the coverage rule in `sun-criterion.json`, not by IoU or the tone map. A sun still ahead of the runner (azimuth 1°) kept the rendered path in shadow, because the spires throw their shadows back over the follow view. The comparison sampler was also painting empty shadow texels as umbra; the depth texel is the test now. The near plane of each cascade sits 240 m sun-ward of the sphere so a spire top is not clipped into a triangle that covers the map.
+Each cascade is a bounding sphere on fixed light axes. The ortho origin is that centre snapped to whole shadow texels, so a camera move inside one texel does not move the map.
 
-The chosen sun is behind the runner and 48° toward +X, at 28° elevation:
+The filter is a 3×3 of bilinear depth compares. The penumbra is 14 cm in world units on both cascades, so the width does not jump at the split. The blend is the outer quarter of the near map, sampling both. Bias is a slope term from the shadow-depth derivatives plus a 3.5 cm normal offset.
 
-`[0.6561, 0.4695, 0.5910]`
+On this GPU the hardware comparison sampler does not match the depth texel (it lifts the umbra above one half). The bilinear weights are applied to `textureLoad` compares. The sampler stays bound.
 
-Peach colour stays `[0.85, 0.58, 0.42]`. Exposure stays 0.32. Intensity is 0.90 so lit snow does not blow past the still key.
+## Coverage
 
-## Coverage gate
-
-`coverage-limits.json`, written before this sun trial. On-screen path snow in the 720×1280 follow frame (flat snow below the spire line, Bolt card excluded) must be in shadow on at least 15% of its pixels and on less than 85%. Round 2 is the fixture and it fails (every time is 0.999–1.000).
-
-This sun:
+Round 2 fixture still fails (0.999–1.000). This capture:
 
 | t | path in shadow |
 | --- | --- |
-| 5.10 | 0.833 |
-| 5.567 | 0.260 |
-| 7.9 | 0.584 |
-| 11.70 | 0.842 |
-| 24 | 0.399 |
-| 30 | 0.768 |
+| 5.10 | 0.835 |
+| 5.567 | 0.319 |
+| 7.9 | 0.628 |
+| 11.70 | **0.893** |
+| 24 | 0.473 |
+| 30 | 0.788 |
 
-`coverage-gate.json` PASS.
+11.70 s is over the 0.85 ceiling. The other five are inside.
 
-## What the stills show
-
-The path is no longer one lavender field. Lit snow sits next to blue cast bands. At 24 s the ridge keeps a lit face and a shaded face, as in `csmoff`. The contact darkens the snow under Bolt on the lit path. Shadow edges are blocky, in rectangles the size of the near shadow texel, especially in front of the dog and at 5.567 s.
-
-## Gates that pass
-
-- Coverage, as above. Round 2 fixture fails.
-- Keyscore 91.36 (floor 85.84).
-- Frame luma p1/p50/p99 within 0.05 of the run-31 gamma key. Clip 0. Grey-bright 0.09–0.12. Ice b−r about 0.11.
-- Snow b−r, sun-facing, 0.079–0.091 (floor 0.03).
-- Cross-camera CIE76 0.00.
-- Texel gate PASS at 2048 px/m.
-- Colour draws 9, shadow draws 2, total 11. Unique triangles 195634.
-- Exposure 0.32.
-
-## Gates that fail
+## Quality gates
 
 Not lowered.
 
 | check | result | limit |
 | --- | --- | --- |
-| csm_iou | 0.791, 0.828, 0.745, 0.697, 0.767, 0.812 | ≥ 0.80 |
-| cascade seam | 0.032, **0.086**, 0.011, 0.049, 0.033, 0.045 | ≤ 0.03 |
-| edge shimmer | 4.2% of edge pixels; 3.9% of snow vertices | ≤ 0.5% |
-| snow p50 | 0.656 on 5.10, 7.9, 11.70, and 30 s; 0.711 at 24 s; 0.758 at 5.567 s | within 0.05 of 0.708 |
+| csm_iou | 0.737, 0.795, 0.736, 0.692, 0.774, 0.725 | ≥ 0.80 |
+| cascade seam | 0.046, 0.064, 0.023, 0.046, 0.052, 0.044 | ≤ 0.03 |
+| edge shimmer | 2.4% of edge pixels; 2.1% of snow vertices | ≤ 0.5% |
 
-The 5.567 s seam is the blocky transition between the cascades. The shimmer count is high because the path now has many shadow edges, and a 4 mm camera move shifts those edges on screen. IoU is the GPU mask against the CPU light-space raster; they disagree by a few hundred snow samples on most frames.
+5.567 s seam was 0.086 and is now 0.064. Shimmer was 4.2% / 3.9% and is now 2.4% / 2.1%. Neither is under the floor. IoU is still short. The shadow edges in the stills are soft rather than one-texel rectangles.
+
+## Tone map
+
+Exposure was not changed. Keyscore 91.25. Frame luma is inside 0.05. Clip 0. Grey-bright 0.08–0.10. Snow p50 is 0.655–0.656 on 5.10, 7.9, 11.70, and 30 s, about 0.002 under the 0.658 floor. 24 s is 0.707 and 5.567 s is 0.758.
 
 ## Perf
 
-SwiftShader at 540×960: 13.2 s/frame, 0.076 fps. Not a phone.
+SwiftShader at 540×960: 12.8 s/frame, 0.078 fps, 9 colour draws + 2 shadow draws. Not a phone.
 
-## Remaining
-
-- Shadow edges are rectangular. The near cascade is 4.5 cm texels, and at a grazing view those texels read as blocks.
-- Seam, shimmer, and IoU miss the floors above.
-- Shaded-snow p50 is 0.656 against a floor of 0.658 on four of the six times.
-- `csm=high` was not the trial.
+Round 3 stills are in `r3-stills/`. Round 2 masks are in `r2-fixture/`.
