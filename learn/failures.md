@@ -1437,3 +1437,25 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | None. The curve is doing what it says. Exposure and the grade were not moved. The remaining lightness gap stays with the grade. |
 | Guard | `artifacts/run33-horizon/ice-light.json` records the split. The dE76 bar stays 10. |
 | Sources | `engine/webgpu/glacier/glacier.js`, `engine/webgpu/glacier/artifacts/run33-horizon/ice-light.json`. |
+
+### 2026-11-17 — A per-cell hash must not steer the anisotropic footprint
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 8. Not a KEEP. |
+| Defect | The grazing tooth flank is one long streak. Its 3× crop stays over the tile-period gate. |
+| Root cause | The sampler was created at anisotropy 1, because this SwiftShader does not expose `maxSamplerAnisotropy` and the fallback was 1. The hex sample also rotated the footprint by the per-cell hash, which jumps at the cell seam. |
+| Fix | `createSampler({ maxAnisotropy: 16 })` succeeds and is what the page reports. The footprint is the tooth-rotated face derivative. The hash still rotates where the still is read. The grazing crop is shipped and still fails: the derivative is longer than 16:1. |
+| Guard | `window.__glacierAniso` is 16. `repeat-gate.mjs` on `crops/t30-graze-3x.jpg` is the record of the remaining streak. |
+| Sources | `engine/webgpu/glacier/glacier.js`, `engine/webgpu/glacier/albedo.js`, `engine/webgpu/glacier/artifacts/run33-horizon/crops/t30-graze-3x.jpg`. |
+
+### 2026-11-17 — The 24 s horizon step is already under 3.29 on this mesh
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 8. Not a KEEP. |
+| Defect | Team C measured a horizon step of 4.353 at 24 s, row 499, dark ice against pale snow. The bar is 3.29. |
+| Root cause | On the round-7 frame the same measure is 2.425 (lossless) and 3.144 (jpeg). The cited RGB pair is not in the frame. The front triangle at x=200 is a mid fall sheet, not the foot. A skirt long enough to cover that cut pushed fall-ice stretch to 1.30. |
+| Fix | None kept for the silhouette. The gate is `horizon-step-gate.mjs` and the fixture is `fixture-r7/t24.png`. Five of the six times are still over 3.29. |
+| Guard | `node engine/webgpu/glacier/horizon-step-gate.mjs` . The bar stays 3.29. |
+| Sources | `engine/webgpu/glacier/horizon-step-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/horizon-step.json`. |

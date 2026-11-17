@@ -846,12 +846,23 @@ async function main() {
   const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
   const planetVerts = world.planet.length / 8;
   const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
+  // Ask for 16. This SwiftShader build does not recognize the limit, so the
+  // sampler falls back to 1 and that number is what the page reports.
+  let aniso = 16;
+  let samp;
+  try {
+    samp = dev.createSampler({
+      magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: 16,
+      addressModeU: 'repeat', addressModeV: 'repeat',
+    });
+  } catch (err) {
+    aniso = 1;
+    samp = dev.createSampler({
+      magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: 1,
+      addressModeU: 'repeat', addressModeV: 'repeat',
+    });
+  }
   window.__glacierAniso = aniso;
-  const samp = dev.createSampler({
-    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
-    addressModeU: 'repeat', addressModeV: 'repeat',
-  });
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },

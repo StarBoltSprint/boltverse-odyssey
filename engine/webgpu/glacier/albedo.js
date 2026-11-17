@@ -117,12 +117,17 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let m2 = rot2(metres, a2) + o2 * 0.5;
   // A face that under-reports its derivative was sampling the raw still
   // and reading as glitter. Three texels per pixel is the floor.
-  let du0 = cover(rot2(dmu, a0) * ${repeats} * bias);
-  let dv0 = cover(rot2(dmv, a0) * ${repeats} * bias);
-  let du1 = cover(rot2(dmu, a1) * ${repeats} * bias);
-  let dv1 = cover(rot2(dmv, a1) * ${repeats} * bias);
-  let du2 = cover(rot2(dmu, a2) * ${repeats} * bias);
-  let dv2 = cover(rot2(dmv, a2) * ${repeats} * bias);
+  // The footprint is the tooth-rotated face derivative. Rotating it again by
+  // the per-cell hash jumps across the seam and the anisotropic kernel
+  // becomes one long streak. The hash still rotates the sample position.
+  let du = cover(dmu * ${repeats} * bias);
+  let dv = cover(dmv * ${repeats} * bias);
+  let du0 = du;
+  let dv0 = dv;
+  let du1 = du;
+  let dv1 = dv;
+  let du2 = du;
+  let dv2 = dv;
   let uv0 = m0 * ${repeats};
   let uv1 = m1 * ${repeats};
   let uv2 = m2 * ${repeats};

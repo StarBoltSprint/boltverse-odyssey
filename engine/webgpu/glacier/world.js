@@ -181,10 +181,13 @@ function columns(z0, z1) {
 
 function face(mesh, a, b, c, d, mat, toward, phase = 0) {
   const n = cross(sub(b, a), sub(c, a));
-  const uv = phase > 0
-    ? [[phase, 0], [phase, 0], [phase, 0], [phase, 0]]
-    : [[0, 0], [0, 1], [1, 1], [1, 0]];
-  if (dot(n, toward) < 0) mesh.quad(a, d, c, b, uv[0], uv[1], uv[2], uv[3], mat);
+  const phases = Array.isArray(phase) ? phase : null;
+  const uv = phases
+    ? phases.map((p) => [p, 0])
+    : phase > 0
+      ? [[phase, 0], [phase, 0], [phase, 0], [phase, 0]]
+      : [[0, 0], [0, 1], [1, 1], [1, 0]];
+  if (dot(n, toward) < 0) mesh.quad(a, d, c, b, uv[0], uv[3], uv[2], uv[1], mat);
   else mesh.quad(a, b, c, d, uv[0], uv[1], uv[2], uv[3], mat);
 }
 
