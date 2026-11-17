@@ -1,3 +1,22 @@
+# Run 33 — cascaded sun shadows, round 13
+
+Not a KEEP. Not merged. The sun, the exposure, the terrain, and the ambient were not changed. This round only changes what the gates sample.
+
+Shade b* now requires snow's draw id, a shadow factor under 0.35, and mask blue under 0.03. Bolt is id 5, the contact decal is 6, a print is 7, and a flake is 8. Those are excluded by the id, not by the fur colour. The old luma window on the same stills is still +2.30 at 24 s and +2.49 at 5.567 s. The clean values are −12.67, −8.63, −12.67, −12.66, −9.02, −12.81. The two lit times have 36 and 7 clean pixels because that window is in sun. They are outside −4.4 to −3.2, so the gate fails until G lands.
+
+The slab gate samples wall id inside the ice box and sky id inside the sky box. The old box means on these stills are 0.022 and 0.012. The new wall-minus-sky is 0.048 and 0.081. They disagree because the sky box holds 1884 lit-snow pixels at 24 s (luma 0.70) and 1688 at 30 s. True sky is luma 0.544 and 0.514. The wall is 0.590 and 0.595. The bar stays 0.8 of the key's +0.076 and +0.086. 24 s is 0.048 and fails. 30 s is 0.081 and passes. Laying our pixel mask on the key gives about 0, because the key's slab is not at these pixels. The key's own figures stay the bar.
+
+| time | contact | slivers | far px | IoU | seam | path shadow | form | shade b* | slab |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 5.10 | 0.134 | 1 | 4 | 0.924 | 0.014 | 0.832 | | −12.67 fail | |
+| 5.567 | 0.139 | 2 | 3 | 0.921 | 0.009 | 0.255 | | −8.63 fail | |
+| 7.9 | 0.169 | 0 | 4 | 0.904 | 0.007 | 0.586 | | −12.67 fail | |
+| 11.70 | 0.140 | 1 | 4 | 0.834 | 0.008 | 0.645 | | −12.66 fail | |
+| 24 | 0.140 | 0 | 5 | 0.802 | 0.014 | 0.212 | ridge 0.036 fail | −9.02 fail | 0.048 fail (old box 0.022) |
+| 30 | 0.132 | 4 | 4 | 0.860 | 0.011 | 0.763 | slope 0.032 fail | −12.81 fail | 0.081 pass (old box 0.012) |
+
+Snapped vertex shimmer is 0. The screen shimmer is still 0.0054 and the world shimmer is still 0.034. Those bars were not moved. Triangle count is 195,098. The round-3 seam fixture still fails.
+
 # Run 33 — cascaded sun shadows, round 12
 
 Not a KEEP. Not merged. Exposure was not changed. The 34° sun stays. Terrain was not edited. Shading normals were not edited. The lost form is occlusion by the terrain, not the sun heading and not a smoothed crease.

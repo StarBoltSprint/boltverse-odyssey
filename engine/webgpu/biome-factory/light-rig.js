@@ -277,6 +277,10 @@ fn tonemap(color: vec3f) -> vec3f {
   if (mode > 0.5 && mode < 1.5) {
     return vec4f(clamp(c, vec3f(0.0), vec3f(1.0)), 1.0);
   }
+  // Draw-id plates stay linear. A curve would move the codes off their bins.
+  if (mode > 2.5 && mode < 3.5) {
+    return vec4f(clamp(c, vec3f(0.0), vec3f(1.0)), 1.0);
+  }
   if (mode > 1.5 || (iso > 29.5 && iso < 37.5)) {
     return vec4f(srgbOetf(clamp(c, vec3f(0.0), vec3f(1.0))), 1.0);
   }

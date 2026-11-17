@@ -56,6 +56,18 @@ for (const name of fs.readdirSync(srcBefore)) {
 const t0 = Date.now();
 const log = (m) => console.log(((Date.now() - t0) / 1000).toFixed(0) + 's', m);
 
+if (process.argv.includes('--id-only')) {
+  await page(8825, 9425, 'cap=1&w=720&h=1280', async ({ evalJson }) => {
+    for (const [tag, t] of times) {
+      const payload = await evalJson(`window.__glacierStill(${t}, "id").then(r => JSON.stringify(r))`);
+      if (payload.info.gpuErr) throw new Error(tag + ' id ' + payload.info.gpuErr);
+      fs.writeFileSync(path.join(root, 'after', `t${tag}-id.png`), Buffer.from(payload.png, 'base64'));
+      log('id ' + tag);
+    }
+  });
+  process.exit(0);
+}
+
 await page(8811, 9411, 'cap=1&w=720&h=1280', async ({ evalJson }) => {
   for (const [tag, t] of times) {
     for (const mode of ['beauty', 'mat', 'shadow']) {

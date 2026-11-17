@@ -125,37 +125,48 @@ function med(arr) {
   const s = arr.slice().sort((a, b) => a - b);
   return s[s.length >> 1];
 }
-// The lower-center crop also holds Bolt, the contact decals, prints, and flakes.
-// Those draws write a non-zero blue into the mask. Snow's mask blue stays 0.
-// A luma window with no mask test reports the dog once the path snow is too
-// bright to enter the window. Clean shade is shadow factor under 0.35 and mask blue under 0.03.
-function shadeB(im, mask) {
+// Codes written by the id plate. (code + 0.5) / 16, stored without a grade curve.
+const DRAW = { sky: 1, snow: 2, wall: 3, other: 4, bolt: 5, decal: 6, print: 7, flake: 8 };
+function drawOf(idIm, x, y) {
+  const r = idIm.raw[((y | 0) * idIm.w + (x | 0)) * 3] / 255;
+  return Math.round(r * 16 - 0.5);
+}
+// The old crop is a luma window. It reports Bolt once the path snow is too bright
+// to enter the window. Clean shade is snow's draw id, shadow factor under 0.35,
+// and mask blue under 0.03. Bolt, the decal, the prints, and the flakes are
+// excluded by those ids.
+function shadeB(im, mask, idIm) {
   const mixed = [];
   const clean = [];
-  const tainted = [];
+  let nExcluded = 0;
   for (let y = im.h * 0.62 | 0; y < im.h * 0.82; y += 3) {
     for (let x = im.w * 0.35 | 0; x < im.w * 0.65; x += 3) {
       const o = (y * im.w + x) * 3;
       const r = im.raw[o] / 255, g = im.raw[o + 1] / 255, b = im.raw[o + 2] / 255;
       const yv = luma(r, g, b);
-      if (!(yv > 0.35 && yv < 0.75)) continue;
       const bb = labB(r, g, b);
-      mixed.push(bb);
-      if (!mask) continue;
-      const mo = (y * mask.w + x) * 3;
-      const sh = mask.raw[mo] / 255;
-      const mb = mask.raw[mo + 2] / 255;
-      if (sh >= 0.35) continue;
-      (mb < 0.03 ? clean : tainted).push(bb);
+      if (yv > 0.35 && yv < 0.75) mixed.push(bb);
+      if (!mask || !idIm) continue;
+      const id = drawOf(idIm, x, y);
+      if (id === DRAW.bolt || id === DRAW.decal || id === DRAW.print || id === DRAW.flake) { nExcluded++; continue; }
+      const sh = mask.raw[o] / 255;
+      const mb = mask.raw[o + 2] / 255;
+      if (id !== DRAW.snow || sh >= 0.35 || mb >= 0.03) continue;
+      clean.push(bb);
     }
   }
-  return {
-    mixed: med(mixed),
-    clean: med(clean),
-    tainted: med(tainted),
-    nClean: clean.length,
-    nTainted: tainted.length,
-  };
+  return { mixed: med(mixed), clean: med(clean), nClean: clean.length, nExcluded };
+}
+function classMean(im, box, idIm, code) {
+  let s = 0, n = 0;
+  const x0 = box[0] * im.w | 0, x1 = box[2] * im.w | 0;
+  const y0 = box[1] * im.h | 0, y1 = box[3] * im.h | 0;
+  for (let y = y0; y < y1; y += 2) for (let x = x0; x < x1; x += 2) {
+    if (drawOf(idIm, x, y) !== code) continue;
+    s += LAt(im, x, y);
+    n++;
+  }
+  return { mean: n ? s / n : null, n };
 }
 
 const root = arg('--root');
@@ -166,6 +177,10 @@ const SLOPE_R = [0.58, 0.46, 0.92, 0.62];
 const ICE = [0.62, 0.18, 0.96, 0.42];
 const SKY = [0.30, 0.08, 0.55, 0.18];
 const CONTACT_MIN = 0.04;
+const SHADE_B_LO = -4.4;
+const SHADE_B_HI = -3.2;
+// The key's old box differences. The 0.8 factor stays. The sample inside the box changes.
+const SKY_KEY = { '24': 0.076, '30': 0.086 };
 const SHADE = new Set(['51', '79', '117', '30']);
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
@@ -183,17 +198,53 @@ if (!(ridgeNow >= 0.8 * ridgeKey)) bad(`ridge step 24 ${ridgeNow.toFixed(3)} < 0
 if (!(slopeNow >= 0.8 * slopeKey)) bad(`slope step 30 ${slopeNow.toFixed(3)} < 0.8x key ${slopeKey.toFixed(3)}`);
 console.log('form', 'ridge', ridgeNow.toFixed(3), 'key', ridgeKey.toFixed(3), 'slope', slopeNow.toFixed(3), 'key', slopeKey.toFixed(3));
 
+const slab = {};
 for (const tag of ['24', '30']) {
   const im = tag === '24' ? now24 : now30;
   const key = tag === '24' ? key24 : key30;
   const eNow = energy(im, ICE);
   const eKey = energy(key, ICE);
-  const silNow = meanBox(im, ICE) - meanBox(im, SKY);
-  const silKey = meanBox(key, ICE) - meanBox(key, SKY);
+  const oldNow = meanBox(im, ICE) - meanBox(im, SKY);
+  const oldKey = meanBox(key, ICE) - meanBox(key, SKY);
+  const idPath = path.join(root, 'after', `t${tag}-id.png`);
+  if (!fs.existsSync(idPath)) bad(`draw id missing ${tag}`);
+  const idIm = fs.existsSync(idPath) ? load(idPath) : null;
+  let wall = null, sky = null, keyWall = null, keySky = null, skySnow = 0, skyLit = 0;
+  if (idIm) {
+    wall = classMean(im, ICE, idIm, DRAW.wall);
+    sky = classMean(im, SKY, idIm, DRAW.sky);
+    keyWall = classMean(key, ICE, idIm, DRAW.wall);
+    keySky = classMean(key, SKY, idIm, DRAW.sky);
+    const mask = load(path.join(root, 'mask', `t${tag}.png`));
+    const x0 = SKY[0] * im.w | 0, x1 = SKY[2] * im.w | 0;
+    const y0 = SKY[1] * im.h | 0, y1 = SKY[3] * im.h | 0;
+    for (let y = y0; y < y1; y += 2) for (let x = x0; x < x1; x += 2) {
+      if (drawOf(idIm, x, y) !== DRAW.snow) continue;
+      skySnow++;
+      if (mask.raw[(y * mask.w + x) * 3] / 255 > 0.7) skyLit++;
+    }
+  }
+  const sil = wall && sky && wall.mean != null && sky.mean != null ? wall.mean - sky.mean : null;
+  const silKeyMasked = keyWall && keySky && keyWall.mean != null && keySky.mean != null ? keyWall.mean - keySky.mean : null;
+  const bar = SKY_KEY[tag];
   if (!(eNow >= 0.8 * eKey)) bad(`ice energy ${tag} ${eNow.toFixed(4)} < 0.8x ${eKey.toFixed(4)}`);
-  if (!(silNow >= 0.8 * silKey)) bad(`ice silhouette ${tag} ${silNow.toFixed(3)} < 0.8x ${silKey.toFixed(3)}`);
-  console.log('ice', tag, 'energy', eNow.toFixed(4), eKey.toFixed(4), 'sil', silNow.toFixed(3), silKey.toFixed(3));
-  rows.push({ tag, iceEnergy: +eNow.toFixed(4), iceEnergyKey: +eKey.toFixed(4), silhouette: +silNow.toFixed(3), silhouetteKey: +silKey.toFixed(3) });
+  if (sil == null) bad(`slab sky ${tag} missing`);
+  else if (!(sil >= 0.8 * bar)) bad(`slab sky ${tag} ${sil.toFixed(3)} < 0.8x key ${bar.toFixed(3)}`);
+  slab[tag] = {
+    oldBox: +oldNow.toFixed(3),
+    oldKey: +oldKey.toFixed(3),
+    wallMinusSky: sil == null ? null : +sil.toFixed(3),
+    keyMasked: silKeyMasked == null ? null : +silKeyMasked.toFixed(3),
+    bar,
+    wallN: wall && wall.n,
+    skyN: sky && sky.n,
+    skyBoxSnow: skySnow,
+    skyBoxLitSnow: skyLit,
+    wallL: wall && wall.mean != null ? +wall.mean.toFixed(3) : null,
+    skyL: sky && sky.mean != null ? +sky.mean.toFixed(3) : null,
+  };
+  console.log('ice', tag, 'energy', eNow.toFixed(4), eKey.toFixed(4), 'oldBox', oldNow.toFixed(3), 'wall-sky', sil == null ? 'none' : sil.toFixed(3), 'keyMasked', silKeyMasked == null ? 'none' : silKeyMasked.toFixed(3), 'skyBoxLitSnow', skyLit);
+  rows.push({ tag, iceEnergy: +eNow.toFixed(4), iceEnergyKey: +eKey.toFixed(4), slab: slab[tag] });
 }
 
 const bStar = {};
@@ -203,13 +254,24 @@ for (const tag of ['51', '5567', '79', '117', '24', '30']) {
   const c = contact(im, info);
   const maskPath = path.join(root, 'mask', `t${tag}.png`);
   const pngPath = path.join(root, 'after', `t${tag}.png`);
-  const shade = shadeB(fs.existsSync(pngPath) ? load(pngPath) : im, fs.existsSync(maskPath) ? load(maskPath) : null);
+  const idPath = path.join(root, 'after', `t${tag}-id.png`);
+  if (!fs.existsSync(idPath)) bad(`draw id missing ${tag}`);
+  const shade = shadeB(
+    fs.existsSync(pngPath) ? load(pngPath) : im,
+    fs.existsSync(maskPath) ? load(maskPath) : null,
+    fs.existsSync(idPath) ? load(idPath) : null,
+  );
   bStar[tag] = {
     clean: shade.clean == null ? null : +shade.clean.toFixed(2),
     mixed: shade.mixed == null ? null : +shade.mixed.toFixed(2),
-    tainted: shade.tainted == null ? null : +shade.tainted.toFixed(2),
     nClean: shade.nClean,
+    nExcluded: shade.nExcluded,
   };
+  if (shade.clean == null) bad(`shade b* ${tag} empty`);
+  else if (!(shade.clean >= SHADE_B_LO && shade.clean <= SHADE_B_HI)) bad(`shade b* ${tag} ${shade.clean.toFixed(2)} outside ${SHADE_B_LO}..${SHADE_B_HI}`);
+  if ((tag === '5567' || tag === '24') && !(shade.mixed > 0 && shade.clean < -8)) {
+    bad(`shade fixture ${tag} mixed ${shade.mixed} clean ${shade.clean}`);
+  }
   if (!c) bad(`contact missing ${tag}`);
   else if (c.dark < CONTACT_MIN) bad(`contact ${tag} ${c.dark.toFixed(3)} < ${CONTACT_MIN}`);
   else if (Math.abs((c.px ?? 360) - 360) > 8) bad(`bolt x ${tag} ${c.px}`);
@@ -223,7 +285,7 @@ for (const tag of ['51', '5567', '79', '117', '24', '30']) {
     rows.push({ tag, contact: c && +c.dark.toFixed(3), shadeB: bStar[tag], penumbra: pen });
   }
 }
-rows.push({ form: { ridgeNow, ridgeKey, slopeNow, slopeKey }, shadeB: bStar });
+rows.push({ form: { ridgeNow, ridgeKey, slopeNow, slopeKey }, shadeB: bStar, slab });
 const report = { rows, verdict: fail ? 'FAIL' : 'PASS' };
 fs.writeFileSync(path.join(root, 'visual-gate.json'), JSON.stringify(report, null, 2) + '\n');
 console.log('shade b*', JSON.stringify(bStar));

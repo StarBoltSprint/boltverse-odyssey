@@ -388,6 +388,8 @@ fn darken15(c: vec3f) -> vec3f {
     sky = sky + vec3f(0.045, 0.02, 0.07) * s + vec3f(0.03, 0.0, 0.05) * fract(u.spin.w * 0.37);
   }
   if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(5.5 / 8.0, 1.0, 1.0, 1.0); }
+  // Draw id 1 is sky. The grade stores it without a curve. Depth-far is this draw.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(1.5 / 16.0, 0.0, 0.0, 1.0); }
   return present(sky);
 }
 @fragment fn fs(v: VO) -> @location(0) vec4f {
@@ -405,7 +407,14 @@ fn darken15(c: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   let mode = u.misc.z;
-  if (mode > 1.5) { return present(alb); }
+  // Draw ids: 2 snow, 3 wall, 4 anything else. Mode 2 stays the albedo plate.
+  if (mode > 2.5 && mode < 3.5) {
+    var code = 4.0;
+    if (m < 0.5) { code = 2.0; }
+    else if (m > 5.5 && m < 6.5) { code = 3.0; }
+    return vec4f((code + 0.5) / 16.0, 0.0, 0.0, 1.0);
+  }
+  if (mode > 1.5 && mode < 2.5) { return present(alb); }
   if (mode > 0.5 && mode < 1.5) {
     let near = select(0.0, 1.0, dist < 40.0);
     return vec4f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0), ndv * near);
@@ -460,6 +469,7 @@ fn darken15(c: vec3f) -> vec3f {
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(5.5 / 8.0, 0.0, 0.0, 1.0); }
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(4.5 / 16.0, 0.0, 0.0, 1.0); }
   if (u.misc.z > 1.5) { return present(alb); }
   var col = alb * dawnIrr(n);
   let limb = smoothstep(0.0, 0.22, ndv);
@@ -489,6 +499,8 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
   let s = mix(cell(a, uvs), cell(bb, uvs), k);
   if (s.a < 0.03) { discard; }
+  // Draw id 5 is Bolt. The id is the draw, not the fur colour.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(5.5 / 16.0, 0.0, 0.0, 1.0); }
   var c = s.rgb;
   c = mix(c, vec3f(dot(c, vec3f(0.3, 0.59, 0.11))), 0.12) * 1.08;
   let toE = normalize(vec2f(u.cam.x - u.bolt.x, u.cam.z - u.bolt.z));
@@ -557,6 +569,11 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   // already in cascade shade. The sun-offset blot is the attached shadow:
   // it draws only on lit snow, so it does not stack on the cast shadow.
   let sh = shadowAt(v.wp, vec3f(0.0, 1.0, 0.0));
+  // Draw id 6 is the contact decal. Draw id 7 is a print. Alpha 1 so the blend replaces.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) {
+    let code = select(6.0, 7.0, v.k >= 3.0);
+    return vec4f((code + 0.5) / 16.0, 0.0, 0.0, 1.0);
+  }
   let ao = v.k < 0.5 || (v.k > 1.5 && v.k < 2.5);
   let keep = select(smoothstep(0.08, 0.7, sh), 1.0, ao);
   if (v.k < 0.5) {
@@ -608,6 +625,8 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   let e = v.uv * vec2f(1.0, select(1.0, 0.38, near));
   let r = length(e);
   if (r > 1.0) { discard; }
+  // Draw id 8 is a flake.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(8.5 / 16.0, 0.0, 0.0, 1.0); }
   let soft = pow(1.0 - smoothstep(0.0, 1.0, r), select(1.35, 1.05, puff));
   let uv = vec2f(v.seed, 0.41) + v.uv * select(0.12, 0.06, v.layer > 0.5);
   let tex = textureSampleLevel(snowArr, samp, uv, 0, 1.0);
@@ -1969,7 +1988,7 @@ async function main() {
     const prevMask = maskForce;
     const prevMode = gateMode;
     maskForce = mode === 'shadow' ? 1 : 0;
-    gateMode = mode === 'mat' ? 1 : 0;
+    gateMode = mode === 'mat' ? 1 : mode === 'id' ? 3 : 0;
     const frame = await readFrame();
     maskForce = prevMask;
     gateMode = prevMode;

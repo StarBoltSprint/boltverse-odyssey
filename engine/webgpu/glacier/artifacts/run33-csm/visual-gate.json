@@ -4,24 +4,46 @@
       "tag": "24",
       "iceEnergy": 0.0143,
       "iceEnergyKey": 0.0165,
-      "silhouette": 0.022,
-      "silhouetteKey": 0.076
+      "slab": {
+        "oldBox": 0.022,
+        "oldKey": 0.076,
+        "wallMinusSky": 0.048,
+        "keyMasked": -0.005,
+        "bar": 0.076,
+        "wallN": 9416,
+        "skyN": 2141,
+        "skyBoxSnow": 1911,
+        "skyBoxLitSnow": 1884,
+        "wallL": 0.59,
+        "skyL": 0.543
+      }
     },
     {
       "tag": "30",
       "iceEnergy": 0.0175,
       "iceEnergyKey": 0.0204,
-      "silhouette": 0.012,
-      "silhouetteKey": 0.086
+      "slab": {
+        "oldBox": 0.012,
+        "oldKey": 0.086,
+        "wallMinusSky": 0.081,
+        "keyMasked": 0.016,
+        "bar": 0.086,
+        "wallN": 8368,
+        "skyN": 1977,
+        "skyBoxSnow": 1700,
+        "skyBoxLitSnow": 1688,
+        "wallL": 0.595,
+        "skyL": 0.514
+      }
     },
     {
       "tag": "51",
       "contact": 0.134,
       "shadeB": {
-        "clean": -12.7,
+        "clean": -12.67,
         "mixed": -12.66,
-        "tainted": 3.71,
-        "nClean": 3761
+        "nClean": 2433,
+        "nExcluded": 3831
       },
       "penumbra": {
         "thin": 1,
@@ -33,10 +55,10 @@
       "tag": "5567",
       "contact": 0.139,
       "shadeB": {
-        "clean": -9.67,
+        "clean": -8.63,
         "mixed": 2.49,
-        "tainted": 4.32,
-        "nClean": 380
+        "nClean": 36,
+        "nExcluded": 4008
       },
       "penumbra": {
         "thin": 2,
@@ -50,8 +72,8 @@
       "shadeB": {
         "clean": -12.67,
         "mixed": -12.53,
-        "tainted": 3.87,
-        "nClean": 3356
+        "nClean": 2112,
+        "nExcluded": 3948
       },
       "penumbra": {
         "thin": 0,
@@ -65,8 +87,8 @@
       "shadeB": {
         "clean": -12.66,
         "mixed": -12.14,
-        "tainted": 4.06,
-        "nClean": 3254
+        "nClean": 2173,
+        "nExcluded": 3988
       },
       "penumbra": {
         "thin": 1,
@@ -78,10 +100,10 @@
       "tag": "24",
       "contact": 0.14,
       "shadeB": {
-        "clean": -9.66,
+        "clean": -9.02,
         "mixed": 2.3,
-        "tainted": 4.45,
-        "nClean": 210
+        "nClean": 7,
+        "nExcluded": 4088
       },
       "penumbra": {
         "thin": 0,
@@ -93,10 +115,10 @@
       "tag": "30",
       "contact": 0.132,
       "shadeB": {
-        "clean": -13.18,
+        "clean": -12.81,
         "mixed": -12.64,
-        "tainted": 3.67,
-        "nClean": 3070
+        "nClean": 1720,
+        "nExcluded": 3913
       },
       "penumbra": {
         "thin": 4,
@@ -113,40 +135,68 @@
       },
       "shadeB": {
         "24": {
-          "clean": -9.66,
+          "clean": -9.02,
           "mixed": 2.3,
-          "tainted": 4.45,
-          "nClean": 210
+          "nClean": 7,
+          "nExcluded": 4088
         },
         "30": {
-          "clean": -13.18,
+          "clean": -12.81,
           "mixed": -12.64,
-          "tainted": 3.67,
-          "nClean": 3070
+          "nClean": 1720,
+          "nExcluded": 3913
         },
         "51": {
-          "clean": -12.7,
+          "clean": -12.67,
           "mixed": -12.66,
-          "tainted": 3.71,
-          "nClean": 3761
+          "nClean": 2433,
+          "nExcluded": 3831
         },
         "79": {
           "clean": -12.67,
           "mixed": -12.53,
-          "tainted": 3.87,
-          "nClean": 3356
+          "nClean": 2112,
+          "nExcluded": 3948
         },
         "117": {
           "clean": -12.66,
           "mixed": -12.14,
-          "tainted": 4.06,
-          "nClean": 3254
+          "nClean": 2173,
+          "nExcluded": 3988
         },
         "5567": {
-          "clean": -9.67,
+          "clean": -8.63,
           "mixed": 2.49,
-          "tainted": 4.32,
-          "nClean": 380
+          "nClean": 36,
+          "nExcluded": 4008
+        }
+      },
+      "slab": {
+        "24": {
+          "oldBox": 0.022,
+          "oldKey": 0.076,
+          "wallMinusSky": 0.048,
+          "keyMasked": -0.005,
+          "bar": 0.076,
+          "wallN": 9416,
+          "skyN": 2141,
+          "skyBoxSnow": 1911,
+          "skyBoxLitSnow": 1884,
+          "wallL": 0.59,
+          "skyL": 0.543
+        },
+        "30": {
+          "oldBox": 0.012,
+          "oldKey": 0.086,
+          "wallMinusSky": 0.081,
+          "keyMasked": 0.016,
+          "bar": 0.086,
+          "wallN": 8368,
+          "skyN": 1977,
+          "skyBoxSnow": 1700,
+          "skyBoxLitSnow": 1688,
+          "wallL": 0.595,
+          "skyL": 0.514
         }
       }
     }
