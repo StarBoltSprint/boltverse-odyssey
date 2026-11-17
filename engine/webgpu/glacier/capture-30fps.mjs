@@ -12,7 +12,7 @@ const out = process.env.GLACIER_OUT || '/opt/cursor/artifacts/run33';
 const dir = '/tmp/glacier-ao-30fps';
 const fps = 30;
 const frames = 60;
-const t0s = 24;
+const t0s = Number(process.env.GLACIER_T0 || 24);
 fs.rmSync(dir, { recursive: true, force: true });
 fs.mkdirSync(dir, { recursive: true });
 fs.mkdirSync(out, { recursive: true });
@@ -37,11 +37,11 @@ try {
   });
   const enc = spawnSync('ffmpeg', [
     '-y', '-framerate', String(fps), '-i', path.join(dir, 'f_%04d.jpg'),
-    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart',
-    path.join(out, 'glacier-t24-2s-30fps.mp4'),
+    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', '-movflags', '+faststart',
+    path.join(out, `glacier-t${String(t0s).replace('.', 'p')}-2s-30fps.mp4`),
   ], { encoding: 'utf8' });
   if (enc.status !== 0) throw new Error(String(enc.stderr).slice(-400));
-  console.log('CLIP', path.join(out, 'glacier-t24-2s-30fps.mp4'));
+  console.log('CLIP', path.join(out, `glacier-t${String(t0s).replace('.', 'p')}-2s-30fps.mp4`));
 } finally {
   server.close();
 }

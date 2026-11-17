@@ -1327,3 +1327,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Scale stayed at 0.90, the crop-corrected point on that axis. The misses are reported. The band and the CIE76 limit were not moved. |
 | Guard | `node engine/webgpu/glacier/shade-snow-gate.mjs` on the follow frames. Constant-ambient `run32/before` fails every time (b\* −7.71 to −5.89). |
 | Sources | `engine/webgpu/glacier/sh-sky.js`, `engine/webgpu/glacier/shade-snow-gate.mjs`, `engine/webgpu/glacier/artifacts/run32/notes.md`. |
+
+### 2026-11-17 — lower-hemisphere bounce does not reach the path shadow
+
+| | |
+| --- | --- |
+| Take | Glacier round 3 |
+| Defect | With the bounce only in the lower hemisphere, cast-shadow b\* is −13.8 to −16.2. CIE76 is over 10 at five of the six times. The shade/sun ratio misses ±10% of 0.605 at 5.10, 7.90, and 30. |
+| Root cause | The path shadow is up-facing snow. The cosine lobe of an up face does not include the lower hemisphere, so the bounce luma on that face is 0. The fill is the sky plate, which is blue. Scaling the ground radiance does not move the ratio. |
+| Fix | Strength stayed at 1, one physical bounce. The uniform add was not put back. 7.90 L\* fell from 69.4 to 60.7. b\* was not forced with an offset. |
+| Guard | `node engine/webgpu/glacier/shade-snow-gate.mjs` . Key ratio 0.605, b\* band −4.4..−3.2, CIE76 ≤ 10. Round-2 frames fail the ratio at 5.10, 7.90, and 30. |
+| Sources | `engine/webgpu/glacier/sh-sky.js`, `engine/webgpu/glacier/artifacts/run32/notes.md`. |

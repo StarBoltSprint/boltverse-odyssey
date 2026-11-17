@@ -695,6 +695,36 @@ function makeDrift() {
   return m.finish();
 }
 
+function instanceAoReport(map, icicles, drifts) {
+  const sample = (list) => {
+    const aos = [];
+    const img = map && map.levels[0];
+    for (let i = 0; i < list.length; i += 8) {
+      let ao = 1;
+      if (img) {
+        const u = (list[i] - map.x0) / map.spanX;
+        const v = (map.z0 - list[i + 2]) / map.spanZ;
+        if (u >= 0 && v >= 0 && u <= 1 && v <= 1) {
+          const ix = Math.min(map.w - 1, Math.floor(u * map.w));
+          const iz = Math.min(map.h - 1, Math.floor(v * map.h));
+          ao = img[iz * map.w + ix] / 255;
+        }
+      }
+      aos.push(ao);
+    }
+    if (!aos.length) return { n: 0 };
+    aos.sort((a, b) => a - b);
+    return {
+      n: aos.length,
+      min: +aos[0].toFixed(3),
+      p50: +aos[Math.floor(aos.length / 2)].toFixed(3),
+      max: +aos[aos.length - 1].toFixed(3),
+      occluded: aos.filter((a) => a < 0.98).length,
+    };
+  };
+  return { icicle: sample(icicles), drift: sample(drifts) };
+}
+
 function pushInst(list, x, y, z, yaw, sx, sy, sz, lean = 0) {
   list.push(x, y, z, yaw, sx, sy, sz, lean);
 }
@@ -1047,6 +1077,7 @@ export function buildWorld() {
     meanContactAo: aoBake.meanContactAo,
     meanOpenAo: aoBake.meanOpenAo,
     drawsAdded: 0,
+    instances: instanceAoReport(aoBake.groundMap, icicles, drifts),
     ground: aoBake.groundMap ? {
       w: aoBake.groundMap.w,
       h: aoBake.groundMap.h,

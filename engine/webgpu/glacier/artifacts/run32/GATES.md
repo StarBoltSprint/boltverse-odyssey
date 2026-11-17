@@ -47,6 +47,18 @@ The limit is the existing CIE76 limit. It is not raised. The fixture is the cons
 
 The lever is the snow-bounce warmth. Its colour is the irradiance the run-31 mauve is missing from the sky-only up face (`scene(mauve) / snow albedo − sky up`), and its scale is the one that puts this crop on the key. It is not a hand-set RGB.
 
+## Shade/sun ratio (blocking)
+
+Added in round 3, before the lower-hemisphere trial. Not a replacement for the shaded-snow b\* band or the CIE76 limit above.
+
+At each of the six times, on the follow frame, two crops where the sun and the cast shadow both show: snow the contact decal darkened by at least 6 L\*, and undarkened snow beside that paw. Linear luma is `(byte/255)^2.2` then Rec.709.
+
+`ratio = Y(shade) / Y(sun)` must be within **±10%** of the run-31 key ratio **0.605** (median of t10, t24, t30 on the shadow oval ahead of the paws over the sunlit side lane).
+
+The round-2 uniform lift is the fixture. On those frames the ratios are 0.516, 0.613, 0.517, 0.598, 0.562, 0.532. 5.10, 7.90, and 30 sit outside ±10%, so that build **fails** this gate.
+
+The strength that is allowed to move is the scalar on the lower-hemisphere snow radiance (ground albedo × sun-plus-sky on an up face). It is not a colour added on every direction.
+
 ## What is reported, not retuned
 
 If the SH changes mean open-snow luma, the delta is reported. Exposure, the present curve, and sun intensity stay as they are. No EV compensation.

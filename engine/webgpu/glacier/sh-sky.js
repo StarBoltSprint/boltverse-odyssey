@@ -1,28 +1,28 @@
 // SH L2 sky irradiance for the glacier dawn rig.
-// The sky function is the existing procedural plate (world direction only).
-// Lower hemisphere is one Lambertian snow bounce.
-// A second bounce, the warm residual the run-31 mauve is missing from the
-// sky-only up face, is added on every direction. Its colour is that residual.
-// Its scale is the one that puts the cast-shadow crop on the shade key.
-// The result replaces the constant ambient colour. It is the cosine-weighted
-// average of that radiance, in the same units the shader already adds to the sun
-// term. No exposure curve is applied on top.
+// Upper hemisphere: the existing sky plate, world direction only.
+// Lower hemisphere: one snow bounce. Ground albedo times the sun-plus-sky
+// irradiance on an up-facing snow patch, as a ground-plane radiance.
+// An up face sees almost none of that bounce. The strength is the scalar
+// that puts the path's shade/sun luma ratio on the run-31 key. It is not
+// a colour, and it is not added on every direction.
+// The result replaces the constant ambient colour, in the same units the
+// shader already adds to the sun term. No exposure curve on top.
 
 import { skyLinear } from '../biome-factory/procedural-sky.js';
 import { norm3 } from '../biome-factory/light-rig.js';
-import { srgbToLab, dE76 } from '../biome-factory/cie76.mjs';
 import { LIGHT } from './biome.js';
 
-// Run 31 lane snow, t24, left of Bolt. b* -3.97 is inside the mauve band.
-const OPEN_MAUVE_LAB = [70.98, 5.07, -3.97];
-// Run 31 cast shadow ahead of Bolt, t24. This is the shaded-snow key.
-// b* -3.90 is inside -4.4..-3.2. Lightness is the shadow, not the open field.
+// Run 31 cast shadow ahead of Bolt, t24. b* -3.90 is inside -4.4..-3.2.
 export const KEY_SHADE_LAB = [59.0, 5.1, -3.9];
 export const KEY_B_LO = -4.4;
 export const KEY_B_HI = -3.2;
-// Median linear albedo of the snow that shadow falls on (albedo buffer).
+// Shade/sun linear-luma ratio on that key. Median of t10, t24, t30:
+// shadow oval ahead of the paws (snow chroma, darker than the side lane
+// but not the legs) over the sunlit side lane. 0.596, 0.605, 0.610.
+export const KEY_SHADE_SUN = 0.605;
+// Median linear albedo of the snow the shadow falls on (albedo buffer).
 const SNOW_LIN = [0.715, 0.836, 1.007];
-// fsContact sun-shadow quad. The crop is this decal over the lit snow.
+// fsContact sun-shadow quad, used only to predict the path ratio.
 const SHADOW_DECAL = [0.18, 0.2, 0.32];
 const SHADOW_ALPHA = 0.35;
 
@@ -127,113 +127,85 @@ function project(radianceOf, samples) {
 
 const skyAvg = skyAverageUp();
 const sunUp = sunTermOn([0, 1, 0]);
+// One bounce off the snow: albedo times the irradiance an up face receives.
+// This colour is the ground-plane radiance. It is not a picked RGB.
 const snowRadiance = SNOW_ALB.map((a, i) => a * (skyAvg[i] + sunUp[i]));
 
-function radiance(dir) {
-  if (dir[1] >= 0) return skyLinear(dir, LIGHT.sky);
-  return snowRadiance;
-}
-
-const COEFF = project(radiance, 6144);
-
-function evalRaw(n) {
+function evalCoeff(coeff, n) {
   const b = shBasis(n);
   let r = 0;
   let g = 0;
   let bl = 0;
   for (let k = 0; k < 9; k++) {
-    r += COEFF[k * 3] * b[k];
-    g += COEFF[k * 3 + 1] * b[k];
-    bl += COEFF[k * 3 + 2] * b[k];
+    r += coeff[k * 3] * b[k];
+    g += coeff[k * 3 + 1] * b[k];
+    bl += coeff[k * 3 + 2] * b[k];
   }
-  return [r, g, bl];
+  return [Math.max(0, r), Math.max(0, g), Math.max(0, bl)];
 }
 
-function labToByte(lab) {
-  const [L, a, b] = lab;
-  const fy = (L + 16) / 116;
-  const fx = a / 500 + fy;
-  const fz = fy - b / 200;
-  const finv = (t) => {
-    const t3 = t * t * t;
-    return t3 > 216 / 24389 ? t3 : (116 * t - 16) / (24389 / 27);
-  };
-  const X = finv(fx) * 0.95047;
-  const Y = finv(fy);
-  const Z = finv(fz) * 1.08883;
-  const R = 3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z;
-  const G = -0.969266 * X + 1.8760108 * Y + 0.041556 * Z;
-  const B = 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
-  const enc = (c) => {
-    const x = Math.min(1, Math.max(0, c));
-    return x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055;
-  };
-  return [enc(R) * 255, enc(G) * 255, enc(B) * 255];
+function projectStrength(strength) {
+  return project((dir) => {
+    if (dir[1] >= 0) return skyLinear(dir, LIGHT.sky);
+    return snowRadiance.map((v) => v * strength);
+  }, 3072);
 }
 
-function sceneOfLab(lab) {
-  return labToByte(lab).map((v) => (v / 255) ** 2.2);
+function lumaOf(c) {
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 }
 
-// Warmth the sky-only up face is missing so snow albedo presents as the
-// run-31 mauve. Every component is that division. Nothing here is a picked RGB.
-const skyUp = evalRaw([0, 1, 0]);
-const mauveScene = sceneOfLab(OPEN_MAUVE_LAB);
-const WARM_AXIS = mauveScene.map((s, i) => Math.max(0, s / SNOW_LIN[i] - skyUp[i]));
-
-function shadowLab(scale) {
-  const lit = skyUp.map((v, i) => v + sunUp[i] + WARM_AXIS[i] * scale);
-  const scene = SNOW_LIN.map((a, i) => a * lit[i]);
-  const bytes = scene.map((c, i) => {
-    const pix = Math.round((Math.min(1, Math.max(0, c)) ** (1 / 2.2)) * 255);
-    const dec = Math.round(SHADOW_DECAL[i] * 255);
-    return Math.round(pix * (1 - SHADOW_ALPHA) + dec * SHADOW_ALPHA);
-  });
-  return srgbToLab(bytes);
+// Path ratio: sunlit up-snow versus the same snow under the cast-shadow decal.
+// Both faces are up, so the lower hemisphere barely reaches them. The strength
+// still moves the ratio through that small leak. We do not fit b*.
+function pathRatio(coeff) {
+  const up = evalCoeff(coeff, [0, 1, 0]);
+  const lit = SNOW_LIN.map((a, i) => a * (up[i] + sunUp[i]));
+  const present = (c) => Math.round((Math.min(1, Math.max(0, c)) ** (1 / 2.2)) * 255);
+  const sunB = lit.map(present);
+  const shadeB = sunB.map((b, i) => Math.round(b * (1 - SHADOW_ALPHA) + SHADOW_DECAL[i] * 255 * SHADOW_ALPHA));
+  const Y = (rgb) => lumaOf(rgb.map((v) => (v / 255) ** 2.2));
+  return Y(shadeB) / Y(sunB);
 }
 
-// The decal model is bluer than the follow-camera crop by this much at the
-// same scale (scale 1.1: model b* -4.16, crop median b* -1.74). The solve
-// scores the crop. The axis above is unchanged.
-const CROP_BIAS_B = 2.42;
-let bounceScale = 0;
+let bounceStrength = 1;
 let bounceBest = Infinity;
-for (let s = 0; s <= 1.6; s += 0.01) {
-  const lab = shadowLab(s);
-  const b = lab[2] + CROP_BIAS_B;
-  const corrected = [lab[0], lab[1], b];
-  const inBand = b >= KEY_B_LO && b <= KEY_B_HI;
-  const de = dE76(corrected, KEY_SHADE_LAB);
-  const miss = inBand ? 0 : Math.min(Math.abs(b - KEY_B_LO), Math.abs(b - KEY_B_HI));
-  const score = miss * 20 + de;
-  if (score < bounceBest) {
-    bounceBest = score;
-    bounceScale = s;
+for (let s = 0; s <= 2.001; s += 0.1) {
+  const ratio = pathRatio(projectStrength(s));
+  const err = Math.abs(ratio - KEY_SHADE_SUN);
+  // A tie stays on one physical bounce. Zeroing the ground to win a
+  // flat ratio is not the calibration.
+  if (err + 1e-4 < bounceBest || (Math.abs(err - bounceBest) <= 0.002 && Math.abs(s - 1) < Math.abs(bounceStrength - 1))) {
+    bounceBest = err;
+    bounceStrength = s;
   }
 }
-const BOUNCE = WARM_AXIS.map((v) => v * bounceScale);
+
+const COEFF = projectStrength(bounceStrength);
 
 export function shCoeff() {
   return COEFF;
 }
 
 export function ambientAt(n) {
-  const raw = evalRaw(n);
-  return raw.map((v, i) => {
-    const x = v + BOUNCE[i];
-    return x < 0 ? 0 : x;
-  });
+  return evalCoeff(COEFF, n);
 }
 
 export function bounceMeta() {
-  const lab = shadowLab(bounceScale);
+  const up = ambientAt([0, 1, 0]);
+  const down = ambientAt([0, -1, 0]);
+  const skyOnly = projectStrength(0);
+  const upSky = evalCoeff(skyOnly, [0, 1, 0]);
+  const upBounce = lumaOf(up) - lumaOf(upSky);
+  const downBounce = lumaOf(down) - lumaOf(evalCoeff(skyOnly, [0, -1, 0]));
   return {
-    axis: WARM_AXIS.map((v) => +v.toFixed(4)),
-    scale: +bounceScale.toFixed(3),
-    bounce: BOUNCE.map((v) => +v.toFixed(4)),
-    predictedShade: lab.map((v) => +v.toFixed(2)),
-    predictedDE: +dE76(lab, KEY_SHADE_LAB).toFixed(2),
-    key: KEY_SHADE_LAB,
+    strength: +bounceStrength.toFixed(3),
+    snowRadiance: snowRadiance.map((v) => +v.toFixed(4)),
+    ratio: +pathRatio(COEFF).toFixed(4),
+    keyRatio: KEY_SHADE_SUN,
+    upBounceLuma: +upBounce.toFixed(4),
+    downBounceLuma: +downBounce.toFixed(4),
+    upShare: downBounce > 1e-4 ? +((upBounce / downBounce).toFixed(4)) : 0,
   };
 }
 
@@ -300,7 +272,7 @@ fn ambientIrr(n: vec3f) -> vec3f {
   c += ${term(6)} * b6;
   c += ${term(7)} * b7;
   c += ${term(8)} * b8;
-  return max(c, vec3f(0.0)) + vec3f(${f(BOUNCE[0])}, ${f(BOUNCE[1])}, ${f(BOUNCE[2])});
+  return max(c, vec3f(0.0));
 }
 `;
 }

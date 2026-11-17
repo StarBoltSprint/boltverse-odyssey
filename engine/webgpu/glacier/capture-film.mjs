@@ -39,7 +39,7 @@ try {
   });
   const enc = spawnSync('ffmpeg', [
     '-y', '-framerate', String(fps), '-i', path.join(dir, 'f_%04d.jpg'),
-    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart',
+    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '16', '-movflags', '+faststart',
     path.join(out, 'glacier-chase-30s.mp4'),
   ], { encoding: 'utf8' });
   if (enc.status !== 0) throw new Error(enc.stderr.slice(-400));

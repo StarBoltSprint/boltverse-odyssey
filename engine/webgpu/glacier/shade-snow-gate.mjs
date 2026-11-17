@@ -4,7 +4,7 @@
 import { spawnSync } from 'child_process';
 import path from 'path';
 import { srgbToLab, dE76, DE76_MAX } from '../biome-factory/cie76.mjs';
-import { KEY_SHADE_LAB, KEY_B_LO, KEY_B_HI } from './sh-sky.js';
+import { KEY_SHADE_LAB, KEY_B_LO, KEY_B_HI, KEY_SHADE_SUN } from './sh-sky.js';
 
 const W = 720;
 const H = 1280;
@@ -68,14 +68,79 @@ export function loadFrame(dir, t) {
   return { beauty: g('beauty'), surface: g('surface'), bolt: g('bolt'), shade: g('shade') };
 }
 
+function linY(buf, i) {
+  const R = (buf[i] / 255) ** 2.2;
+  const G = (buf[i + 1] / 255) ** 2.2;
+  const B = (buf[i + 2] / 255) ** 2.2;
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
+// Shade/sun on the path. Shade is snow the cast decal darkened. Sun is the
+// undarkened snow beside that same paw. Ratio is linear luma.
+export function shadeSunAt(buf) {
+  let maxy = 0;
+  let fx = 360;
+  for (let y = 800; y < 1150; y += 2) {
+    for (let x = 280; x < 440; x += 2) {
+      const i = (y * W + x) * 4;
+      if (buf.bolt[i] > 40 && buf.bolt[i + 1] > 40 && y > maxy) { maxy = y; fx = x; }
+    }
+  }
+  const shade = [];
+  const sun = [];
+  for (let y = maxy - 110; y < maxy + 40; y++) {
+    for (let x = fx - 80; x < fx + 80; x++) {
+      if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
+      const i = (y * W + x) * 4;
+      if (buf.bolt[i] > 16) continue;
+      if (matOf(buf.shade, i) !== 0) continue;
+      const beauty = srgbToLab([buf.beauty[i], buf.beauty[i + 1], buf.beauty[i + 2]]);
+      const surf = srgbToLab([buf.surface[i], buf.surface[i + 1], buf.surface[i + 2]]);
+      const dark = surf[0] - beauty[0];
+      if (dark >= 6) shade.push(linY(buf.beauty, i));
+      else if (dark < 1.5 && beauty[0] > 55 && Math.abs(x - fx) > 24) sun.push(linY(buf.beauty, i));
+    }
+  }
+  if (shade.length < 30 || sun.length < 30) {
+    return { nShade: shade.length, nSun: sun.length, ratio: null, pass: false };
+  }
+  const ys = median(shade);
+  const yu = median(sun);
+  const ratio = ys / yu;
+  const err = Math.abs(ratio - KEY_SHADE_SUN) / KEY_SHADE_SUN;
+  return {
+    nShade: shade.length,
+    nSun: sun.length,
+    shadeY: +ys.toFixed(4),
+    sunY: +yu.toFixed(4),
+    ratio: +ratio.toFixed(4),
+    err: +err.toFixed(4),
+    pass: err <= 0.10,
+  };
+}
+
 export function scoreDir(dir) {
   return TIMES.map((t) => shadeSnowAt(loadFrame(dir, t), t));
 }
 
 export function shadeSnowReport(dir) {
-  const rows = scoreDir(dir);
-  const pass = rows.every((r) => r.pass);
-  return { dir, key: KEY_SHADE_LAB, bBand: [KEY_B_LO, KEY_B_HI], de76: DE76_MAX, pass, rows };
+  const rows = TIMES.map((t) => {
+    const buf = loadFrame(dir, t);
+    const colour = shadeSnowAt(buf, t);
+    const ratio = shadeSunAt(buf);
+    return { ...colour, ratio };
+  });
+  const pass = rows.every((r) => r.pass && r.ratio && r.ratio.pass);
+  return {
+    dir,
+    key: KEY_SHADE_LAB,
+    bBand: [KEY_B_LO, KEY_B_HI],
+    de76: DE76_MAX,
+    keyRatio: KEY_SHADE_SUN,
+    ratioBand: 0.10,
+    pass,
+    rows,
+  };
 }
 
 if (process.argv[1] && process.argv[1].endsWith('shade-snow-gate.mjs')) {

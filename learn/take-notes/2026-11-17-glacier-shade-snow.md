@@ -24,3 +24,10 @@ The first scale (1.1) was scored from the decal model and landed the crop at b\*
 
 - New recipes: none
 - New failure entries: the 2026-11-17 shaded-snow row in `learn/failures.md`
+
+## Round 3
+
+- Step: replace the uniform warm add with a lower-hemisphere snow bounce, and gate shade/sun luma ratio at ±10% of 0.605.
+- Accepted because: the uniform add is gone, up-face bounce luma is 0, 7.90 L\* fell from 69.4 to 60.7, contact darken is over 15% at all six times, open-snow AO delta is 0%. b\* and the ratio do not pass. No offset was added. See the failure "lower-hemisphere bounce does not reach the path shadow".
+- Recipe appended: none
+- Failure appended: that heading in `learn/failures.md`

@@ -102,3 +102,52 @@ Open-snow luma versus the constant ambient, SH versus old, per time: +75.4%, +73
 - The open field is much brighter than the constant ambient. That is the bounce energy. Exposure was left alone. Sunlit peaks clamp harder than the old 1.149.
 
 The 2.0 s clip is `glacier-t24-2s-30fps.mp4`: 720×1280, 30/1, 60 frames, from t=24, this lighting. The overview is `glacier-chase-30s.mp4`: 720×1280, 5/1, 150 frames, 30 s, this lighting. The run-32 overview does not include the ground map or this bounce.
+
+## Round 3 — lower-hemisphere bounce
+
+Not a KEEP. The uniform add from round 2 is gone. Snow bounce is the lower hemisphere only: authored snow albedo times the sun-plus-sky irradiance on an up face, one scalar of strength 1. The sky plate fills the upper hemisphere. An up face’s bounce luma is 0 against the down face’s 0.451. The strength search cannot move the path ratio, because that crop is up-facing, so the scalar stays on one physical bounce instead of being zeroed.
+
+### Ground occlusion and instances
+
+Top-down map: 2880×3040, 0.125 m/texel, 11,673,522 bytes, 12 mips. X −180..180, Z 60..−320. Traced 833,677, dark 410,437. Bake about 77–94 s. Draws stay 9. Triangles stay 195,634. The map adds 0 draws.
+
+Each drift and icicle reads that map at its origin (one factor, no extra draw):
+
+| | n | min | p50 | max | ao < 0.98 |
+| --- | --- | --- | --- | --- | --- |
+| drift | 32 | 0 | 0.039 | 0.165 | 32 |
+| icicle | 97 | 0.008 | 0.639 | 1 | 56 |
+
+Drift origins sit in their own footprint, so the factor is the ground contact under the drift, applied to the whole instance.
+
+### Contact band
+
+Snow with `ny > 0.72` and AO under 0.55, versus snow in that normal band with AO over 0.98. Linear luma over albedo. The base is the non-snow neighbour of the dark pixels. The world-space 0.5 m / 3 m projector still does not land on the strip.
+
+| t (s) | base | dark pixels | darken |
+| --- | --- | --- | --- |
+| 5.10 | wall | 1368 | 0.229 |
+| 5.567 | wall | 1488 | 0.285 |
+| 7.90 | wall | 4175 | 0.528 |
+| 11.70 | wall | 1018 | 0.262 |
+| 24 | wall | 359 | 0.279 |
+| 30 | fall | 171 | 0.439 |
+
+All six are over 15%. At 11.70 and 24 the base is a wall. With AO forced off there are no pixels under 0.55, so the fixture still fails. Open snow, AO on versus AO off, moved 0% at every time.
+
+### Shade, ratio, clip
+
+Key shade/sun linear-luma ratio is 0.605. ±10% is 0.544 to 0.666. Round 2’s uniform lift fails it (0.516, 0.613, 0.517, 0.598, 0.562, 0.532).
+
+| t (s) | b\* | L\* | CIE76 | ratio | round-2 b\* | round-2 L\* |
+| --- | --- | --- | --- | --- | --- | --- |
+| 5.10 | −15.41 | 53.0 | 13.07 | 0.526 | −4.85 | 61.8 |
+| 5.567 | −15.29 | 57.4 | 11.63 | 0.596 | −3.50 | 67.7 |
+| 7.90 | −13.80 | 60.7 | 10.17 | 0.523 | −3.34 | 69.4 |
+| 11.70 | −16.17 | 55.0 | 13.00 | 0.585 | −4.03 | 65.8 |
+| 24 | −13.75 | 58.2 | 9.99 | 0.550 | −3.51 | 66.6 |
+| 30 | −15.06 | 58.2 | 11.33 | 0.538 | −3.84 | 67.3 |
+
+7.90’s L\* came down from 69.4 to 60.7, next to the key’s 59. CIE76 is still 10.17 because b\* is −13.8. 5.10 went from 0.45 too blue to b\* −15.4. The cast shadow is up-facing snow, and that face receives none of the lower-hemisphere bounce, so the fill is the sky plate. The ratio passes at 5.567, 11.70, and 24, and fails at 5.10, 7.90, and 30. No colour offset was added to chase b\*.
+
+Open snow versus the constant ambient is +20%, +21%, +18%, +22%, +17%, +19%. That is the sky integral, not the round-2 lift. Not re-exposed. The round-2 multiplier 1.068 was not applied. A face aimed at the sun is 1.150 before `present()` clamps. ×1.068 is 1.228, which still crosses 1: the sun term alone is 0.858 on authored snow, and the sky plate on that normal supplies the rest. Up-facing path snow is 0.544, and ×1.068 is 0.581, which does not clip. Bolt luma did not move. Screen x stays 360. Card stays 1.15 m.
