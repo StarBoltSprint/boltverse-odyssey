@@ -1360,3 +1360,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Berms no longer cross. Fins sit beside the reachable lat. A ridge sits at z=-4640, past the course end. Corridor hits are 0. mcam 0 horizon_closed is 0.8866, under 0.98. CPU tris 194290. Near walls use mip bias 1 inside 140 m. |
 | Guard | `node engine/webgpu/glacier/horizon-gate.mjs`. Corridor hits must be 0. horizon_closed bar stays 0.98. |
 | Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/horizon-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/notes.md`. |
+
+### 2026-11-17 — A camera-facing cliff is a black seam when the sun is down-canyon
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 3. Not a KEEP. |
+| Defect | Round-2 t=30 row 548 is one pixel of horizon material, sun dot 0, between a lit wall and lit snow. Mean dip 39.7. |
+| Root cause | The side fins are constant-z faces aimed at the camera. The sun direction has negative z, so that face is unlit. Deleting the fin without a replacement opens the eye-level row. A cliff in the same pose is a one-pixel black edge wherever only its rim shows. |
+| Fix | Fins removed. Cliffs sit outside the reachable lat and one massif sits past z=-4500. The shade normal of the cliff takes part of the sun direction. The geometric normal stays, so horizon_closed still measures the real face. Dark-row X is 32. The round-2 still fails. The new stills and the chase pass. mcam 0 closed is 0.9848. Corridor hits 0. |
+| Guard | `node engine/webgpu/glacier/dark-row-gate.mjs` on `fixture-r2-t30.jpg` must fail. The same command on the new stills and chase frames must pass. `horizon-gate.mjs` stays at 0.98 and 0 corridor hits. |
+| Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/dark-row-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/fixture-r2-t30.jpg`. |

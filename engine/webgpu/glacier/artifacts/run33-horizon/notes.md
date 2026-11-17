@@ -1,41 +1,46 @@
-# Run 33 round 2 — corridor stays open
+# Run 33 round 3 — dark row and the open lat
 
-Not a KEEP. Not live. Not merged.
+Not a KEEP. Not live. Not merged. Draft stays draft.
 
-## What changed
+## Root cause of the dark row
 
-The crossing berms are gone. Horizon geometry is fins beside the reachable lat and one ridge at z = -4640, past the course end (`z1` = -4500). `horizon-gate.mjs` now samples the full course, both sides of the lat the player can reach (`max(6, floorHalf - 1.3)`), and fails if any horizon triangle rises more than 0.5 m above the floor there.
+The round-2 t=30 crease is one pixel at screen row 548, left edge. The mat buffer there is horizon (mat 8, sun dot 0) between a lit wall above and lit snow below. Those pixels are the short side fins: a constant-z face aimed at the camera, so it faces away from the sun (sun z is negative). Mean dip of that run is 39.7 at the gate threshold. It is not a sky row and not a post blur.
 
-Near walls (`distance < 140 m`) sample glacier ice at mip bias 1. Farther walls stay at bias 4 so the repeat does not column. The texel gate still passes, magnification included. Exposure was not touched.
+`dark-row-gate.mjs` scans y 0.30H–0.55H. A 1–3 px band fails when every row in the band is more than 32 luma below both neighbours, in a run of at least 8 (one-pixel gaps count). X=32 is that t=30 run. The round-2 still is `fixture-r2-t30.jpg` and it fails. The six new stills and all 41 chase frames pass.
+
+## What closed the row
+
+The fins are gone. Ice cliffs sit just outside the reachable lat (inner edge `corridorHalf + 3`), from z=-240 to z=-1360, 6 m cells so a near face is not a sheet. One massif spans x=-2400..2400 at z=-4660, past the course end (`z1` = -4500). Both use the horizon material: serac plus crust, hex triplanar, mip bias 1. Nothing is fog, a sky mix, or a distance colour.
+
+Walls that pinch into the lat are slid out, so a level look down the run reaches the massif. The wall foot that was a sloped unlit lip is retagged as snow and lit with an up normal; long edges are split so it is not a cap. The cliff faces the camera and therefore faces away from the sun. Its shade normal takes part of the sun direction, so the edge is ice rather than a black seam. The horizon gate still reads the geometric normal.
 
 ## Gates
 
-| Check | Round 1 | Round 2 | Bar |
+| Check | Round 2 | Round 3 | Bar |
 | --- | --- | --- | --- |
-| corridor hits | 595 (rise 36.7 m at z=-560) | 0 | 0 |
-| horizon_closed mcam 0 / 0.9 / 1.57 | 0.9986 / 1 / 1 | 0.8866 / 1 / 1 | ≥ 0.98 |
+| corridor hits | 0 | 0 | 0 |
+| horizon_closed mcam 0 / 0.9 / 1.57 | 0.8866 / 1 / 1 | 0.9848 / 1 / 1 | ≥ 0.98 |
+| graze at mcam 0 | 0.0097 | 0 | (counts 0) |
 | right shoulder drop | 0.104 m | 0.104 m | ≤ 0.40 m |
 | near sheets / caps | 0 / 0 | 0 / 0 | 0 |
-| CPU / page triangles | 199266 / 199898 | 194290 / 194922 | ≤ 197000 CPU |
+| CPU triangles | 194290 | 196051 | ≤ 197000 |
+| page triangles | 194922 | 196682 | |
 | draws | 9 | 9 | ≤ 12 |
-| texel | PASS, stretch 1.28 | PASS, stretch 1.28 | 2048 px/m |
+| texel | PASS | PASS | 2048 px/m, stretch ≤ 1.3 |
+| dark-row, new stills and chase | t=30 fails | all pass; fixture fails | X = 32 |
+| Bolt centre / card | x=360, 1.15 m | x=360.00, 1.15 m | unchanged |
 
-mcam 0 misses 0.98. The ice walls already fill the eye-level row. Rays that stay inside the reachable lat the whole way still hit those walls, and a fin outside the lat cannot catch them. Covering every outside hit would still leave the row at 0.9485. The 0.9986 figure was the berm that crossed the run. That berm fails the new corridor gate. Both bars are not met together.
+`chase.mp4` is 720×1280, 41 frames, 8.2 s, 5 fps, t=22 s through t=30 s. Bolt mean x is 360.00.
 
-Bolt stays at x = 360. Card stays 1.15 m. `chase.mp4` is 720×1280, 8 s, 5 fps, t=22 s to t=30 s. The path in front of him is open.
+## Tonemap — still FAIL, not tuned
 
-## Tonemap — still FAIL, not tuned here
+Exposure, AgX, and the spec cap were not touched. PR 239 round 4 owns the grade. Against the same gamma key (`run32-hdr/before`):
 
-The present() grade is being redone on the #239 line (round 3). This round did not change exposure, AgX, or the spec cap. Numbers against the same gamma key:
-
-| Check | Round 2 | Limit |
+| Check | Round 3 | Limit |
 | --- | --- | --- |
-| 11.70 s snow p50 vs the crust still | 0.657 vs 0.708, delta 0.051 | 0.05 |
-| 24 s frame p99 | delta 0.0507 | 0.05 |
-| 30 s grey_bright | 0.1398 | < 0.15 |
+| 11.70 s snow p50 vs the crust still | 0.6574 vs 0.7082, delta 0.0508 | 0.05 |
+| 24 s frame p99 | delta 0.0671 | 0.05 |
+| 30 s grey_bright | 0.1298 | < 0.15 |
+| 24 s grey_bright | 0.1429 | < 0.15 |
 
-grey_bright is back under the limit once the crossing berm is gone. The other two misses are about 0.001 over. Keyscore 94.20, floor 85.84. CIE76 snow 3.47–5.47, ice 6.19–8.08, all under 10. Clip and crush 0. These two misses depend on the grade round, not on a new exposure.
-
-## Still open
-
-The one-pixel dark row is back in the t=30 chase, because the closure no longer crosses the canyon. mcam 0 horizon_closed is 0.8866. Near wall ice is on the native mip inside 140 m. No KEEP.
+The 11.70 s snow miss is about 0.001, the same miss as round 2. The 24 s p99 miss grew from 0.0507 to 0.0671: the ice now fills pixels that were brighter in the key. That is not a grade change. Keyscore 94.65 (floor 85.84). CIE76 snow 3.47–5.47, ice 5.86–7.06, all under 10. Clip and crush 0. No KEEP.
