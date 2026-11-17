@@ -1382,3 +1382,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | The follow gate measures sky under the ground-connected skyline, and a second gate counts axis-aligned crest steps. Round-3 t=24 and t=30 fail both. The canyon mesh is restored. The gap is the existing serac-range tooth, tagged wall. The level row is 1 / 1 / 1 and corridor hits are 0. Ice dE76 rose to about 13. The large faces still repeat. |
 | Guard | `node engine/webgpu/glacier/follow-horizon-gate.mjs` on `fixture-r3/t24.jpg` and `t30.jpg` must fail. The six new stills must pass. `horizon-gate.mjs` stays at 0.98 and 0 corridor hits. |
 | Sources | `engine/webgpu/glacier/follow-horizon-gate.mjs`, `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/artifacts/run33-horizon/fixture-r3/`. |
+
+### 2026-11-17 — A sunward tooth aim puts the dark lip back
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 5. Not a KEEP. |
+| Defect | Chase t=24.6 had a 9 px dark run, mean dip 45.5. Ice dE76 rose to about 13. The 3× crop repeats. |
+| Root cause | The dark run is one pixel of a wall tooth, sun dot 0, between a drift and an arch. The tooth was edge-on. Pointing that face at the sun raised ndl only to 0.16, failed stretch at 1.30, and brought the lip back. The repeat peak of a large face sits in the same range as one glacier-ice still (about 0.44). |
+| Fix | Foot buried, envelope floor 0.5, yaw kept in the spread that clears the lip. All 61 chase frames from t=20 s to t=32 s pass the dark-row gate. dE76 and the repeat gate do not. |
+| Guard | `dark-row-gate.mjs` on the chase frames. `repeat-gate.mjs` on `fixture-r4/` must fail. |
+| Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/repeat-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/fixture-r4/`. |

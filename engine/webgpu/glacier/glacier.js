@@ -383,7 +383,7 @@ fn darken15(c: vec3f) -> vec3f {
   var n = normalize(v.lit);
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
-  let alb = albedoOf(m, v.w, nUv, gx, gy);
+  let alb = albedoOf(m, v.w, nUv, gx, gy, select(0.0, v.uv.x, v.uv.x > 1.5));
   let iso = u.sun.w;
   if (iso > 29.5 && iso < 35.5) { return present(alb); }
   if (iso > 36.5 && iso < 37.5) { return present(vec3f(0.62)); }

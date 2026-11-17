@@ -179,10 +179,13 @@ function columns(z0, z1) {
   return zs;
 }
 
-function face(mesh, a, b, c, d, mat, toward) {
+function face(mesh, a, b, c, d, mat, toward, phase = 0) {
   const n = cross(sub(b, a), sub(c, a));
-  if (dot(n, toward) < 0) mesh.quad(a, d, c, b, [0, 0], [0, 1], [1, 1], [1, 0], mat);
-  else mesh.quad(a, b, c, d, [0, 0], [1, 0], [1, 1], [0, 1], mat);
+  const uv = phase > 0
+    ? [[phase, 0], [phase, 0], [phase, 0], [phase, 0]]
+    : [[0, 0], [0, 1], [1, 1], [1, 0]];
+  if (dot(n, toward) < 0) mesh.quad(a, d, c, b, uv[0], uv[1], uv[2], uv[3], mat);
+  else mesh.quad(a, b, c, d, uv[0], uv[1], uv[2], uv[3], mat);
 }
 
 const TURN = 75 * Math.PI / 180;
@@ -445,7 +448,7 @@ function addFall(mesh, z0, side) {
 }
 
 
-function addRange(mesh, x0, z0, x1, z1, height, halfW, fine, mat = MAT.mountain) {
+function addRange(mesh, x0, z0, x1, z1, height, halfW, fine, mat = MAT.mountain, phase = 0, sink = 3, foot = 0) {
   const segs = fine ? 28 : 16;
   const sides = fine ? 11 : 6;
   const dx = x1 - x0;
@@ -459,7 +462,8 @@ function addRange(mesh, x0, z0, x1, z1, height, halfW, fine, mat = MAT.mountain)
     const envelope = Math.sin(t * Math.PI);
     const tooth = Math.pow(Math.abs(Math.sin(t * 9.4 + z0 * 0.001)), 0.42);
     const nick = 0.55 + 0.45 * Math.abs(Math.sin(t * 17.0 + x0 * 0.0007));
-    const h = height * envelope * (0.28 + 0.72 * tooth * nick);
+    const env = foot + (1 - foot) * envelope;
+    const h = height * env * (0.28 + 0.72 * tooth * nick);
     const cx = x0 + dx * t;
     const cz = z0 + dz * t;
     const base = plateauH(cx, cz);
@@ -471,7 +475,7 @@ function addRange(mesh, x0, z0, x1, z1, height, halfW, fine, mat = MAT.mountain)
       const jag = (hash(k * 3 + s, z0 * 0.01) - 0.5) * halfW * 0.08;
       row.push([
         cx + rx * (q * span + jag),
-        base - 3 + h * (1 - fall),
+        base - sink + h * (1 - fall),
         cz + rz * (q * span + jag),
       ]);
     }
@@ -484,7 +488,7 @@ function addRange(mesh, x0, z0, x1, z1, height, halfW, fine, mat = MAT.mountain)
       const c = rows[s + 1][k + 1];
       const d = rows[s + 1][k];
       const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
-      face(mesh, a, b, c, d, mat, [mid[0] - (x0 + x1) * 0.5, 1.2, mid[2] - (z0 + z1) * 0.5]);
+      face(mesh, a, b, c, d, mat, [mid[0] - (x0 + x1) * 0.5, 1.2, mid[2] - (z0 + z1) * 0.5], phase);
     }
   }
 }
@@ -830,9 +834,20 @@ function addMassif(mesh) {
   for (const z of [-130, -250, -430]) {
     const span = z < -400 ? 2 : 3;
     for (let i = -span; i <= span; i++) {
-      const cx = pathX(z) + i * 16;
+      const cx = pathX(z) + i * 18;
       const h = 72 + ((i + 3) % 3) * 24;
-      addRange(mesh, cx, z + 22, cx + 3, z - 34, h, 15, false, MAT.wall);
+      // Yaw so the face the chase sees is not an edge-on sliver, and not every
+      // flank is in the sun. The lit share stays near the existing walls.
+      // Flank stays within 37° of an axis so the texel stretch stays ≤ 1.3.
+      // Most teeth show a sunward flank. A few turn toward the camera and sit in shade.
+      const ang = 0.34 + hash(i * 4.2, z * 0.013) * 0.38;
+      const spanM = 34;
+      const x0 = cx - Math.sin(ang) * spanM * 0.5;
+      const z0 = z + Math.cos(ang) * spanM * 0.5;
+      const x1 = cx + Math.sin(ang) * spanM * 0.5;
+      const z1 = z - Math.cos(ang) * spanM * 0.5;
+      const phase = 2 + hash(i * 9.0, z * 0.02) * 4;
+      addRange(mesh, x0, z0, x1, z1, h, 18, false, MAT.wall, phase, 16, 0.5);
     }
   }
   const zFar = GLACIER.z1 - 110;

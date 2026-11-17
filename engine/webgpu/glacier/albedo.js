@@ -224,7 +224,7 @@ fn sampleSnow(arr: texture_2d_array<f32>, p: vec3f, px: vec3f, py: vec3f, gain: 
   if (iso > 35.5 && iso < 36.5) { return vec3f(1.0); }
   return (detail * 0.84 + (m0 * 0.62 + m1 * 0.38) * 0.16) * lift;
 }
-fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
+fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, phase: f32) -> vec3f {
   if (m < 0.5) {
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     // Planar world xz so a tilted triangle does not shear the crust into lanes.
@@ -260,7 +260,22 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   if (m > 5.5 && m < 6.5) {
     // Near walls keep the native mip. Far walls stay one bias coarser so the repeat does not column.
     let wallBias = select(4.0, 1.0, length(p - u.cam.xyz) < 140.0);
-    let wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, wallBias);
+    var wallIce = vec3f(0.0);
+    if (phase > 1.5) {
+      // Per-tooth lattice. Two phases of the same four stills, so a big face
+      // is not one repeated cell. Derivatives rotate with the sample.
+      let ang = phase - 2.0;
+      let c = cos(ang);
+      let s = sin(ang);
+      let q = vec3f(p.x * c - p.z * s, p.y, p.x * s + p.z * c) + vec3f(phase * 19.0, phase * 4.0, phase * 11.0);
+      let qx = vec3f(px.x * c - px.z * s, px.y, px.x * s + px.z * c);
+      let qy = vec3f(py.x * c - py.z * s, py.y, py.x * s + py.z * c);
+      let a = sampleArr(iceArr, q, nrm, qx, qy, iceGain, 2.0, wallBias);
+      let b = sampleArr(iceArr, q + vec3f(0.41, 0.17, 0.63), nrm, qx, qy, iceGain, 2.0, wallBias);
+      wallIce = mix(a, b, 0.5);
+    } else {
+      wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, wallBias);
+    }
     let cap = smoothstep(0.42, 0.75, nrm.y);
     return mix(wallIce, snow, cap);
   }
