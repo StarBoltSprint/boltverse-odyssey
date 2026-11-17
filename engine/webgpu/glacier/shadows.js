@@ -239,13 +239,11 @@ fn cascadePair(w: vec3f, nrm: vec3f) -> vec4f {
   let b1 = slopeBias(q1.z);
   let e0 = max(abs(q0.x), abs(q0.y));
   let band = viewBand(w);
-  // penlock (soft.w > 1) forces one width, for the IoU-vs-width table.
-  // Otherwise the far map is at least two of its texels, and the near map
-  // opens to that same width across the view-depth band.
-  let farW = select(max(u.soft.z, u.soft.y * 2.0), u.soft.z, u.soft.w > 1.5);
-  let nearW = mix(u.soft.z, farW, band);
-  let s0 = shadeCascade(0.0, q0, b0, u.soft.x, nearW);
-  let s1 = shadeCascade(1.0, q1, b1, u.soft.y, farW);
+  // One world width on both maps. Two far texels on the far map and 8 cm on
+  // the near map was a penumbra step, which is what the seam crops show.
+  let width = select(max(u.soft.z, u.soft.y), u.soft.z, u.soft.w > 1.5);
+  let s0 = shadeCascade(0.0, q0, b0, u.soft.x, width);
+  let s1 = shadeCascade(1.0, q1, b1, u.soft.y, width);
   return vec4f(s0, s1, e0, band);
 }
 fn shadowPhone(w: vec3f, nrm: vec3f) -> f32 {

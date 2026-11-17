@@ -65,72 +65,105 @@ function dropToSnow(p, sun, heightAt) {
   }
   return null;
 }
-// Reference mask: a hard CPU raster of spire triangles only (materials 1, 2, 3, 6, 7),
-// not the baked props and not Bolt. Each cascade is a 384² depth image in the same
-// light projection the GPU uses. A snow vertex is occluded when the stored depth is
-// more than 0.008 closer than the receiver. The GPU side of the IoU is the rendered
-// shadow factor, binarized at 0.5 (below 0.5 counts as shadowed). This is not the
-// csmoff picture and not a ray trace. The bar and this reference stay put.
+// The gate reference matches the GPU shadow pass: every non-snow triangle in
+// the world mesh, plus baked icicles, chunks, and drifts. Snow is the receiver
+// and is not a caster. Bolt's animated card is a separate draw and is not in
+// this raster. Each cascade is 384² in the same light projection. A snow vertex
+// is occluded when the stored depth is more than 0.008 closer than the receiver.
+// The GPU side is the rendered factor, shadowed below 0.5. The 0.80 bar stays.
+// `spire` is the old reference, kept so the two scores can be reported together.
+const BIAS = 0.008;
 function cpuOcclusion(world, eye, tgt, W, H) {
   const casc = buildCascades({
     eye, tgt, fovY: FOV_Y, aspect: W / H, sun: norm3(LIGHT.sun.direction), tier: 'phone',
   });
-  const S = 384;
+  const S = 1024;
   const depth = [new Float32Array(S * S).fill(1), new Float32Array(S * S).fill(1)];
-  const verts = world.verts;
+  const spire = [new Float32Array(S * S).fill(1), new Float32Array(S * S).fill(1)];
   let used = 0;
-  function rast(buf, tri) {
-    const xs = tri.map((v) => v[0]);
-    const ys = tri.map((v) => v[1]);
-    if (Math.max(...xs) < 0 || Math.min(...xs) > S || Math.max(...ys) < 0 || Math.min(...ys) > S) return;
-    const minX = Math.max(0, Math.floor(Math.min(...xs)));
-    const maxX = Math.min(S - 1, Math.ceil(Math.max(...xs)));
-    const minY = Math.max(0, Math.floor(Math.min(...ys)));
-    const maxY = Math.min(S - 1, Math.ceil(Math.max(...ys)));
-    if (maxX - minX > S * 0.85 && maxY - minY > S * 0.85) return;
-    const [a, b, c] = tri;
-    const area = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]);
-    if (Math.abs(area) < 1e-3) return;
-    for (let y = minY; y <= maxY; y++) {
-      for (let x = minX; x <= maxX; x++) {
-        const px = x + 0.5;
-        const py = y + 0.5;
-        const w0 = ((b[0] - px) * (c[1] - py) - (c[0] - px) * (b[1] - py)) / area;
-        const w1 = ((c[0] - px) * (a[1] - py) - (a[0] - px) * (c[1] - py)) / area;
-        const w2 = 1 - w0 - w1;
-        if (w0 < -0.01 || w1 < -0.01 || w2 < -0.01) continue;
-        const z = w0 * a[2] + w1 * b[2] + w2 * c[2];
-        if (z < 0 || z > 1) continue;
-        const i = y * S + x;
-        if (z < buf[i]) buf[i] = z;
+  let spireUsed = 0;
+  function rast(bufs, tri) {
+    for (let ci = 0; ci < 2; ci++) {
+      const q = tri.map((v) => applyMat(casc.mats[ci], v));
+      const proj = q.map((v) => [(v[0] * 0.5 + 0.5) * S, (0.5 - v[1] * 0.5) * S, v[2]]);
+      const xs = proj.map((v) => v[0]);
+      const ys = proj.map((v) => v[1]);
+      if (Math.max(...xs) < 0 || Math.min(...xs) > S || Math.max(...ys) < 0 || Math.min(...ys) > S) continue;
+      const minX = Math.max(0, Math.floor(Math.min(...xs)));
+      const maxX = Math.min(S - 1, Math.ceil(Math.max(...xs)));
+      const minY = Math.max(0, Math.floor(Math.min(...ys)));
+      const maxY = Math.min(S - 1, Math.ceil(Math.max(...ys)));
+      // A caster that fills the map is still a caster. The GPU draws it.
+      const [a, b, c] = proj;
+      const area = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]);
+      if (Math.abs(area) < 1e-3) continue;
+      const buf = bufs[ci];
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          const px = x + 0.5;
+          const py = y + 0.5;
+          const w0 = ((b[0] - px) * (c[1] - py) - (c[0] - px) * (b[1] - py)) / area;
+          const w1 = ((c[0] - px) * (a[1] - py) - (a[0] - px) * (c[1] - py)) / area;
+          const w2 = 1 - w0 - w1;
+          if (w0 < -0.01 || w1 < -0.01 || w2 < -0.01) continue;
+          const z = w0 * a[2] + w1 * b[2] + w2 * c[2];
+          if (z < 0 || z > 1) continue;
+          const i = y * S + x;
+          if (z < buf[i]) buf[i] = z;
+        }
       }
     }
   }
+  function pushTri(buf, tri, alsoSpire) {
+    rast(buf, tri);
+    if (alsoSpire) rast(spire, tri);
+  }
+  const verts = world.verts;
   for (let t = 0; t + 24 <= verts.length; t += 24) {
     const m = Math.round(verts[t + 3]);
-    if (!SPIRE.has(m)) continue;
+    if (m < 0.5) continue;
     const tri = [0, 8, 16].map((k) => [verts[t + k], verts[t + k + 1], verts[t + k + 2]]);
-    const mx = (tri[0][0] + tri[1][0] + tri[2][0]) / 3;
-    const mz = (tri[0][2] + tri[1][2] + tri[2][2]) / 3;
-    if ((mx - eye[0]) ** 2 + (mz - eye[2]) ** 2 > 180 * 180) continue;
-    for (let ci = 0; ci < 2; ci++) {
-      const q = tri.map((v) => applyMat(casc.mats[ci], v));
-      rast(depth[ci], q.map((v) => [(v[0] * 0.5 + 0.5) * S, (0.5 - v[1] * 0.5) * S, v[2]]));
-    }
+    pushTri(depth, tri, SPIRE.has(m));
     used++;
+    if (SPIRE.has(m)) spireUsed++;
   }
-  function blocked(p) {
+  const bake = (proto, data) => {
+    const vCount = proto.length / 8;
+    const count = data.length / 8;
+    for (let i = 0; i < count; i++) {
+      const ix = data[i * 8], iy = data[i * 8 + 1], iz = data[i * 8 + 2], yaw = data[i * 8 + 3];
+      const sx = data[i * 8 + 4], sy = data[i * 8 + 5], sz = data[i * 8 + 6], tilt = data[i * 8 + 7];
+      const cl = Math.cos(tilt), sl = Math.sin(tilt), c = Math.cos(yaw), s = Math.sin(yaw);
+      const pts = [];
+      for (let v = 0; v < vCount; v++) {
+        const px = proto[v * 8] * sx, py = proto[v * 8 + 1] * sy, pz = proto[v * 8 + 2] * sz;
+        const pLx = cl * px - sl * py, pLy = sl * px + cl * py, pLz = pz;
+        pts.push([c * pLx + s * pLz + ix, pLy + iy, -s * pLx + c * pLz + iz]);
+      }
+      for (let v = 0; v + 2 < pts.length; v += 3) pushTri(depth, [pts[v], pts[v + 1], pts[v + 2]], false);
+      used += vCount / 3;
+    }
+  };
+  for (const name of ['icicle', 'chunk', 'drift']) {
+    const inst = world.instances[name];
+    bake(inst.proto, inst.data);
+  }
+  function blockedAt(maps, p) {
     for (let ci = 0; ci < 2; ci++) {
       const q = applyMat(casc.mats[ci], p);
       const e = Math.max(Math.abs(q[0]), Math.abs(q[1]));
       if (e >= 0.98 || q[2] < 0 || q[2] > 1) continue;
       const x = Math.max(0, Math.min(S - 1, (q[0] * 0.5 + 0.5) * S | 0));
       const y = Math.max(0, Math.min(S - 1, (0.5 - q[1] * 0.5) * S | 0));
-      if (depth[ci][y * S + x] + 0.008 < q[2]) return true;
+      if (maps[ci][y * S + x] + BIAS < q[2]) return true;
     }
     return false;
   }
-  return { blocked, used, casc };
+  return {
+    blocked: (p) => blockedAt(depth, p),
+    blockedSpire: (p) => blockedAt(spire, p),
+    used, spireUsed, casc,
+  };
 }
 
 const root = arg('--root');
@@ -180,9 +213,11 @@ for (const tag of tags) {
   const cpu = cpuOcclusion(world, info.eye, info.tgt, w, h);
   const vp = mul(persp(FOV_Y, w / h, 0.08, 14000), lookAt(info.eye, info.tgt, [0, 1, 0]));
   let inter = 0, union = 0, gN = 0, cN = 0;
+  let interS = 0, unionS = 0, cS = 0;
   const stride = 4;
   for (let t = 0; t < world.verts.length; t += 8 * stride) {
     if (Math.round(world.verts[t + 3]) !== 0) continue;
+    // The shader samples 3.5 cm along the normal, which is where the GPU shadow is read.
     const p = [world.verts[t], world.verts[t + 1], world.verts[t + 2]];
     if ((p[0] - info.eye[0]) ** 2 + (p[2] - info.eye[2]) ** 2 > 70 * 70) continue;
     const scr = project(vp, p, w, h);
@@ -191,12 +226,17 @@ for (const tag of tags) {
     if (!snow[pix]) continue;
     const g = gpu[pix] === 1;
     const c = cpu.blocked(p);
+    const cs = cpu.blockedSpire(p);
     if (g) gN++;
     if (c) cN++;
+    if (cs) cS++;
     if (g || c) union++;
     if (g && c) inter++;
+    if (g || cs) unionS++;
+    if (g && cs) interS++;
   }
   const iou = union ? inter / union : 0;
+  const iouSpire = unionS ? interS / unionS : 0;
   if (iou < limits.csmIouMin) bad(`csm_iou ${tag} ${iou.toFixed(3)} gpu ${gN} cpu ${cN}`);
   const mean = (a) => a.reduce((s, v) => s + v, 0) / (a.length || 1);
   const blueDelta = shSnow.length && litSnow.length ? mean(shSnow) - mean(litSnow) : 0;
@@ -232,14 +272,14 @@ for (const tag of tags) {
   if (!(blue > limits.iceBlueMin)) bad(`ice b-r ${tag} ${blue}`);
   if (clip / (w * h) > limits.clipFracMax) bad(`clip ${tag}`);
   rows.push({
-    tag, iou: +iou.toFixed(4), gpu: gN, cpu: cN, inter, union, spireTris: cpu.used,
+    tag, iou: +iou.toFixed(4), iouSpire: +iouSpire.toFixed(4), gpu: gN, cpu: cN, cpuSpire: cS, inter, union, casterTris: cpu.used, spireTris: cpu.spireUsed,
     blueDelta: +blueDelta.toFixed(4), seam: +seam.toFixed(4), seamN,
     greyBright: greyBright == null ? null : +greyBright.toFixed(4),
     iceBlue: blue == null ? null : +blue.toFixed(4),
     clip: +(clip / (w * h)).toFixed(5),
     draws: info.draws, shadowDraws: info.shadowDraws,
   });
-  console.log(tag, 'iou', iou.toFixed(3), 'gpu', gN, 'cpu', cN, 'blue', blueDelta.toFixed(3), 'seam', seam.toFixed(3));
+  console.log(tag, 'iou', iou.toFixed(3), 'spire', iouSpire.toFixed(3), 'gpu', gN, 'cpu', cN, 'cpuSpire', cS, 'seam', seam.toFixed(3));
 }
 if (fs.existsSync(path.join(root, 'shimmer.json'))) {
   const shim = JSON.parse(fs.readFileSync(path.join(root, 'shimmer.json'), 'utf8'));
@@ -291,6 +331,32 @@ if (fs.existsSync(path.join(root, 'shimmer.json'))) {
     shim.receiverFlip = recvFlip;
     shim.mapFraction = n ? mapFlip / n : 0;
     shim.receiverFraction = n ? recvFlip / n : 0;
+    const band = (eye, p) => {
+      const dist = Math.hypot(p[0] - eye[0], p[2] - eye[2]);
+      const t = Math.min(1, Math.max(0, (dist - 16) / 16));
+      return t * t * (3 - 2 * t);
+    };
+    let bandSum = 0;
+    let pixSum = 0;
+    let bandFlips = 0;
+    for (let t = 0; t < world.verts.length; t += 8 * 2) {
+      if (Math.round(world.verts[t + 3]) !== 0) continue;
+      const p = [world.verts[t], world.verts[t + 1], world.verts[t + 2]];
+      if ((p[0] - shim.eyeA[0]) ** 2 + (p[2] - shim.eyeA[2]) ** 2 > 50 * 50) continue;
+      const pa = project(mul(persp(FOV_Y, A.w / A.h, 0.08, 14000), lookAt(shim.eyeA, shim.tgtA, [0, 1, 0])), p, A.w, A.h);
+      const pb = project(mul(persp(FOV_Y, B.w / B.h, 0.08, 14000), lookAt(shim.eyeB, shim.tgtB, [0, 1, 0])), p, B.w, B.h);
+      if (!pa || !pb || pa[0] < 2 || pb[0] < 2 || pa[1] < 2 || pb[1] < 2 || pa[0] >= A.w - 2 || pb[0] >= B.w - 2 || pa[1] >= A.h - 2 || pb[1] >= B.h - 2) continue;
+      const ga = A.raw[((pa[1] | 0) * A.w + (pa[0] | 0)) * 3] / 255;
+      const gb = B.raw[((pb[1] | 0) * B.w + (pb[0] | 0)) * 3] / 255;
+      if (Math.abs(ga - gb) <= 0.1) continue;
+      const db = Math.abs(band(shim.eyeA, p) - band(shim.eyeB, p));
+      bandSum += db;
+      pixSum += Math.hypot(pa[0] - pb[0], pa[1] - pb[1]);
+      if (db > 0.02) bandFlips++;
+    }
+    shim.flipScreenPx = recvFlip ? +(pixSum / recvFlip).toFixed(3) : 0;
+    shim.flipBandDelta = recvFlip ? +(bandSum / recvFlip).toFixed(5) : 0;
+    shim.bandFlips = bandFlips;
   }
   rows.push({ shimmer: shim });
   if (!(shim.fraction <= limits.edgeShimmerMax)) bad(`edge_shimmer ${shim.fraction}`);
