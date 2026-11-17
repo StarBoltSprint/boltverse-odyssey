@@ -1,19 +1,32 @@
 {
   "margin": 0.1,
   "native": "tex/glacier-ice/v1.jpg",
-  "note": "Round 7 crops. Over is crop peak minus the still at that lag. Pass means over <= 0.10 and no two-harmonic lattice. The plain tile and the still are the calibration.",
+  "note": "Round 9 crops. Over is crop peak minus the still at that lag. Pass means over <= 0.10 and no two-harmonic lattice. The graze window is 288,392 at t=30. Before this round that crop was +0.269 / +0.213 / +0.147 at periods 12 / 19 / 32.",
+  "detail": {
+    "crop": "crops/t30-graze-3x.jpg",
+    "source": "200x200 nearest, then the 3x crop",
+    "laplacianBefore": 9.56,
+    "laplacianAfter": 9.97,
+    "neighbourBefore": 3.75,
+    "neighbourAfter": 4.33
+  },
   "rows": [
     {"file": "fixture-repeat/plain-tile.jpg", "period": 64, "over": 0.7389, "lattice": true, "pass": false},
     {"file": "tex/glacier-ice/v1.jpg", "period": 64, "over": 0, "lattice": false, "pass": true},
-    {"file": "crops/t24-ice-3x.jpg", "period": 12, "over": -0.2548, "pass": true},
-    {"file": "crops/t24-ice-3x.jpg", "period": 15, "over": -0.3036, "pass": true},
-    {"file": "crops/t24-ice-3x.jpg", "period": 19, "over": -0.3238, "pass": true},
-    {"file": "crops/t24-ice-3x.jpg", "period": 24, "over": -0.3217, "pass": true},
-    {"file": "crops/t24-ice-3x.jpg", "period": 32, "over": -0.3049, "pass": true},
-    {"file": "crops/t30-ice-3x.jpg", "period": 12, "over": 0.0932, "pass": true},
-    {"file": "crops/t30-ice-3x.jpg", "period": 15, "over": 0.0505, "pass": true},
-    {"file": "crops/t30-ice-3x.jpg", "period": 19, "over": 0.0105, "pass": true},
-    {"file": "crops/t30-ice-3x.jpg", "period": 24, "over": -0.0249, "pass": true},
-    {"file": "crops/t30-ice-3x.jpg", "period": 32, "over": -0.065, "pass": true}
+    {"file": "crops/t24-ice-3x.jpg", "period": 12, "over": -0.4248, "pass": true},
+    {"file": "crops/t24-ice-3x.jpg", "period": 15, "over": -0.4367, "pass": true},
+    {"file": "crops/t24-ice-3x.jpg", "period": 19, "over": -0.4011, "pass": true},
+    {"file": "crops/t24-ice-3x.jpg", "period": 24, "over": -0.3659, "pass": true},
+    {"file": "crops/t24-ice-3x.jpg", "period": 32, "over": -0.3245, "pass": true},
+    {"file": "crops/t30-ice-3x.jpg", "period": 12, "over": -0.1821, "pass": true},
+    {"file": "crops/t30-ice-3x.jpg", "period": 15, "over": -0.2437, "pass": true},
+    {"file": "crops/t30-ice-3x.jpg", "period": 19, "over": -0.2966, "pass": true},
+    {"file": "crops/t30-ice-3x.jpg", "period": 24, "over": -0.3272, "pass": true},
+    {"file": "crops/t30-ice-3x.jpg", "period": 32, "over": -0.3267, "pass": true},
+    {"file": "crops/t30-graze-3x.jpg", "period": 12, "over": -0.2352, "pass": true},
+    {"file": "crops/t30-graze-3x.jpg", "period": 15, "over": -0.2957, "pass": true},
+    {"file": "crops/t30-graze-3x.jpg", "period": 19, "over": -0.3376, "pass": true},
+    {"file": "crops/t30-graze-3x.jpg", "period": 24, "over": -0.3595, "pass": true},
+    {"file": "crops/t30-graze-3x.jpg", "period": 32, "over": -0.3368, "pass": true}
   ]
 }

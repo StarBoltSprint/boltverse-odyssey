@@ -118,10 +118,15 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   // A face that under-reports its derivative was sampling the raw still
   // and reading as glitter. Three texels per pixel is the floor.
   // The footprint is the tooth-rotated face derivative. Rotating it again by
-  // the per-cell hash jumps across the seam and the anisotropic kernel
-  // becomes one long streak. The hash still rotates the sample position.
-  let du = cover(dmu * ${repeats} * bias);
-  let dv = cover(dmv * ${repeats} * bias);
+  // the per-cell hash jumps across the seam. The hash still rotates the sample.
+  // Hardware anisotropy covers 16:1. Past that the minor axis aliases, so its
+  // derivative is lengthened by ratio/16. That raises its LOD by log2(ratio/16).
+  var du = cover(dmu * ${repeats} * bias);
+  var dv = cover(dmv * ${repeats} * bias);
+  let lu = max(length(du), 1e-8);
+  let lv = max(length(dv), 1e-8);
+  let grow = max(max(lu, lv) / min(lu, lv) / 16.0, 1.0);
+  if (lu < lv) { du = du * grow; } else { dv = dv * grow; }
   let du0 = du;
   let dv0 = dv;
   let du1 = du;
@@ -293,9 +298,13 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, phase: f32) -> v
       let q = vec3f(p.x * c - p.z * s, p.y, p.x * s + p.z * c) + vec3f(phase * 19.0, phase * 4.0, phase * 11.0);
       let qx = vec3f(px.x * c - px.z * s, px.y, px.x * s + px.z * c);
       let qy = vec3f(py.x * c - py.z * s, py.y, py.x * s + py.z * c);
+      // The yaw that decorrelates the tooth has to rotate the normal too.
+      // Projecting the rotated derivative onto the unrotated face collapses
+      // one axis (measured 6:1 to 10:1 on a face whose real ratio is 1.2).
+      let nr = normalize(vec3f(nrm.x * c - nrm.z * s, nrm.y, nrm.x * s + nrm.z * c));
       // cells 5 puts a new still inside the 12–32 px band on a face 25 m away.
       // cells 2 left that face one smooth tile, which correlated with itself.
-      wallIce = sampleArr(iceArr, q, nrm, qx, qy, iceGain, 5.0, wallBias, 2.0, ang, 1.0);
+      wallIce = sampleArr(iceArr, q, nr, qx, qy, iceGain, 5.0, wallBias, 2.0, ang, 1.0);
     } else {
       wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, wallBias, 0.0, 0.0, 0.0);
     }

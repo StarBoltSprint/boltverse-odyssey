@@ -6,14 +6,14 @@
     "step": 2.425,
     "row": 492,
     "pass": true,
-    "note": "The round-7 lossless t=24 frame is under 3.29. The jpeg of the same frame scores 3.144. Team C measured 4.353 on their own render, with RGB 113,136,172 over 172,165,175 at x=200. That pair is not on this frame. The gate does not fail the fixture."
+    "note": "The round-7 lossless t=24 frame is under 3.29. The gate does not fail the fixture. Team C's 4.353 is their TAA frame and was handed back."
   },
   "times": [
-    {"tag": "5.10", "file": "after/t51.jpg", "step": 5.574, "row": 552, "pass": false},
-    {"tag": "5.567", "file": "after/t5567.jpg", "step": 5.349, "row": 551, "pass": false},
-    {"tag": "7.9", "file": "after/t79.jpg", "step": 7.077, "row": 506, "pass": false},
-    {"tag": "11.70", "file": "after/t117.jpg", "step": 6.57, "row": 538, "pass": false},
-    {"tag": "24", "file": "after/t24.jpg", "step": 3.144, "row": 439, "pass": true},
-    {"tag": "30", "file": "after/t30.jpg", "step": 5.638, "row": 583, "pass": false}
+    {"tag": "5.10", "file": "after/t51.jpg", "step": 5.222, "row": 552, "pass": false},
+    {"tag": "5.567", "file": "after/t5567.jpg", "step": 5.345, "row": 551, "pass": false},
+    {"tag": "7.9", "file": "after/t79.jpg", "step": 6.71, "row": 506, "pass": false},
+    {"tag": "11.70", "file": "after/t117.jpg", "step": 6.71, "row": 538, "pass": false},
+    {"tag": "24", "file": "after/t24.jpg", "step": 3.068, "row": 492, "pass": true},
+    {"tag": "30", "file": "after/t30.jpg", "step": 4.63, "row": 583, "pass": false}
   ]
 }

@@ -88,3 +88,11 @@ A flat mix of the four stills made every cell the same average, so the autocorre
 - Accepted because: the sampler is created with maxAnisotropy 16 (`window.__glacierAniso` is 16). The hex footprint is the continuous tooth-rotated derivative. Frontal crops still pass the repeat gate. The grazing crop is shipped and fails (+0.269 / +0.213 / +0.147 at 12 / 19 / 32). The round-7 t=24 png scores horizon step 2.425, under 3.29, so the fixture does not fail. Five of the six times are over 3.29. A skirt that reached the visible cut failed fall-ice stretch at 1.30 and was removed. Texel PASS. Draws 9. Page tris 196866. The 30 fps chase is 30 frames, 1.0 s, Bolt x 360. Five of those frames fail dark-row with a run of 8.
 - Recipe appended: none.
 - Failure appended: `learn/failures.md` headings `2026-11-17 — A per-cell hash must not steer the anisotropic footprint` and `2026-11-17 — The 24 s horizon step is already under 3.29 on this mesh`.
+
+## This step
+
+- Step: round 9. Correct the grazing footprint past the anisotropy cap, and find the run of exactly 8.
+- Accepted because: the graze window's collapsed ratio was 6:1 to 9.6:1 and the face ratio is 1.2. Rotating the normal with the yaw puts the frame on the derivative. The minor-axis LOD rises by log2(ratio/16) only when the ratio exceeds 16, so these faces do not move from that branch. Graze Laplacian 9.56 before, 9.97 after. Repeat over at 12 px went from +0.269 to −0.235. Frontal crops pass. Texel PASS, stretch 1.30. The five dark runs were that collapsed slice on one tooth (frames 15, 17, 19, 20, 25; y 417, 417, 385, 385, 418), world-locked, not an 8-wide screen tile. The new chase is 30/30. The six stills pass. `fixture-r2-t30.jpg` still fails. Horizon bar stays 3.29. The 24 s jpeg is 3.068. The other five times are still over it. Draws 9. Page tris 196866. Bolt x 360.00. Exposure was not changed.
+- Recipe appended: none. The frame fix is `albedo.js`.
+- Failure appended: `learn/failures.md` heading `2026-11-17 — A yaw that rotates the derivative and not the normal collapses one axis`.
+- Quota: not appended. This session has no Grok CLI ndjson, and a row was not invented.

@@ -1459,3 +1459,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | None kept for the silhouette. The gate is `horizon-step-gate.mjs` and the fixture is `fixture-r7/t24.png`. Five of the six times are still over 3.29. |
 | Guard | `node engine/webgpu/glacier/horizon-step-gate.mjs` . The bar stays 3.29. |
 | Sources | `engine/webgpu/glacier/horizon-step-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/horizon-step.json`. |
+
+### 2026-11-17 — A yaw that rotates the derivative and not the normal collapses one axis
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 9. Not a KEEP. |
+| Defect | The grazing 3× crop failed the tile-period gate (+0.269 / +0.213 / +0.147). Five chase frames failed dark-row, each a run of exactly 8. |
+| Root cause | The tooth yaw rotates the sample and both screen derivatives, and the tangent frame was built from the unrotated normal. On the graze window that collapsed ratio is 6:1 to 9.6:1. The face itself is 1.2:1. At the dark mark the shader ratio was 8.3, so each screen row read a different slice of the still and one slice was a dark band about a tile long. The band moves with the camera. It is not an 8-wide screen tile. Ice is rgba8. The run of 8 is the gate minimum on that tent. |
+| Fix | The normal is rotated by the same yaw before the frame is built. Past a real 16:1 the shorter derivative is lengthened by ratio/16, which raises its LOD by log2(ratio/16). These faces sit at 1.2 after the frame matches, so that branch does not move them. The graze Laplacian went from 9.56 to 9.97. The crop passes. The chase is 30/30. The round-2 fixture still fails. |
+| Guard | `repeat-gate.mjs` on `crops/t30-graze-3x.jpg` at periods 12, 19, and 32. `dark-row-gate.mjs` on the 30 fps chase must pass, and on `fixture-r2-t30.jpg` must fail. |
+| Sources | `engine/webgpu/glacier/albedo.js`, `engine/webgpu/glacier/artifacts/run33-horizon/crops/t30-graze-3x.jpg`, `engine/webgpu/glacier/artifacts/run33-horizon/notes.md`. |
