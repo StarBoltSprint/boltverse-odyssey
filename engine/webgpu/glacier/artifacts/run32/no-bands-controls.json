@@ -1,0 +1,104 @@
+{
+  "fixture": {
+    "dir": "/agent/repos/Boltverse-odyssey/engine/webgpu/glacier/artifacts/run32/band-fixture",
+    "crop": {
+      "x0": 330,
+      "x1": 400,
+      "y0": 780,
+      "y1": 980
+    },
+    "stepDelta": 14,
+    "stepLimit": 0.5,
+    "worst": 4.057,
+    "verdict": "FAIL",
+    "rows": [
+      {
+        "name": "t5_1.jpg",
+        "mean": 2.229,
+        "columns": 35,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t5_567.jpg",
+        "mean": 2.343,
+        "columns": 35,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t7_9.jpg",
+        "mean": 3.571,
+        "columns": 35,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t11_7.jpg",
+        "mean": 2,
+        "columns": 35,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t24.jpg",
+        "mean": 2,
+        "columns": 35,
+        "verdict": "FAIL"
+      },
+      {
+        "name": "t30.jpg",
+        "mean": 4.057,
+        "columns": 35,
+        "verdict": "FAIL"
+      }
+    ]
+  },
+  "preD": {
+    "dir": "/agent/repos/Boltverse-odyssey/engine/webgpu/glacier/artifacts/run32/pre-d",
+    "crop": {
+      "x0": 330,
+      "x1": 400,
+      "y0": 780,
+      "y1": 980
+    },
+    "stepDelta": 14,
+    "stepLimit": 0.5,
+    "worst": 0.029,
+    "verdict": "PASS",
+    "rows": [
+      {
+        "name": "t5_1.jpg",
+        "mean": 0,
+        "columns": 35,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t5_567.jpg",
+        "mean": 0,
+        "columns": 35,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t7_9.jpg",
+        "mean": 0,
+        "columns": 35,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t11_7.jpg",
+        "mean": 0,
+        "columns": 35,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t24.jpg",
+        "mean": 0,
+        "columns": 35,
+        "verdict": "PASS"
+      },
+      {
+        "name": "t30.jpg",
+        "mean": 0.029,
+        "columns": 35,
+        "verdict": "PASS"
+      }
+    ]
+  }
+}
