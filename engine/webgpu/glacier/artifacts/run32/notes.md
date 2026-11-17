@@ -39,6 +39,8 @@ The follow camera sits 2.35 m behind Bolt, so a print 7.5 m behind him is behind
 
 The upper back of the card is near the medial axis of the distance field, so that normal is almost flat. The cool belly is the strong half of the split. Frame 16's belly is the least cool (Lab b +1.05 against a back of +8.87).
 
+The distance gradient is steep. Where it flips along the legs, the cool term draws blue bands across the coat instead of one smooth belly. That is visible in the chase stills. It is not a finished lighting look.
+
 The trail format on this machine is RG8 packing of a 16-bit value, not an `r16unorm` texture.
 
 The thin dark horizon line from run 31 is still there. The shoulder-ice and range-serac sets are still one still short, so they are not installed.
