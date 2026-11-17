@@ -7,8 +7,8 @@ import { CANDIDATE } from './biome.js';
 
 const webgpu = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const outDir = process.env.GLACIER_OUT || '/opt/cursor/artifacts/run32';
-const frames = 80;
-const fps = 10;
+const fps = Number(process.env.GLACIER_FPS || 10);
+const frames = Number(process.env.GLACIER_FRAMES || Math.round(8 * fps));
 const dir = '/tmp/glacier-d5-chase';
 fs.rmSync(dir, { recursive: true, force: true });
 fs.mkdirSync(dir, { recursive: true });

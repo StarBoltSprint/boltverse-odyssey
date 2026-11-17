@@ -571,14 +571,24 @@ fn darken15(c: vec3f) -> vec3f {
   let hdx = hx * keepX - h;
   let hdz = hz * keepZ - h;
   let snowLive = m < 0.5 && !(iso > 29.5 && iso < 40.5) && u.misc.y < 0.5;
+  var albSnow = alb;
+  let nSnow = nLit;
   if (snowLive) {
-    // The follow camera cannot see 4–6 m behind Bolt. On screen this is only
-    // a slight dent in the snow grain: no bright rim, no navy cavity.
-    alb = alb * (1.0 - clamp(-h, 0.0, 1.0) * 0.08);
-    nLit = normalize(nLit + vec3f(-hdx, 0.0, -hdz) * 0.6);
+    // A shallow dent in the grain that is already there. Darken only.
+    // A steep normal was a white lobe on the sun side and a blue pit on the other.
+    let dent = clamp(-h, 0.0, 1.0);
+    alb = alb * (1.0 - dent * 0.26);
+    nLit = normalize(nLit + vec3f(-hdx, 0.0, -hdz) * 0.05);
     alb = alb * capsuleShade(v.w);
+    albSnow = albSnow * capsuleShade(v.w);
   }
   var col = litIce(alb, nLit, view);
+  if (snowLive) {
+    let plain = litIce(albSnow, nSnow, view);
+    let yC = dot(col, vec3f(0.2126, 0.7152, 0.0722));
+    let yP = dot(plain, vec3f(0.2126, 0.7152, 0.0722));
+    if (yC > yP) { col = col * (yP / max(yC, 1e-4)); }
+  }
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
@@ -728,9 +738,16 @@ fn capsuleShade(p: vec3f) -> f32 {
   let view = normalize(u.cam.xyz - v.w);
   let irr = boltIrr(n);
   let basis = boltIrr(face);
-  // The lower legs face the camera. The 0.5 scale that holds the back made them a black sock.
-  let pawLift = smoothstep(0.82, 0.94, v.uv.y);
-  var col = alb * irr / max(basis, vec3f(0.04)) * mix(0.5, 0.92, pawLift);
+  // The 0.5 scale holds the back and the belly. Below that band the pre-D
+  // card carried a small fill, which is what kept the paws from going dark.
+  // The sun term itself is unchanged.
+  let paw = smoothstep(0.80, 0.90, v.uv.y);
+  var col = alb * irr / max(basis, vec3f(0.04)) * mix(0.5, 0.92, paw);
+  col = col + vec3f(0.09, 0.048, 0.066) * paw * smoothstep(0.35, 0.7, s.a);
+  // The paw outline sits at a low atlas alpha. Pre-D filled that fringe.
+  // Without it the left paw reads as a black sock over the snow.
+  let fringe = smoothstep(0.06, 0.20, s.a) * (1.0 - smoothstep(0.28, 0.55, s.a));
+  col = col + vec3f(0.16, 0.08, 0.11) * paw * fringe;
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let rim = pow(1.0 - ndv, 2.4);
   let skyRim = vec3f(${LIGHT.sky.nebulaViolet[0]}, ${LIGHT.sky.nebulaViolet[1]}, ${LIGHT.sky.nebulaViolet[2]});
