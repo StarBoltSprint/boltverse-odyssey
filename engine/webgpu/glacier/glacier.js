@@ -658,19 +658,29 @@ struct TaaOut { @location(0) color: vec4f, @location(1) hist: vec4f };
     puv = vec2f(pc.x / pc.w * 0.5 + 0.5, 0.5 - pc.y / pc.w * 0.5);
     if (pc.w > 0.0 && puv.x > 0.0 && puv.x < 1.0 && puv.y > 0.0 && puv.y < 1.0) {
       let h = textureSampleLevel(taaHist, taaSamp, puv, 0.0).rgb;
-      var lo = rgbYCoCg(cur);
-      var hi = lo;
+      var m1 = vec3f(0.0);
+      var m2 = vec3f(0.0);
       for (var oy = -1; oy <= 1; oy++) {
         for (var ox = -1; ox <= 1; ox++) {
           let q = clamp(pix + vec2i(ox, oy), vec2i(0), vec2i(719, 1279));
           let n = rgbYCoCg(pow(max(textureLoad(taaCur, q, 0).rgb, vec3f(0.0)), vec3f(2.2)));
-          lo = min(lo, n);
-          hi = max(hi, n);
+          m1 += n;
+          m2 += n * n;
         }
       }
-      let hc = clamp(rgbYCoCg(h), lo, hi);
+      m1 *= (1.0 / 9.0);
+      m2 *= (1.0 / 9.0);
+      let sigma = sqrt(max(m2 - m1 * m1, vec3f(0.0)));
+      let gamma = 1.1;
+      let hc = clamp(rgbYCoCg(h), m1 - sigma * gamma, m1 + sigma * gamma);
       let hist = ycocgRgb(hc);
-      out = mix(cur, hist, 0.9);
+      let vel = length((puv - uv) * dim);
+      let histW = 0.9 * (1.0 - smoothstep(1.5, 6.0, vel));
+      let lyC = dot(cur, vec3f(0.2126, 0.7152, 0.0722));
+      let lyH = dot(hist, vec3f(0.2126, 0.7152, 0.0722));
+      let wC = 1.0 / (1.0 + lyC);
+      let wH = histW / (1.0 + lyH);
+      out = (cur * wC + hist * wH) / max(wC + wH, 1e-4);
     }
   }
   let blur = (
@@ -679,7 +689,7 @@ struct TaaOut { @location(0) color: vec4f, @location(1) hist: vec4f };
     pow(max(textureLoad(taaCur, clamp(pix + vec2i(0, 1), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2)) +
     pow(max(textureLoad(taaCur, clamp(pix + vec2i(0, -1), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2))
   ) * 0.25;
-  out = out + (out - blur) * 0.15;
+  out = out + (out - blur) * u.misc.y;
   out = max(out, vec3f(0.0));
   let srgb = pow(out, vec3f(1.0 / 2.2));
   var o: TaaOut;
@@ -1133,8 +1143,9 @@ async function main() {
     const proj = persp(FOV_Y, W / H, 0.08, 14000);
     const useTaa = gateMode === 0 && window.__glacierSingle !== true;
     if (useTaa) {
-      const jx = (halton(taaN, 2) - 0.5) * (2 / W);
-      const jy = (halton(taaN, 3) - 0.5) * (2 / H);
+      const j = (taaN % 16) + 1;
+      const jx = (halton(j, 2) - 0.5) * (2 / W);
+      const jy = (halton(j, 3) - 0.5) * (2 / H);
       proj[8] = -jx;
       proj[9] = -jy;
     }
@@ -1170,7 +1181,7 @@ async function main() {
     }
     U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
-    U[53] = 0;
+    U[53] = window.__glacierSharp == null ? 0.15 : Number(window.__glacierSharp);
     U[54] = gateMode;
     U[55] = gateBreak;
     U[58] = skySwim;
@@ -1804,19 +1815,33 @@ async function main() {
     return src[i + 1] / 255 * 4000;
   }
   const SPIRE = new Set([1, 2, 6, 7]);
-  async function warmTaa(n) {
-    for (let i = 0; i < n; i++) {
-      dev.pushErrorScope('validation');
-      renderFixed(simClock);
-      const err = await dev.popErrorScope();
-      if (err) throw new Error(String(err.message || err));
-      await dev.queue.onSubmittedWorkDone();
+  async function renderSettled() {
+    dev.pushErrorScope('validation');
+    renderFixed(simClock);
+    const err = await dev.popErrorScope();
+    if (err) throw new Error(String(err.message || err));
+    await dev.queue.onSubmittedWorkDone();
+  }
+  // Sixteen real 1/30 s steps, each one a resolved frame, so history has
+  // seen the phone rate before the sample. The sim between samples is not rendered.
+  async function converge(t) {
+    const phone = 1 / 30;
+    const fine = 1 / 60;
+    const begin = Math.max(0, t - 16 * phone);
+    while (sim < begin - 1e-5) { const h = Math.min(fine, begin - sim); stepLive(h); sim += h; }
+    if (window.__glacierSingle === true) {
+      while (sim < t - 1e-5) { const h = Math.min(fine, t - sim); stepLive(h); sim += h; }
+      return;
+    }
+    for (let i = 0; i < 16; i++) {
+      const target = Math.min(t, begin + (i + 1) * phone);
+      while (sim < target - 1e-5) { const h = Math.min(fine, target - sim); stepLive(h); sim += h; }
+      await renderSettled();
     }
   }
   window.__glacierD8 = async (t) => {
     const step = 1 / 60;
-    while (sim < t - 1e-5) { const h = Math.min(step, t - sim); stepLive(h); sim += h; }
-    if (window.__glacierSingle !== true) await warmTaa(3);
+    await converge(t);
     hideFlakes = true;
     gateMode = window.__glacierAlbedo ? 2 : 0;
     const colourA = await readFrame();
@@ -1828,10 +1853,18 @@ async function main() {
     const colourB = await readFrame();
     gateMode = 3;
     const geoB = await readFrame();
+    const t3 = t2 + 1 / 60;
+    while (sim < t3 - 1e-5) { const h = Math.min(step, t3 - sim); stepLive(h); sim += h; }
+    gateMode = window.__glacierAlbedo ? 2 : 0;
+    const colourC = await readFrame();
+    gateMode = 3;
+    const geoC = await readFrame();
     gateMode = 0;
     hideFlakes = false;
     let flicker = 0;
     let flickerN = 0;
+    let flicker60 = 0;
+    let flicker60N = 0;
     const flickerSamp = [];
     let mid = 0;
     let midN = 0;
@@ -1856,6 +1889,12 @@ async function main() {
           const dlt = Math.abs(lumaAt(colourA.src, i) - lumaAt(colourB.src, i));
           flicker += dlt;
           flickerN++;
+          const mc = matOf(geoC.src, i);
+          const dc = distOf(geoC.src, i);
+          if (SPIRE.has(mc) && dc >= 100 && dc <= 300) {
+            flicker60 += Math.abs(lumaAt(colourB.src, i) - lumaAt(colourC.src, i));
+            flicker60N++;
+          }
           if ((flickerN & 15) === 0) flickerSamp.push(dlt);
           if (da >= 220 && da <= 320 && db >= 220 && db <= 320) { mid += dlt; midN++; }
           let edge = x < 2 || y < 2 || x >= W - 2 || y >= H - 2;
@@ -1933,6 +1972,9 @@ async function main() {
       t,
       z: live.z,
       flicker: flickerN ? flicker / flickerN : null,
+      flicker60: flicker60N ? flicker60 / flicker60N : null,
+      pair: '1/30',
+      pair60: '1/60',
       flickerN,
       flickerP50: (() => { flickerSamp.sort((a, b) => a - b); return flickerSamp.length ? flickerSamp[flickerSamp.length >> 1] : null; })(),
       flickerP90: flickerSamp.length ? flickerSamp[Math.floor(flickerSamp.length * 0.9)] : null,
@@ -1986,8 +2028,14 @@ async function main() {
   };
   window.__glacierFilm = async (t) => {
     const dt = 1 / 60;
-    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
-    if (window.__glacierSingle !== true && !taaReady) await warmTaa(3);
+    const gap = t - sim;
+    if (window.__glacierSingle === true) {
+      while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    } else if (!taaReady || gap > 1 / 20) {
+      await converge(t);
+    } else {
+      while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    }
     const frame = await readFrame();
     const jpg = await blobOf(frame.src, 'image/jpeg', 0.92);
     const pix = projectPixel([live.x, pawGround(), live.z]);

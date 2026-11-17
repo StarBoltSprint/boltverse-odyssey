@@ -114,11 +114,15 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let uv2 = m2 * ${repeats};
   // Ice only. Snow bias stays 2 and never takes this branch.
   // Bias 4 is undone. Hardware trilinear and anisotropy 16 pick the mip.
+  // 7.5 is only a ceiling so the chain cannot go flat. Both axes scale together.
   let farIce = bias >= 3.5 && length(px) + length(py) > 0.05;
   if (farIce) {
-    let h0 = blend4(arr, uv0, du0 / 4.0, dv0 / 4.0, variantW(i), gain);
-    let h1 = blend4(arr, uv1, du1 / 4.0, dv1 / 4.0, variantW(id1), gain);
-    let h2 = blend4(arr, uv2, du2 / 4.0, dv2 / 4.0, variantW(id2), gain);
+    let k0 = lodScale(du0 / 4.0, dv0 / 4.0, 0.0, 7.5);
+    let k1 = lodScale(du1 / 4.0, dv1 / 4.0, 0.0, 7.5);
+    let k2 = lodScale(du2 / 4.0, dv2 / 4.0, 0.0, 7.5);
+    let h0 = blend4(arr, uv0, du0 / 4.0 * k0, dv0 / 4.0 * k0, variantW(i), gain);
+    let h1 = blend4(arr, uv1, du1 / 4.0 * k1, dv1 / 4.0 * k1, variantW(id1), gain);
+    let h2 = blend4(arr, uv2, du2 / 4.0 * k2, dv2 / 4.0 * k2, variantW(id2), gain);
     return h0 * w.x + h1 * w.y + h2 * w.z;
   }
   let s0 = lodScale(du0, dv0, 0.0, 12.0);

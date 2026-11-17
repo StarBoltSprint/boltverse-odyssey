@@ -60,7 +60,7 @@ try {
         const dIce = dirDist(dirOf(meanRgb(row.farPx)), dirOf(meanRgb(row.nearPx)));
         const dSky = dirDist(dirOf(meanRgb(row.farPx)), dirOf(meanRgb(row.skyPx)));
         const slim = {
-          t: row.t, z: row.z, flicker: row.flicker, flickerN: row.flickerN,
+          t: row.t, z: row.z, flicker: row.flicker, flicker60: row.flicker60, flickerN: row.flickerN,
           shimmer: row.shimmer, mid: row.mid, midN: row.midN,
           nearLuma: row.nearLuma, nearN: row.nearN, farLuma: row.farLuma, farN: row.farN,
           contrast: row.contrast, horizon: row.horizon,
