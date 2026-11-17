@@ -1,0 +1,66 @@
+{
+  "round": 12,
+  "sun": [0.6161, 0.5592, 0.5547],
+  "exposure": "unchanged",
+  "terrainEdited": false,
+  "shadingNormalEdited": false,
+  "ridge24": {
+    "pictureStep": 0.036,
+    "keyStep": 0.394,
+    "needed": 0.315,
+    "meanLuma": 0.632,
+    "meanShadow": 0.112,
+    "litFraction": 0.03,
+    "sunFacingTris": 243,
+    "sunFacingOpen": 4,
+    "occluders": { "wall>8m": 51, "snow>8m": 91, "wall2to8m": 76, "wall<2m": 19 },
+    "sharpestPair": {
+      "faceDeg": 149.3,
+      "shadeDeg": 136.5,
+      "apartM": 3.95,
+      "picture": [0.687, 0.652],
+      "A": { "mat": "snow", "face": [0.074, 0.996, 0.04], "shade": [0.017, 0.999, 0.052], "faceShadeDeg": 3.3, "ndl": 0.597, "shadow": 0.176, "edgeM": 2.1, "ambLuma": 0.375, "gAmbLuma": 0.466, "ao": 1 },
+      "B": { "mat": "wall", "face": [-0.57, -0.822, 0.02], "shade": [-0.699, -0.711, -0.081], "faceShadeDeg": 11.3, "ndl": 0, "shadow": 0, "edgeM": 1.68, "ambLuma": 0.205, "gAmbLuma": 0.744, "ao": 1 }
+    },
+    "cause": "The sun-facing snow in the crop is occluded by the terrain (walls and snow, 2 m and beyond). Shading normals are not averaged across that fold. G's ambient cannot open a 0.315 step while both sides stay at shadow factor under 0.2."
+  },
+  "slope30": {
+    "pictureStep": 0.032,
+    "keyStep": 0.079,
+    "needed": 0.063,
+    "left": { "meanLuma": 0.727, "meanShadow": 0.604, "litFraction": 0.549, "sharpestFaceDeg": 17.2, "sharpestShadeDeg": 3.3, "sunFacing": 235, "open": 50, "wallBeyond8m": 174 },
+    "right": {
+      "meanLuma": 0.695,
+      "meanShadow": 0.405,
+      "litFraction": 0.352,
+      "crease": {
+        "faceDeg": 113.6,
+        "shadeDeg": 113.6,
+        "apartM": 3.5,
+        "picture": [0.66, 0.655],
+        "A": { "face": [0.8, 0.59, -0.106], "shade": [0.8, 0.59, -0.106], "ndl": 0.764, "shadow": 0.035, "edgeM": 2.95, "ambLuma": 0.322, "gAmbLuma": 0.541, "ao": 1 },
+        "B": { "face": [-0.857, 0.503, 0.114], "shade": [-0.857, 0.503, 0.114], "ndl": 0, "shadow": 0, "edgeM": 2.79, "ambLuma": 0.308, "gAmbLuma": 0.558, "ao": 1 }
+      },
+      "sunFacing": 108,
+      "open": 11,
+      "wallBeyond8m": 55,
+      "snowBeyond8m": 30
+    },
+    "cause": "The right-hand fold is 114 degrees in both the face normal and the shading normal, and both faces are in cast shadow, so the picture step on the crease is 0.005. The left box is a 17 degree roll. Box means stay close because both boxes are mostly terrain-shadowed snow."
+  },
+  "shadeB": {
+    "key": [-4.4, -3.2],
+    "mixed": { "51": -12.66, "5567": 2.49, "79": -12.53, "117": -12.14, "24": 2.3, "30": -12.64 },
+    "cleanSnow": { "51": -12.7, "5567": -9.67, "79": -12.67, "117": -12.66, "24": -9.66, "30": -13.18 },
+    "overlay": { "51": 3.71, "5567": 4.32, "79": 3.87, "117": 4.06, "24": 4.45, "30": 3.67 },
+    "gradedSnowAlbedo": { "ours": [-13.55], "gShL2": [-4.28], "labOurs": [67.87, 3.9, -13.55], "labG": [70.67, 2.42, -4.28] }
+  },
+  "slab": {
+    "gate": { "24": 0.022, "30": 0.012, "key": [0.076, 0.086] },
+    "iceBox24": { "wallL": 0.604, "wallShadow": 0.294, "otherL": 0.504, "sky": 0 },
+    "skyBox24": { "skyL": 0.478, "skyN": 231, "litSnowL": 0.699, "litSnowN": 136, "litSnowShadow": 0.992 },
+    "wallMinusTrueSky": { "24": 0.126, "30": 0.15 },
+    "cause": "The slab is already brighter than the sky. The sky box also holds a band of sunlit snow, and that lifts the box mean onto the slab. Exposure would lift both."
+  },
+  "handoff243": "Do not treat this as a shading-normal bug. At 24 s the ridge crop has 243 sun-facing snow triangles and 4 of them see the sun; the rest are blocked by wall and snow geometry from 2 m outward. At 30 s the right slope crease is 113.6 degrees and the shading normal matches the face normal, with shadow factor 0.035 on the sun-facing side. Vertex spacing there is 2.8 to 3.0 m. The form the key shows needs those faces to see the sun, which is the terrain's occlusion, not the cascade and not the ambient."
+}

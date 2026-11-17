@@ -1,0 +1,33 @@
+{
+  "writtenBeforeTrial": "2026-11-14",
+  "note": "Glacier cascaded sun shadow gates. Written before the trial. Not relaxed after the pictures come back.",
+  "csmIouMin": 0.8,
+  "edgeShimmerMax": 0.005,
+  "cascadeSeamJumpMax": 0.03,
+  "snowShadowBlueMin": 0.03,
+  "crossCameraDe76Max": 10,
+  "greyBrightMax": 0.15,
+  "iceBlueMin": 0,
+  "clipFracMax": 0.005,
+  "clipAt": 0.98,
+  "brightLuma": 0.45,
+  "greyChroma": 0.04,
+  "sceneDraws": 9,
+  "drawLimit": 12,
+  "shadowDraws": 2,
+  "shadowDrawNames": ["casters", "bolt"],
+  "uniqueTris": 195634,
+  "phoneFpsSoftOk": 50,
+  "phoneSize": [540, 960],
+  "cascades": {
+    "phone": { "count": 2, "splitsM": [0, 25.8, 120], "lambda": 0.7, "atlas": [2048, 3072], "near": 2048, "far": 1024, "memoryBytes": 25165824, "pcf": "4 bilinear less-equal taps, near 8 cm, far at least 2 texels" },
+    "high": { "count": 4, "lambda": 0.7, "nearM": 1, "farM": 120, "atlas": [2048, 2048], "tile": 1024, "pcf": "poisson-16", "flag": "csm=high", "default": false }
+  },
+  "accounting": "Colour draws stay 9. The shadow depth pass is 2 draws: one batched caster draw (world, icicle, chunk, drift baked into one buffer) and the sun-facing Bolt card. Both cascades are instances of those draws, so the cascade count does not add a draw. Colour plus shadow is 11, inside the 12-draw ceiling. Unique triangles stay 195634. The shadow pass re-rasterises those meshes and that fill is reported separately. Polygon depth bias is 0. The receiver uses a 2 cm normal offset and one depth bias. The near kernel widens across the cascade blend. The grade pass stays outside the list.",
+  "iou": "On snow vertices within 70 m, binary IoU of the rendered shadow mask against a CPU light-space depth raster of fall, arch, icicle, wall, and mountain triangles projected along the sun. Threshold 0.80.",
+  "edgeShimmer": "World-space snow samples in the near cascade. Two cameras about 1 cm apart that share the snapped cascade centre. Edge samples have 0.05 < shadow < 0.95. The fraction whose shadow changes by more than 0.1 must be <= 0.005.",
+  "seam": "Mean absolute beauty luma of snow pairs that straddle the cascade blend (far-weight < 0.15 vs > 0.85, within 16 px). Limit 0.03.",
+  "snowBlue": "On sun-facing snow (ndl > 0.4), mean (b-r) where shadow < 0.35 exceeds mean (b-r) where shadow > 0.85 by more than 0.03.",
+  "hooks": "csmoff=1 and lmask=shadow are capture-only. Absent, they do not change the image.",
+  "tonemap": "tonemap-limits.json is unchanged. A check run 32 passed must still pass. A run 32 miss must not get worse."
+}

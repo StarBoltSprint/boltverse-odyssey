@@ -1,0 +1,253 @@
+{
+  "limits": {
+    "csmIouMin": 0.8,
+    "edgeShimmerMax": 0.005,
+    "cascadeSeamJumpMax": 0.03,
+    "snowShadowBlueMin": 0.03
+  },
+  "rows": [
+    {
+      "tag": "51",
+      "iou": 0.9237,
+      "iouSpire": 0.9242,
+      "gpu": 1628,
+      "cpu": 1750,
+      "cpuSpire": 1747,
+      "inter": 1622,
+      "union": 1756,
+      "casterTris": 100910,
+      "spireTris": 98852,
+      "blueDelta": 0.0905,
+      "seam": 0.0353,
+      "seamN": 997,
+      "cascadeSeam": {
+        "n": 5051,
+        "mean": 0.0144,
+        "max": 0.5,
+        "frac": 0.0519
+      },
+      "greyBright": 0.0669,
+      "iceBlue": 0.1092,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 2
+    },
+    {
+      "tag": "5567",
+      "iou": 0.9205,
+      "iouSpire": 0.9228,
+      "gpu": 1546,
+      "cpu": 1644,
+      "cpuSpire": 1640,
+      "inter": 1529,
+      "union": 1661,
+      "casterTris": 100910,
+      "spireTris": 98852,
+      "blueDelta": 0.0832,
+      "seam": 0.0528,
+      "seamN": 874,
+      "cascadeSeam": {
+        "n": 4681,
+        "mean": 0.0094,
+        "max": 0.3887,
+        "frac": 0.0393
+      },
+      "greyBright": 0.0808,
+      "iceBlue": 0.1075,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 2
+    },
+    {
+      "tag": "79",
+      "iou": 0.9043,
+      "iouSpire": 0.905,
+      "gpu": 1347,
+      "cpu": 1460,
+      "cpuSpire": 1459,
+      "inter": 1333,
+      "union": 1474,
+      "casterTris": 100910,
+      "spireTris": 98852,
+      "blueDelta": 0.085,
+      "seam": 1,
+      "seamN": 0,
+      "cascadeSeam": {
+        "n": 3189,
+        "mean": 0.0067,
+        "max": 0.5,
+        "frac": 0.0257
+      },
+      "greyBright": 0.0681,
+      "iceBlue": 0.1071,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 2
+    },
+    {
+      "tag": "117",
+      "iou": 0.8336,
+      "iouSpire": 0.8342,
+      "gpu": 1101,
+      "cpu": 1246,
+      "cpuSpire": 1245,
+      "inter": 1067,
+      "union": 1280,
+      "casterTris": 100910,
+      "spireTris": 98852,
+      "blueDelta": 0.0894,
+      "seam": 0.058,
+      "seamN": 394,
+      "cascadeSeam": {
+        "n": 1850,
+        "mean": 0.0076,
+        "max": 0.3789,
+        "frac": 0.0319
+      },
+      "greyBright": 0.0766,
+      "iceBlue": 0.1028,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 2
+    },
+    {
+      "tag": "24",
+      "iou": 0.8023,
+      "iouSpire": 0.8023,
+      "gpu": 1089,
+      "cpu": 1218,
+      "cpuSpire": 1218,
+      "inter": 1027,
+      "union": 1280,
+      "casterTris": 100910,
+      "spireTris": 98852,
+      "blueDelta": 0.0864,
+      "seam": 0.0246,
+      "seamN": 44,
+      "cascadeSeam": {
+        "n": 1400,
+        "mean": 0.0138,
+        "max": 0.3987,
+        "frac": 0.0536
+      },
+      "greyBright": 0.0966,
+      "iceBlue": 0.1057,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 2
+    },
+    {
+      "tag": "30",
+      "iou": 0.8599,
+      "iouSpire": 0.8599,
+      "gpu": 938,
+      "cpu": 1054,
+      "cpuSpire": 1054,
+      "inter": 921,
+      "union": 1071,
+      "casterTris": 100910,
+      "spireTris": 98852,
+      "blueDelta": 0.0931,
+      "seam": 0.0514,
+      "seamN": 340,
+      "cascadeSeam": {
+        "n": 1347,
+        "mean": 0.0115,
+        "max": 0.3789,
+        "frac": 0.0416
+      },
+      "greyBright": 0.0608,
+      "iceBlue": 0.111,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 2
+    },
+    {
+      "shimmer": {
+        "fraction": 0.00538619734467466,
+        "edge": 71479,
+        "changed": 385,
+        "eyeA": [
+          12.383962783250904,
+          1.5246933625343209,
+          -30.493974469615175
+        ],
+        "tgtA": [
+          11.871566429147737,
+          1.1118413749856386,
+          -35.01503075949941
+        ],
+        "eyeB": [
+          12.386639201934749,
+          1.5246933625343209,
+          -30.496947142323155
+        ],
+        "tgtB": [
+          11.874242847831582,
+          1.1118413749856386,
+          -35.018003432207394
+        ],
+        "worldSamples": 3759,
+        "worldFlip": 126,
+        "worldFraction": 0.0335195530726257,
+        "radiusA": [
+          23.7464,
+          102.8067
+        ],
+        "radiusB": [
+          23.7464,
+          102.8067
+        ],
+        "radiusConstant": true,
+        "mapFlip": 0,
+        "receiverFlip": 126,
+        "mapFraction": 0,
+        "receiverFraction": 0.0335195530726257,
+        "flipScreenPx": 0.183,
+        "flipBandDelta": 0.00007,
+        "bandFlips": 0
+      }
+    },
+    {
+      "vertShadow": {
+        "snapped": {
+          "n": 65184,
+          "edge": 10540,
+          "flip": 0,
+          "fraction": 0,
+          "maxD": 0.0039
+        },
+        "unsnapped": {
+          "n": 65184,
+          "edge": 10529,
+          "flip": 67,
+          "fraction": 0.006363377338778612,
+          "maxD": 0.3608
+        },
+        "screen": {
+          "fraction": 0.00538619734467466,
+          "worldFraction": null
+        },
+        "bar": 0.005,
+        "unsnappedFails": true,
+        "snappedPasses": true
+      }
+    },
+    {
+      "cross": {
+        "de76": 0,
+        "at": [
+          12.025285335378687,
+          1.2,
+          -33.658713872534136
+        ],
+        "eye2": [
+          15.583962783250904,
+          2.124693362534321,
+          -29.093974469615176
+        ]
+      }
+    }
+  ],
+  "verdict": "FAIL"
+}

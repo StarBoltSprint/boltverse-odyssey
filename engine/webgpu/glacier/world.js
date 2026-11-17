@@ -11,6 +11,13 @@ function hash(x, y) {
   return s - Math.floor(s);
 }
 
+// The wall and ground walks feed the next sample into the hash. One ulp of
+// difference between engines flips a later step and the two meshes stop being
+// the same world. Rounding each step to 0.1 mm keeps both on one sequence.
+function qz(z) {
+  return Math.round(z * 1e4) / 1e4;
+}
+
 function noise2(x, z) {
   const ix = Math.floor(x), iz = Math.floor(z);
   const fx = x - ix, fz = z - iz;
@@ -174,9 +181,9 @@ function columns(z0, z1) {
   const zs = [z0];
   let guard = 0;
   while (zs[zs.length - 1] > z1 + 1e-3 && guard++ < 8000) {
-    const z = zs[zs.length - 1];
-    const wobble = 0.72 + hash(z * 9.2, 4.4) * 0.5;
-    zs.push(Math.max(z1, z - stepZ(z) * wobble));
+    const z = qz(zs[zs.length - 1]);
+    const wobble = 0.72 + hash(qz(z * 9.2), 4.4) * 0.5;
+    zs.push(qz(Math.max(z1, z - stepZ(z) * wobble)));
   }
   return zs;
 }
@@ -870,11 +877,11 @@ export function buildWorld() {
   const groundZs = [GLACIER.z0];
   let guardG = 0;
   while (groundZs[groundZs.length - 1] > GLACIER.z1 + 1e-3 && guardG++ < 8000) {
-    const z = groundZs[groundZs.length - 1];
+    const z = qz(groundZs[groundZs.length - 1]);
     const d = Math.max(0, -z);
     const base = d < 55 ? 0.2 : d < 450 ? 0.55 + (d - 55) * 0.0018 : d < 900 ? 8 : d < 2200 ? 32 : 56;
-    const step = base * (0.4 + hash(z * 17.3, 2.8) * 1.35);
-    groundZs.push(Math.max(GLACIER.z1, z - step));
+    const step = base * (0.4 + hash(qz(z * 17.3), 2.8) * 1.35);
+    groundZs.push(qz(Math.max(GLACIER.z1, z - step)));
   }
   let prev = null;
   for (const z of groundZs) {

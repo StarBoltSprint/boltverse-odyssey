@@ -1,0 +1,205 @@
+{
+  "rows": [
+    {
+      "tag": "24",
+      "iceEnergy": 0.0143,
+      "iceEnergyKey": 0.0165,
+      "slab": {
+        "oldBox": 0.022,
+        "oldKey": 0.076,
+        "wallMinusSky": 0.048,
+        "keyMasked": -0.005,
+        "bar": 0.076,
+        "wallN": 9416,
+        "skyN": 2141,
+        "skyBoxSnow": 1911,
+        "skyBoxLitSnow": 1884,
+        "wallL": 0.59,
+        "skyL": 0.543
+      }
+    },
+    {
+      "tag": "30",
+      "iceEnergy": 0.0175,
+      "iceEnergyKey": 0.0204,
+      "slab": {
+        "oldBox": 0.012,
+        "oldKey": 0.086,
+        "wallMinusSky": 0.081,
+        "keyMasked": 0.016,
+        "bar": 0.086,
+        "wallN": 8368,
+        "skyN": 1977,
+        "skyBoxSnow": 1700,
+        "skyBoxLitSnow": 1688,
+        "wallL": 0.595,
+        "skyL": 0.514
+      }
+    },
+    {
+      "tag": "51",
+      "contact": 0.134,
+      "shadeB": {
+        "clean": -12.67,
+        "mixed": -12.66,
+        "nClean": 2433,
+        "nExcluded": 3831
+      },
+      "penumbra": {
+        "thin": 1,
+        "near": 6,
+        "far": 4
+      }
+    },
+    {
+      "tag": "5567",
+      "contact": 0.139,
+      "shadeB": {
+        "clean": -8.63,
+        "mixed": 2.49,
+        "nClean": 36,
+        "nExcluded": 4008
+      },
+      "penumbra": {
+        "thin": 2,
+        "near": 6,
+        "far": 3
+      }
+    },
+    {
+      "tag": "79",
+      "contact": 0.169,
+      "shadeB": {
+        "clean": -12.67,
+        "mixed": -12.53,
+        "nClean": 2112,
+        "nExcluded": 3948
+      },
+      "penumbra": {
+        "thin": 0,
+        "near": 7,
+        "far": 4
+      }
+    },
+    {
+      "tag": "117",
+      "contact": 0.14,
+      "shadeB": {
+        "clean": -12.66,
+        "mixed": -12.14,
+        "nClean": 2173,
+        "nExcluded": 3988
+      },
+      "penumbra": {
+        "thin": 1,
+        "near": 2,
+        "far": 4
+      }
+    },
+    {
+      "tag": "24",
+      "contact": 0.14,
+      "shadeB": {
+        "clean": -9.02,
+        "mixed": 2.3,
+        "nClean": 7,
+        "nExcluded": 4088
+      },
+      "penumbra": {
+        "thin": 0,
+        "near": 7,
+        "far": 5
+      }
+    },
+    {
+      "tag": "30",
+      "contact": 0.132,
+      "shadeB": {
+        "clean": -12.81,
+        "mixed": -12.64,
+        "nClean": 1720,
+        "nExcluded": 3913
+      },
+      "penumbra": {
+        "thin": 4,
+        "near": 6,
+        "far": 4
+      }
+    },
+    {
+      "form": {
+        "ridgeNow": 0.03587607843137253,
+        "ridgeKey": 0.39417254901960785,
+        "slopeNow": 0.03181508582773973,
+        "slopeKey": 0.07930533347569135
+      },
+      "shadeB": {
+        "24": {
+          "clean": -9.02,
+          "mixed": 2.3,
+          "nClean": 7,
+          "nExcluded": 4088
+        },
+        "30": {
+          "clean": -12.81,
+          "mixed": -12.64,
+          "nClean": 1720,
+          "nExcluded": 3913
+        },
+        "51": {
+          "clean": -12.67,
+          "mixed": -12.66,
+          "nClean": 2433,
+          "nExcluded": 3831
+        },
+        "79": {
+          "clean": -12.67,
+          "mixed": -12.53,
+          "nClean": 2112,
+          "nExcluded": 3948
+        },
+        "117": {
+          "clean": -12.66,
+          "mixed": -12.14,
+          "nClean": 2173,
+          "nExcluded": 3988
+        },
+        "5567": {
+          "clean": -8.63,
+          "mixed": 2.49,
+          "nClean": 36,
+          "nExcluded": 4008
+        }
+      },
+      "slab": {
+        "24": {
+          "oldBox": 0.022,
+          "oldKey": 0.076,
+          "wallMinusSky": 0.048,
+          "keyMasked": -0.005,
+          "bar": 0.076,
+          "wallN": 9416,
+          "skyN": 2141,
+          "skyBoxSnow": 1911,
+          "skyBoxLitSnow": 1884,
+          "wallL": 0.59,
+          "skyL": 0.543
+        },
+        "30": {
+          "oldBox": 0.012,
+          "oldKey": 0.086,
+          "wallMinusSky": 0.081,
+          "keyMasked": 0.016,
+          "bar": 0.086,
+          "wallN": 8368,
+          "skyN": 1977,
+          "skyBoxSnow": 1700,
+          "skyBoxLitSnow": 1688,
+          "wallL": 0.595,
+          "skyL": 0.514
+        }
+      }
+    }
+  ],
+  "verdict": "FAIL"
+}

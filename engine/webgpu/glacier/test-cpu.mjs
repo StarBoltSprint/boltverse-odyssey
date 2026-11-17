@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DE76_MAX } from '../biome-factory/cie76.mjs';
-import { shadeAt, norm3 } from '../biome-factory/light-rig.js';
+import { shadeAt, shadeAtSh, norm3 } from '../biome-factory/light-rig.js';
 import { skyLinear, skyDelta, dirFrom } from '../biome-factory/procedural-sky.js';
 import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
 import { invertMat4 } from '../biome-factory/mat4.js';
@@ -85,7 +85,7 @@ if (!(blue[2] > blue[0] + 0.05)) bad('sunlit blue strata is not blue ' + blue.ma
 const n = [1, 0, 0];
 const view = [1, 0, 0];
 const lit = litIce(ICE.wallPale, n, view, LIGHT);
-const irr = shadeAt(LIGHT, Math.max(0, sun[0]), 0).rgb;
+const irr = shadeAtSh(LIGHT, Math.max(0, sun[0]), 0, 1).rgb;
 for (let i = 0; i < 3; i++) if (Math.abs(lit[i] - ICE.wallPale[i] * irr[i]) > 1e-6) bad('front face gained specular');
 
 let skyMax = 0;

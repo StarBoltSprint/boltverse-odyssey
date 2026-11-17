@@ -8,11 +8,16 @@ import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
 import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
+import { buildCascades, applyMat, shadowFnsWgsl, SHADOW_DRAWS, tierConfig } from './shadows.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
 const DEMO = qs.get('demo') === '1' || CAP;
 const SHOT = qs.get('shot');
+const CSM_OFF = qs.get('csmoff') === '1';
+const LMASK = qs.get('lmask') || '';
+const CSM_TIER = qs.get('csm') === 'high' ? 'high' : 'phone';
+const CSM_CFG = tierConfig(CSM_TIER);
 const hud = document.getElementById('hud');
 if (CAP && hud) hud.style.display = 'none';
 
@@ -25,6 +30,7 @@ canvas.height = H;
 let gatePose = null;
 let gateMode = 0;
 let gateBreak = 0;
+let maskForce = 0;
 let skySwim = 0;
 let skyYaw = 0;
 let simClock = 0;
@@ -300,6 +306,8 @@ const WGSL = /* wgsl */`
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
   prints: array<vec4f, 12>,
+  c0: mat4x4f, c1: mat4x4f, c2: mat4x4f, c3: mat4x4f,
+  csm: vec4f, soft: vec4f, extra: vec4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -310,10 +318,12 @@ struct U {
 @group(0) @binding(6) var fallArr: texture_2d_array<f32>;
 @group(0) @binding(7) var archArr: texture_2d_array<f32>;
 @group(0) @binding(8) var seracArr: texture_2d_array<f32>;
+@group(0) @binding(9) var smap: texture_depth_2d;
+@group(0) @binding(10) var scmp: sampler_comparison;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
-struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
+struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32, @location(2) wp: vec3f };
 
 ${lightWgsl(LIGHT)}
 fn lin1(c: f32) -> f32 {
@@ -324,6 +334,7 @@ fn toLin(c: vec3f) -> vec3f { return vec3f(lin1(c.r), lin1(c.g), lin1(c.b)); }
 ${skyWgsl(LIGHT.sky)}
 ${albedoWgsl()}
 ${IDLE.wgsl}
+${shadowFnsWgsl()}
 
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
   var o: VO;
@@ -369,11 +380,16 @@ fn darken15(c: vec3f) -> vec3f {
 @fragment fn fsSky(v: SO) -> @location(0) vec4f {
   let hw = u.ivp * vec4f(v.ndc, 1.0, 1.0);
   var sky = skyColour(normalize(hw.xyz / hw.w - u.cam.xyz));
+  // The dim sky is the frame's dark end once the path is lit. Keep that end near the key.
+  let skyY = dot(sky, vec3f(0.2126, 0.7152, 0.0722));
+  sky = sky * mix(0.42, 1.0, smoothstep(0.02, 0.42, skyY));
   if (u.spin.z > 0.5) {
     let s = clamp(v.p.x / 720.0, 0.0, 1.0);
     sky = sky + vec3f(0.045, 0.02, 0.07) * s + vec3f(0.03, 0.0, 0.05) * fract(u.spin.w * 0.37);
   }
   if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(5.5 / 8.0, 1.0, 1.0, 1.0); }
+  // Draw id 1 is sky. The grade stores it without a curve. Depth-far is this draw.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(1.5 / 16.0, 0.0, 0.0, 1.0); }
   return present(sky);
 }
 @fragment fn fs(v: VO) -> @location(0) vec4f {
@@ -391,7 +407,14 @@ fn darken15(c: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   let mode = u.misc.z;
-  if (mode > 1.5) { return present(alb); }
+  // Draw ids: 2 snow, 3 wall, 4 anything else. Mode 2 stays the albedo plate.
+  if (mode > 2.5 && mode < 3.5) {
+    var code = 4.0;
+    if (m < 0.5) { code = 2.0; }
+    else if (m > 5.5 && m < 6.5) { code = 3.0; }
+    return vec4f((code + 0.5) / 16.0, 0.0, 0.0, 1.0);
+  }
+  if (mode > 1.5 && mode < 2.5) { return present(alb); }
   if (mode > 0.5 && mode < 1.5) {
     let near = select(0.0, 1.0, dist < 40.0);
     return vec4f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0), ndv * near);
@@ -404,10 +427,18 @@ fn darken15(c: vec3f) -> vec3f {
     nLit = normalize(n + vec3f(gAlb.r, 0.0, gAlb.g) * 0.45);
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
-  var col = litIce(alb, nLit, view);
+  let sh = shadowAt(v.w, n);
+  if (u.csm.y > 0.5 && u.soft.w > 3.5) {
+    let sp = cascadePair(v.w, n);
+    return vec4f(sp.x, sp.y, sp.w, 1.0);
+  }
+  if (u.csm.y > 0.5 && u.soft.w > 2.5) { return depthProbe(v.w); }
+  if (u.csm.y > 0.5) { return vec4f(sh, cascadeMix(v.w), 0.0, 1.0); }
+  var col = litIce(alb, nLit, view, sh);
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
+    col = col + vec3f(0.0, 0.02, 0.11) * ndl;
     let shade = 1.0 - smoothstep(0.02, 0.32, ndl);
     let rim = pow(1.0 - ndv, 1.8) * smoothstep(0.55, 0.18, ndv);
     col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
@@ -442,10 +473,11 @@ fn darken15(c: vec3f) -> vec3f {
   let view = normalize(u.cam.xyz - v.w);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   if (u.misc.z > 0.5 && u.misc.z < 1.5) { return vec4f(5.5 / 8.0, 0.0, 0.0, 1.0); }
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(4.5 / 16.0, 0.0, 0.0, 1.0); }
   if (u.misc.z > 1.5) { return present(alb); }
   var col = alb * dawnIrr(n);
   let limb = smoothstep(0.0, 0.22, ndv);
-  col = col * mix(0.22, 1.0, limb);
+  col = col * mix(0.22, 1.0, limb) * 0.75;
   return present(col);
 }
 @vertex fn vsBolt(@builtin(vertex_index) vi: u32) -> BO {
@@ -471,6 +503,8 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
   let s = mix(cell(a, uvs), cell(bb, uvs), k);
   if (s.a < 0.03) { discard; }
+  // Draw id 5 is Bolt. The id is the draw, not the fur colour.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(5.5 / 16.0, 0.0, 0.0, 1.0); }
   var c = s.rgb;
   c = mix(c, vec3f(dot(c, vec3f(0.3, 0.59, 0.11))), 0.12) * 1.08;
   let toE = normalize(vec2f(u.cam.x - u.bolt.x, u.cam.z - u.bolt.z));
@@ -513,7 +547,8 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
     kind = 1.0;
   } else if (which == 2u || which == 3u) {
     let s = select(-1.0, 1.0, which == 3u);
-    w = vec3f(b.x + right.x * (c.x * 0.07 + s * 0.11) + fwd.x * c.y * 0.045, b.y + 0.02, b.z + right.y * (c.x * 0.07 + s * 0.11) + fwd.y * c.y * 0.045);
+    // A little behind the toes, on snow the camera can see.
+    w = vec3f(b.x + right.x * (c.x * 0.12 + s * 0.11) + fwd.x * (c.y * 0.07 - 0.08), b.y + 0.02, b.z + right.y * (c.x * 0.12 + s * 0.11) + fwd.y * (c.y * 0.07 - 0.08));
     kind = 2.0;
   } else {
     let pr = u.prints[which - 4u];
@@ -526,7 +561,7 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
     let fade = (1.0 - smoothstep(7.5, 10.0, behind)) * smoothstep(-0.04, 0.22, behind);
     kind = select(-1.0, 3.0 + fade, pr.y > -10.0);
   }
-  var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; return o;
+  var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; o.wp = w; return o;
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
   if (v.k < 0.0) { discard; }
@@ -534,14 +569,25 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   if (r2 > 1.0) { discard; }
   let r = sqrt(r2);
   let soft = 1.0 - smoothstep(0.15, 1.0, r);
+  // Body and paws are occlusion under the dog. They stay when the snow is
+  // already in cascade shade. The sun-offset blot is the attached shadow:
+  // it draws only on lit snow, so it does not stack on the cast shadow.
+  let sh = shadowAt(v.wp, vec3f(0.0, 1.0, 0.0));
+  // Draw id 6 is the contact decal. Draw id 7 is a print. Alpha 1 so the blend replaces.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) {
+    let code = select(6.0, 7.0, v.k >= 3.0);
+    return vec4f((code + 0.5) / 16.0, 0.0, 0.0, 1.0);
+  }
+  let ao = v.k < 0.5 || (v.k > 1.5 && v.k < 2.5);
+  let keep = select(smoothstep(0.08, 0.7, sh), 1.0, ao);
   if (v.k < 0.5) {
-    return vec4f(toLin(vec3f(0.16, 0.18, 0.26)), soft * 0.46);
+    return vec4f(toLin(vec3f(0.16, 0.18, 0.26)), soft * 0.46 * keep);
   }
   if (v.k < 1.5) {
-    return vec4f(toLin(vec3f(0.18, 0.20, 0.32)), soft * 0.34);
+    return vec4f(toLin(vec3f(0.18, 0.20, 0.32)), soft * 0.34 * keep);
   }
   if (v.k < 2.5) {
-    return vec4f(toLin(vec3f(0.14, 0.16, 0.24)), soft * 0.40);
+    return vec4f(toLin(vec3f(0.10, 0.12, 0.18)), soft * 0.62 * keep);
   }
   // The still prefilter scores the snow. Prints stay out of that pass.
   if (u.sun.w > 29.5 && u.sun.w < 37.5) { discard; }
@@ -583,6 +629,8 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   let e = v.uv * vec2f(1.0, select(1.0, 0.38, near));
   let r = length(e);
   if (r > 1.0) { discard; }
+  // Draw id 8 is a flake.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(8.5 / 16.0, 0.0, 0.0, 1.0); }
   let soft = pow(1.0 - smoothstep(0.0, 1.0, r), select(1.35, 1.05, puff));
   let uv = vec2f(v.seed, 0.41) + v.uv * select(0.12, 0.06, v.layer > 0.5);
   let tex = textureSampleLevel(snowArr, samp, uv, 0, 1.0);
@@ -845,13 +893,53 @@ async function main() {
   const chunkI = mkInst(world.instances.chunk);
   const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
   const planetVerts = world.planet.length / 8;
-  const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const ub = dev.createBuffer({ size: 768, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
   window.__glacierAniso = aniso;
   const samp = dev.createSampler({
     magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
     addressModeU: 'repeat', addressModeV: 'repeat',
   });
+  // Stored depth is 0 at the sun and 1 at the far side. This implementation
+  // compares (reference, texel), so less-equal is stored >= reference.
+  const scmp = dev.createSampler({
+    compare: 'less-equal', magFilter: 'linear', minFilter: 'linear',
+    addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge',
+  });
+  const smTex = dev.createTexture({
+    size: CSM_CFG.atlas,
+    format: 'depth32float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC,
+  });
+  const nC = CSM_CFG.count;
+  const bakeProps = (proto, data) => {
+    const vCount = proto.length / 8;
+    const count = data.length / 8;
+    const out = new Float32Array(vCount * count * 8);
+    let o = 0;
+    for (let i = 0; i < count; i++) {
+      const ix = data[i * 8], iy = data[i * 8 + 1], iz = data[i * 8 + 2], yaw = data[i * 8 + 3];
+      const sx = data[i * 8 + 4], sy = data[i * 8 + 5], sz = data[i * 8 + 6], tilt = data[i * 8 + 7];
+      const cl = Math.cos(tilt), sl = Math.sin(tilt), c = Math.cos(yaw), s = Math.sin(yaw);
+      for (let v = 0; v < vCount; v++) {
+        const px = proto[v * 8] * sx, py = proto[v * 8 + 1] * sy, pz = proto[v * 8 + 2] * sz;
+        const pLx = cl * px - sl * py, pLy = sl * px + cl * py, pLz = pz;
+        out[o++] = c * pLx + s * pLz + ix;
+        out[o++] = pLy + iy;
+        out[o++] = -s * pLx + c * pLz + iz;
+        out[o++] = proto[v * 8 + 3];
+        out[o++] = 0; out[o++] = 1; out[o++] = 0; out[o++] = proto[v * 8 + 7];
+      }
+    }
+    return out;
+  };
+  const baked = ['icicle', 'chunk', 'drift'].map((name) => bakeProps(world.instances[name].proto, world.instances[name].data));
+  const caster = new Float32Array(world.verts.length + baked.reduce((s, p) => s + p.length, 0));
+  caster.set(world.verts, 0);
+  let casterOff = world.verts.length;
+  for (const part of baked) { caster.set(part, casterOff); casterOff += part.length; }
+  const casterBuf = mk(caster, GPUBufferUsage.VERTEX);
+  const casterVerts = caster.length / 8;
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
@@ -862,6 +950,8 @@ async function main() {
     { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'depth' } },
+    { binding: 10, visibility: GPUShaderStage.FRAGMENT, sampler: { type: 'comparison' } },
   ] });
   const snowEntries = (snow) => [
     { binding: 0, resource: { buffer: ub } },
@@ -873,6 +963,8 @@ async function main() {
     { binding: 6, resource: fallTex.createView({ dimension: '2d-array' }) },
     { binding: 7, resource: archTex.createView({ dimension: '2d-array' }) },
     { binding: 8, resource: seracTex.createView({ dimension: '2d-array' }) },
+    { binding: 9, resource: smTex.createView() },
+    { binding: 10, resource: scmp },
   ];
   const bg = dev.createBindGroup({ layout: bgl, entries: snowEntries(snowTex) });
   const bgAstc = snowAstc ? dev.createBindGroup({ layout: bgl, entries: snowEntries(snowAstc) }) : null;
@@ -954,6 +1046,138 @@ async function main() {
     multisample: { count: SAMPLES },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less' },
   });
+  const shDepth = {
+    format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less',
+    depthBias: 0, depthBiasSlopeScale: 0, depthBiasClamp: 0,
+  };
+  const shBgl = dev.createBindGroupLayout({ entries: [
+    { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
+  ] });
+  const shBoltBgl = dev.createBindGroupLayout({ entries: [
+    { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
+    { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+    { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+  ] });
+  const shBg = dev.createBindGroup({ layout: shBgl, entries: [{ binding: 0, resource: { buffer: ub } }] });
+  const shBoltBg = dev.createBindGroup({
+    layout: shBoltBgl,
+    entries: [
+      { binding: 0, resource: { buffer: ub } },
+      { binding: 1, resource: samp },
+      { binding: 2, resource: atlas.createView() },
+    ],
+  });
+  const shLayout = dev.createPipelineLayout({ bindGroupLayouts: [shBgl] });
+  const shBoltLayout = dev.createPipelineLayout({ bindGroupLayouts: [shBoltBgl] });
+  const pWorldSh = dev.createRenderPipeline({
+    layout: shLayout,
+    vertex: { module: mod, entryPoint: 'vsWorldSh', buffers: [vbuf] },
+    fragment: { module: mod, entryPoint: 'fsShadowClip', targets: [] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
+  const probeFloats = [];
+  for (let t = 0; t < world.verts.length && probeFloats.length < 512 * 256 * 8; t += 32) {
+    if (Math.round(world.verts[t + 3]) !== 0) continue;
+    probeFloats.push(world.verts[t], world.verts[t + 1], world.verts[t + 2], 1, world.verts[t + 4], world.verts[t + 5], world.verts[t + 6], 0);
+  }
+  const probeCount = probeFloats.length / 8;
+  const probeBuf = dev.createBuffer({ size: Math.max(32, probeFloats.length * 4), usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+  dev.queue.writeBuffer(probeBuf, 0, new Float32Array(probeFloats));
+  const probeTex = dev.createTexture({
+    size: [512, 256], format: 'rgba8unorm',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
+  const probeRb = dev.createBuffer({ size: 512 * 256 * 4, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const tapTex = dev.createTexture({
+    size: [8, 20], format: 'rgba16float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
+  const tapRb = dev.createBuffer({ size: 256 * 20, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const tapBuf = dev.createBuffer({ size: 20 * 8 * 3 * 32, usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+  const pTap = dev.createRenderPipeline({
+    layout,
+    vertex: {
+      module: mod, entryPoint: 'vsTapLog',
+      buffers: [{ arrayStride: 32, attributes: [
+        { shaderLocation: 0, offset: 0, format: 'float32x4' },
+        { shaderLocation: 1, offset: 16, format: 'float32x4' },
+      ] }],
+    },
+    fragment: { module: mod, entryPoint: 'fsTapLog', targets: [{ format: 'rgba16float' }] },
+    primitive: { topology: 'triangle-list' },
+  });
+  const pProbe = dev.createRenderPipeline({
+    layout,
+    vertex: {
+      module: mod, entryPoint: 'vsShadeProbe',
+      buffers: [{ arrayStride: 32, stepMode: 'instance', attributes: [
+        { shaderLocation: 0, offset: 0, format: 'float32x4' },
+        { shaderLocation: 1, offset: 16, format: 'float32x4' },
+      ] }],
+    },
+    fragment: { module: mod, entryPoint: 'fsShadeProbe', targets: [{ format: 'rgba8unorm' }] },
+    primitive: { topology: 'triangle-list' },
+  });
+  const pSeam = dev.createRenderPipeline({
+    layout,
+    vertex: {
+      module: mod, entryPoint: 'vsShadeProbe',
+      buffers: [{ arrayStride: 32, stepMode: 'instance', attributes: [
+        { shaderLocation: 0, offset: 0, format: 'float32x4' },
+        { shaderLocation: 1, offset: 16, format: 'float32x4' },
+      ] }],
+    },
+    fragment: { module: mod, entryPoint: 'fsCascadePair', targets: [{ format: 'rgba16float' }] },
+    primitive: { topology: 'triangle-list' },
+  });
+  const seamTex = dev.createTexture({
+    size: [512, 256], format: 'rgba16float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
+  const seamRb = dev.createBuffer({ size: 4096 * 256, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const pBoltSh = dev.createRenderPipeline({
+    layout: shBoltLayout,
+    vertex: { module: mod, entryPoint: 'vsBoltSh' },
+    fragment: { module: mod, entryPoint: 'fsBoltSh', targets: [] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
+  const idFmt = 'rg32uint';
+  const idTex = dev.createTexture({
+    size: CSM_CFG.atlas, format: idFmt,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
+  const idBpr = Math.ceil(CSM_CFG.atlas[0] * 8 / 256) * 256;
+  const depthBpr = Math.ceil(CSM_CFG.atlas[0] * 4 / 256) * 256;
+  const idRb = dev.createBuffer({ size: idBpr * CSM_CFG.atlas[1], usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const depthRb = dev.createBuffer({ size: depthBpr * CSM_CFG.atlas[1], usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const idTarget = [{ format: idFmt }];
+  const pWorldId = dev.createRenderPipeline({
+    layout: shLayout,
+    vertex: { module: mod, entryPoint: 'vsWorldSh', buffers: [vbuf] },
+    fragment: { module: mod, entryPoint: 'fsShadowId', targets: idTarget },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
+  const pBoltId = dev.createRenderPipeline({
+    layout: shBoltLayout,
+    vertex: { module: mod, entryPoint: 'vsBoltSh' },
+    fragment: { module: mod, entryPoint: 'fsBoltId', targets: idTarget },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
+  const worldTrisN = world.verts.length / 24;
+  const casterRanges = [{ name: 'world', a: 0, b: worldTrisN }];
+  {
+    let cursor = worldTrisN;
+    for (const name of ['icicle', 'chunk', 'drift']) {
+      const inst = world.instances[name];
+      const n = (inst.proto.length / 24) * inst.count;
+      casterRanges.push({ name, a: cursor, b: cursor + n });
+      cursor += n;
+    }
+  }
   const flakeGpu = new Float32Array(FLAKE_N * 8);
   const flakeBuf = dev.createBuffer({
     size: flakeGpu.byteLength,
@@ -993,8 +1217,10 @@ async function main() {
   const rb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
   const hdrBpr = Math.ceil(W * 8 / 256) * 256;
   const hdrRb = dev.createBuffer({ size: hdrBpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
-  const U = new Float32Array(128);
+  const U = new Float32Array(192);
   let lastEye = [0, 0, 0];
+  let lastTgt = [0, 0, 0];
+  let lastCascades = null;
   const worldVerts = world.verts.length / 8;
 
   let snowDiag = 0;
@@ -1016,6 +1242,7 @@ async function main() {
     U.set(vp, 0);
     U.set(invertMat4(vp), 16);
     lastEye = [eye[0], eye[1], eye[2]];
+    lastTgt = [tgt[0], tgt[1], tgt[2]];
     U.set([eye[0], eye[1], eye[2], t], 32);
     U.set([bp[0], bp[1], bp[2], live.psi], 36);
     const ff = (live.phase % 1) * 32;
@@ -1028,9 +1255,12 @@ async function main() {
     // Four centimetres into the snow. The card size stays 1.15 m.
     U[56] = pawLy + 0.04;
     U.set([0.70, 0.78, 0.88, 0], 44);
-    U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
+    const liveSun = window.__glacierSun;
+    const sunNow = Array.isArray(liveSun) && liveSun.length === 3 ? norm3(liveSun) : sunDir;
+    U.set([sunNow[0], sunNow[1], sunNow[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
-    U[53] = 0;
+    const maskOn = LMASK === 'shadow' || maskForce > 0;
+    U[53] = maskOn ? 4 : 0;
     U[54] = gateMode;
     U[55] = gateBreak;
     U[58] = skySwim;
@@ -1043,6 +1273,28 @@ async function main() {
       U[66 + i * 4] = p.z;
       U[67 + i * 4] = p.yaw;
     }
+    const casc = buildCascades({
+      eye: lastEye, tgt: lastTgt, fovY: FOV_Y, aspect: W / H, sun: sunNow, tier: CSM_TIER,
+      snap: window.__glacierSnap !== 0,
+    });
+    lastCascades = casc;
+    for (let i = 0; i < 4; i++) U.set(casc.mats[Math.min(i, casc.mats.length - 1)], 112 + i * 16);
+    U[176] = CSM_OFF ? 1 : 0;
+    U[177] = maskOn ? 1 : 0;
+    U[178] = casc.count;
+    U[179] = casc.atlas[1];
+    const tex = (i) => (2 * casc.radii[Math.min(i, casc.radii.length - 1)]) / casc.tiles[Math.min(i, casc.tiles.length - 1)];
+    U[180] = tex(0);
+    U[181] = tex(1);
+    const penLive = window.__glacierPen;
+    const penQ = Number.isFinite(penLive) ? penLive : Number(qs.get('pen'));
+    U[182] = Number.isFinite(penQ) && penQ >= 0 ? penQ : 0.08;
+    U[183] = qs.get('split') === '1' ? 4 : (qs.get('depthprobe') === '1' ? 3 : ((window.__glacierPenlock === 1 || qs.get('penlock') === '1') ? 2 : 0));
+    const farBias = Number(window.__glacierFarBias);
+    U[184] = Number.isFinite(farBias) ? farBias : 0;
+    U[185] = window.__glacierSeamR3 === 1 ? 1 : 0;
+    U[186] = 240 + casc.radii[0];
+    U[187] = 240 + casc.radii[Math.min(1, casc.radii.length - 1)];
   }
 
   function beginPass(enc, clear) {
@@ -1086,6 +1338,22 @@ async function main() {
       dev.queue.writeBuffer(flakeBuf, 0, flakeGpu);
     }
     const enc = dev.createCommandEncoder();
+    const sp = enc.beginRenderPass({
+      colorAttachments: [],
+      depthStencilAttachment: {
+        view: smTex.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'store',
+      },
+    });
+    if (!CSM_OFF) {
+      sp.setBindGroup(0, shBg);
+      sp.setPipeline(pWorldSh);
+      sp.setVertexBuffer(0, casterBuf);
+      sp.draw(casterVerts, nC);
+      sp.setPipeline(pBoltSh);
+      sp.setBindGroup(0, shBoltBg);
+      sp.draw(6, nC);
+    }
+    sp.end();
     const pass = beginPass(enc, [0, 0, 0, 1]);
     pass.setBindGroup(0, drawBg);
     pass.setPipeline(pSky); pass.draw(3);
@@ -1132,6 +1400,13 @@ async function main() {
     driftTris: world.budget.driftTris,
     draws: DRAWS.length,
     drawNames: DRAWS,
+    shadowDraws: CSM_OFF ? 0 : SHADOW_DRAWS.length,
+    shadowDrawNames: SHADOW_DRAWS,
+    shadowCascades: nC,
+    shadowAtlas: CSM_CFG.atlas,
+    shadowBytes: CSM_CFG.memoryBytes,
+    shadowTier: CSM_TIER,
+    shadowRasterTris: (world.budget.worldTris + world.budget.icicleTris + world.budget.chunkTris + world.budget.driftTris + 2) * (CSM_OFF ? 0 : nC),
     extentZ: world.extentZ,
     columns: world.columns,
     bolt: 'bolt439_atlas',
@@ -1700,6 +1975,310 @@ async function main() {
       tris: world.budget.totalTris,
       draws: DRAWS.length,
     };
+  };
+  function poseInfo(gpuErr) {
+    return {
+      x: live.x, z: live.z, psi: live.psi, y: pawGround(),
+      eye: lastEye, tgt: lastTgt, W, H,
+      tris: world.budget.totalTris, draws: DRAWS.length, presentPass: 1,
+      shadowDraws: CSM_OFF ? 0 : SHADOW_DRAWS.length,
+      gpuErr,
+      csm: lastCascades && { tier: lastCascades.tier, splits: lastCascades.splits, radii: lastCascades.radii, count: lastCascades.count },
+    };
+  }
+  window.__glacierStill = async (t, mode) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const prevMask = maskForce;
+    const prevMode = gateMode;
+    maskForce = mode === 'shadow' ? 1 : 0;
+    gateMode = mode === 'mat' ? 1 : mode === 'id' ? 3 : 0;
+    const frame = await readFrame();
+    maskForce = prevMask;
+    gateMode = prevMode;
+    return { png: await blobOf(frame.src, 'image/png'), info: poseInfo(frame.gpuErr) };
+  };
+  function half(h) {
+    const s = (h & 0x8000) >> 15;
+    const e = (h & 0x7c00) >> 10;
+    const f = h & 0x03ff;
+    if (e === 0) return (s ? -1 : 1) * 2 ** -14 * (f / 1024);
+    if (e === 31) return f ? NaN : (s ? -Infinity : Infinity);
+    return (s ? -1 : 1) * 2 ** (e - 15) * (1 + f / 1024);
+  }
+  window.__glacierTapLog = async (t, points, eye, tgt) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    if (eye && tgt) gatePose = { eye, tgt };
+    const n = Math.min(20, points.length);
+    const data = new Float32Array(n * 8 * 3 * 8);
+    for (let i = 0; i < n; i++) {
+      const p = points[i];
+      for (let s = 0; s < 8; s++) {
+        for (let c = 0; c < 3; c++) {
+          const o = ((i * 8 + s) * 3 + c) * 8;
+          data[o] = p[0]; data[o + 1] = p[1]; data[o + 2] = p[2]; data[o + 3] = s * 4 + c;
+          data[o + 4] = p[3]; data[o + 5] = p[4]; data[o + 6] = p[5]; data[o + 7] = i;
+        }
+      }
+    }
+    dev.queue.writeBuffer(tapBuf, 0, data);
+    fillU(sim);
+    dev.queue.writeBuffer(ub, 0, U);
+    const enc = dev.createCommandEncoder();
+    const sp = enc.beginRenderPass({
+      colorAttachments: [],
+      depthStencilAttachment: { view: smTex.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'store' },
+    });
+    sp.setBindGroup(0, shBg);
+    sp.setPipeline(pWorldSh);
+    sp.setVertexBuffer(0, casterBuf);
+    sp.draw(casterVerts, nC);
+    sp.setPipeline(pBoltSh);
+    sp.setBindGroup(0, shBoltBg);
+    sp.draw(6, nC);
+    sp.end();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: tapTex.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] }],
+    });
+    pass.setPipeline(pTap);
+    pass.setBindGroup(0, drawBg);
+    pass.setVertexBuffer(0, tapBuf);
+    pass.draw(n * 8 * 3);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: tapTex }, { buffer: tapRb, bytesPerRow: 256 }, [8, 20]);
+    dev.queue.submit([enc.finish()]);
+    await tapRb.mapAsync(GPUMapMode.READ);
+    const raw = new Uint16Array(tapRb.getMappedRange());
+    const rows = [];
+    for (let i = 0; i < n; i++) {
+      const pix = (slot) => {
+        const o = (i * (256 / 2)) + slot * 4;
+        return [half(raw[o]), half(raw[o + 1]), half(raw[o + 2]), half(raw[o + 3])];
+      };
+      const taps = [0, 1, 2, 3].map(pix);
+      const head = pix(4);
+      const uv = pix(5);
+      const fac = pix(6);
+      const centre = pix(7);
+      const texel = (u, v) => [Math.floor(u * 2048), Math.floor(v * 3072)];
+      rows.push({
+        cascade: head[0], extent: +head[1].toFixed(3), band: +head[2].toFixed(3), factor: +head[3].toFixed(3),
+        uv: uv.slice(0, 2).map((v) => +v.toFixed(4)), texel: texel(uv[0], uv[1]),
+        zRef: +uv[2].toFixed(4), inside: uv[3],
+        near: +fac[0].toFixed(3), far: +fac[1].toFixed(3), z0: +fac[2].toFixed(4), z1: +fac[3].toFixed(4),
+        centreStored: [+centre[0].toFixed(4), +centre[1].toFixed(4)],
+        centreChosen: +centre[2].toFixed(4), centreCmp: +centre[3].toFixed(3),
+        taps: taps.map((t) => ({ uv: [+t[0].toFixed(4), +t[1].toFixed(4)], texel: texel(t[0], t[1]), stored: +t[2].toFixed(4), cmp: +t[3].toFixed(3) })),
+      });
+    }
+    const head = Array.from(raw.slice(0, 24));
+    tapRb.unmap();
+    gatePose = null;
+    return { rows, head };
+  };
+  window.__glacierCasterHist = async (t, points, eye, tgt) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    if (eye && tgt) gatePose = { eye, tgt };
+    fillU(sim);
+    dev.queue.writeBuffer(ub, 0, U);
+    const enc = dev.createCommandEncoder();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: idTex.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] }],
+      depthStencilAttachment: { view: smTex.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'store' },
+    });
+    pass.setBindGroup(0, shBg);
+    pass.setPipeline(pWorldId);
+    pass.setVertexBuffer(0, casterBuf);
+    pass.draw(casterVerts, nC);
+    pass.setPipeline(pBoltId);
+    pass.setBindGroup(0, shBoltBg);
+    pass.draw(6, nC);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: idTex }, { buffer: idRb, bytesPerRow: idBpr }, CSM_CFG.atlas);
+    enc.copyTextureToBuffer({ texture: smTex }, { buffer: depthRb, bytesPerRow: depthBpr }, CSM_CFG.atlas);
+    dev.queue.submit([enc.finish()]);
+    await idRb.mapAsync(GPUMapMode.READ);
+    await depthRb.mapAsync(GPUMapMode.READ);
+    const idU = new Uint32Array(idRb.getMappedRange());
+    const depthF = new Float32Array(depthRb.getMappedRange());
+    const casc = buildCascades({ eye: lastEye, tgt: lastTgt, fovY: FOV_Y, aspect: W / H, sun: sunDir, tier: 'phone' });
+    const atlas = CSM_CFG.atlas;
+    const nameOf = (prim) => {
+      const tri = world.verts;
+      for (const r of casterRanges) if (prim >= r.a && prim < r.b) {
+        if (r.name !== 'world') return r.name;
+        const mat = Math.round(tri[(prim * 3) * 8 + 3]);
+        return mat < 0.5 ? 'snow' : 'world-mat' + mat;
+      }
+      return 'out-of-range';
+    };
+    const hist = {};
+    const bleed = {};
+    const examples = [];
+    const both = [];
+    const bump = (map, k) => { map[k] = (map[k] || 0) + 1; };
+    for (const p of points) {
+      let best = null;
+      const samples = [];
+      for (let ci = 0; ci < 2; ci++) {
+        const q = applyMat(casc.mats[ci], p);
+        const e = Math.max(Math.abs(q[0]), Math.abs(q[1]));
+        if (e >= 0.995 || q[2] < 0 || q[2] > 1) continue;
+        const ndcX = q[0] * 0.5 + 0.5;
+        const ndcY = 0.5 - q[1] * 0.5;
+        const tile = atlas[1] > 3500 ? (ci === 0 ? [0, 0, 1, 0.5] : [0, 0.5, 1, 1]) : (ci === 0 ? [0, 0, 1, 2 / 3] : [0, 2 / 3, 0.5, 1]);
+        const u = tile[0] + (tile[2] - tile[0]) * ndcX;
+        const v = tile[1] + (tile[3] - tile[1]) * ndcY;
+        const x = Math.max(0, Math.min(atlas[0] - 1, (u * atlas[0]) | 0));
+        const y = Math.max(0, Math.min(atlas[1] - 1, (v * atlas[1]) | 0));
+        const stored = depthF[y * (depthBpr / 4) + x];
+        const who = idU[y * (idBpr / 4) + x * 2];
+        const prim = idU[y * (idBpr / 4) + x * 2 + 1];
+        const rec = { ci, stored: +stored.toFixed(4), who, prim, qz: +q[2].toFixed(4), name: (who & 0xffff) === 2 ? 'bolt' : ((who & 0xffff) === 0 ? 'empty' : nameOf(prim)) };
+        samples.push(rec);
+        if (best == null || stored < best.stored) best = { ci, stored, who, prim, qz: q[2], e };
+      }
+      if (both.length < 2) both.push({ p, samples });
+      if (!best) { bump(hist, 'outside'); continue; }
+      const draw = best.who & 0xffff;
+      const writer = best.who >>> 16;
+      if (draw === 0) {
+        bump(hist, best.stored < 0.999 ? 'depth-without-id' : 'empty');
+        const q = applyMat(casc.mats[best.ci], p);
+        const ndcX = q[0] * 0.5 + 0.5, ndcY = 0.5 - q[1] * 0.5;
+        const tile = atlas[1] > 3500 ? (best.ci === 0 ? [0, 0, 1, 0.5] : [0, 0.5, 1, 1]) : (best.ci === 0 ? [0, 0, 1, 2 / 3] : [0, 2 / 3, 0.5, 1]);
+        const u = tile[0] + (tile[2] - tile[0]) * ndcX;
+        const v = tile[1] + (tile[3] - tile[1]) * ndcY;
+        const x0 = (u * atlas[0]) | 0, y0 = (v * atlas[1]) | 0;
+        let nearName = 'no-neighbour';
+        for (let dy = -2; dy <= 2 && nearName === 'no-neighbour'; dy++) {
+          for (let dx = -2; dx <= 2; dx++) {
+            const x = x0 + dx, y = y0 + dy;
+            if (x < 0 || y < 0 || x >= atlas[0] || y >= atlas[1]) continue;
+            const whoN = idU[y * (idBpr / 4) + x * 2];
+            const primN = idU[y * (idBpr / 4) + x * 2 + 1];
+            const d = whoN & 0xffff;
+            if (d === 2) nearName = 'bolt';
+            else if (d === 1) nearName = nameOf(primN);
+          }
+        }
+        bump(hist, 'near-' + nearName);
+        continue;
+      }
+      if (writer !== best.ci) bump(bleed, 'cascade-' + best.ci + '-wrote-' + writer);
+      const name = draw === 2 ? 'bolt' : nameOf(best.prim);
+      bump(hist, name);
+      if (examples.length < 6) examples.push({ name, draw, prim: best.prim, writer, ci: best.ci, stored: +best.stored.toFixed(4), qz: +best.qz.toFixed(4) });
+    }
+    const strip = [];
+    if (points[0]) {
+      const q = applyMat(casc.mats[0], points[0]);
+      const tile = [0, 0, 1, 2 / 3];
+      const u = tile[0] + (tile[2] - tile[0]) * (q[0] * 0.5 + 0.5);
+      const v = tile[1] + (tile[3] - tile[1]) * (0.5 - q[1] * 0.5);
+      const y = Math.max(0, Math.min(atlas[1] - 1, (v * atlas[1]) | 0));
+      const x0 = Math.max(0, Math.min(atlas[0] - 1, (u * atlas[0]) | 0));
+      let run = null;
+      for (let x = Math.max(0, x0 - 250); x <= Math.min(atlas[0] - 1, x0 + 250); x++) {
+        const stored = depthF[y * (depthBpr / 4) + x];
+        const prim = stored < 0.999 ? idU[y * (idBpr / 4) + x * 2 + 1] : 0;
+        if (run && run.prim === prim && Math.abs(run.z - stored) < 0.002) run.x1 = x;
+        else {
+          if (run && run.prim) strip.push(run);
+          run = { x0: x, x1: x, prim, z: +stored.toFixed(4) };
+        }
+      }
+      if (run && run.prim) strip.push(run);
+      strip.meta = { y, x: x0 };
+    }
+    idRb.unmap();
+    depthRb.unmap();
+    gatePose = null;
+    return { n: points.length, hist, bleed, examples, ranges: casterRanges, both, strip, stripAt: strip.meta };
+  };
+  window.__glacierVertShadow = async (eye, tgt, snap) => {
+    window.__glacierSnap = snap ? 1 : 0;
+    gatePose = { eye, tgt };
+    renderFixed(sim);
+    const enc = dev.createCommandEncoder();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: probeTex.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] }],
+    });
+    pass.setPipeline(pProbe);
+    pass.setBindGroup(0, drawBg);
+    pass.setVertexBuffer(0, probeBuf);
+    pass.draw(3, probeCount);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: probeTex }, { buffer: probeRb, bytesPerRow: 512 * 4 }, [512, 256]);
+    dev.queue.submit([enc.finish()]);
+    await probeRb.mapAsync(GPUMapMode.READ);
+    const raw = new Uint8Array(probeRb.getMappedRange()).slice();
+    probeRb.unmap();
+    gatePose = null;
+    window.__glacierSnap = 1;
+    const values = new Uint8Array(probeCount);
+    for (let i = 0; i < probeCount; i++) values[i] = raw[(i * 4)];
+    let bin = '';
+    for (let i = 0; i < values.length; i += 4000) bin += String.fromCharCode(...values.subarray(i, i + 4000));
+    return { n: probeCount, b64: btoa(bin) };
+  };
+  window.__glacierCascadeSeam = async (eye, tgt) => {
+    gatePose = { eye, tgt };
+    renderFixed(sim);
+    const enc = dev.createCommandEncoder();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: seamTex.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] }],
+    });
+    pass.setPipeline(pSeam);
+    pass.setBindGroup(0, drawBg);
+    pass.setVertexBuffer(0, probeBuf);
+    pass.draw(3, probeCount);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: seamTex }, { buffer: seamRb, bytesPerRow: 4096 }, [512, 256]);
+    dev.queue.submit([enc.finish()]);
+    await seamRb.mapAsync(GPUMapMode.READ);
+    const raw = new Uint16Array(seamRb.getMappedRange());
+    let n = 0, sum = 0, max = 0, over = 0, edgeN = 0, edgeSum = 0;
+    for (let i = 0; i < probeCount; i++) {
+      const o = i * 4;
+      if (half(raw[o + 3]) < 0.5) continue;
+      const d = Math.abs(half(raw[o]) - half(raw[o + 1]));
+      n++;
+      sum += d;
+      if (d > max) max = d;
+      if (d > 0.1) over++;
+      if (d > 0.02) { edgeN++; edgeSum += d; }
+    }
+    seamRb.unmap();
+    gatePose = null;
+    return {
+      n, mean: n ? sum / n : 1, max, frac: n ? over / n : 1,
+      edgeN, edgeMean: edgeN ? edgeSum / edgeN : 0,
+    };
+  };
+  window.__glacierPose = async (eye, tgt, mode) => {
+    gatePose = { eye, tgt };
+    const prevMask = maskForce;
+    const prevMode = gateMode;
+    maskForce = mode === 'shadow' ? 1 : 0;
+    gateMode = mode === 'mat' ? 1 : 0;
+    const frame = await readFrame();
+    maskForce = prevMask;
+    gateMode = prevMode;
+    gatePose = null;
+    return { png: await blobOf(frame.src, 'image/png'), info: poseInfo(frame.gpuErr) };
+  };
+  window.__glacierPerf = async (n = 4) => {
+    await dev.queue.onSubmittedWorkDone();
+    const a = performance.now();
+    for (let i = 0; i < n; i++) {
+      renderFixed(simClock);
+      await dev.queue.onSubmittedWorkDone();
+    }
+    const ms = (performance.now() - a) / n;
+    return { ms, fps: 1000 / ms, n, w: W, h: H, draws: DRAWS.length, shadowDraws: CSM_OFF ? 0 : SHADOW_DRAWS.length, tris: world.budget.totalTris };
   };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;

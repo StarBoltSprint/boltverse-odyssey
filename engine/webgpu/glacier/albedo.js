@@ -1,7 +1,7 @@
 // Authored linear albedo. Ice, snow, and dawn rock in their own colours.
 // Photographs are sampled in real colour. The shader multiplies by the dawn rig.
 // Nothing here is fitted to a render.
-import { shadeAt, norm3 } from '../biome-factory/light-rig.js';
+import { shadeAtSh, norm3 } from '../biome-factory/light-rig.js';
 import { REPEATS_PER_M } from './texel-density.js';
 
 export const ICE = {
@@ -266,12 +266,13 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 4.0);
   return mix(serac, snow, face * 0.35);
 }
-fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {
+fn litIce(alb: vec3f, n: vec3f, view: vec3f, sh: f32) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let graze = smoothstep(0.50, 0.08, ndv);
   let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${C.specPower}.0);
-  let diffuse = alb * dawnIrr(n);
-  var specCol = alb * spec * graze * ${C.sheen};
+  let diffuse = alb * dawnIrrSh(n, sh);
+  let f0 = ${Math.min(C.sheen, 0.21)};
+  var specCol = alb * spec * graze * f0 * sh;
   let specY = dot(specCol, vec3f(0.2126, 0.7152, 0.0722));
   specCol = specCol * min(1.0, ${C.specCap} / max(specY, 1e-5));
   return diffuse + specCol;
@@ -288,17 +289,19 @@ function smoothstep(e0, e1, x) {
 }
 
 // CPU twin of litIce. Grazing sheen is zero once ndv is above 0.50.
-export function litIce(alb, n, view, light) {
+export function litIce(alb, n, view, light, sh = 1) {
   const nn = norm3(n);
   const vv = norm3(view);
   const sun = norm3((light.sun || light.moon).direction);
   const ndl = Math.max(0, dot(nn, sun));
-  const irr = shadeAt(light, ndl, Math.max(0, nn[1])).rgb;
+  const s = Math.min(1, Math.max(0, sh));
+  const irr = shadeAtSh(light, ndl, Math.max(0, nn[1]), s).rgb;
   const ndv = Math.max(0, dot(nn, vv));
   const graze = smoothstep(0.50, 0.08, ndv);
   const half = norm3(add(sun, vv));
   const spec = Math.max(0, dot(nn, half)) ** ICE.specPower;
-  const specCol = alb.map((a) => a * spec * graze * ICE.sheen);
+  const f0 = Math.min(ICE.sheen, 0.21);
+  const specCol = alb.map((a) => a * spec * graze * f0 * s);
   const specY = 0.2126 * specCol[0] + 0.7152 * specCol[1] + 0.0722 * specCol[2];
   const scale = Math.min(1, ICE.specCap / Math.max(specY, 1e-5));
   return alb.map((a, i) => a * irr[i] + specCol[i] * scale);
