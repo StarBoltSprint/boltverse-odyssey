@@ -35,15 +35,15 @@ export function highSplits() {
   return s;
 }
 
-// Both maps are 2048², stacked. depth32float.
-// 2048 * 4096 * 4 = 33554432 bytes (32 MiB).
+// Near 2048² over a 1024² far map. depth32float.
+// 2048 * 3072 * 4 = 25165824 bytes (24 MiB).
 export const PHONE_SHADOW = {
   lambda: 0.7,
   near: 2048,
-  far: 2048,
-  atlas: [2048, 4096],
-  memoryBytes: 2048 * 4096 * 4,
-  penumbraM: 0.11,
+  far: 1024,
+  atlas: [2048, 3072],
+  memoryBytes: 2048 * 3072 * 4,
+  penumbraM: 0.08,
 };
 
 export function tierConfig(tier) {
@@ -158,12 +158,22 @@ fn atlasClip(clip: vec4f, ci: u32) -> vec4f {
     o.y = clip.y * 0.5 + select(0.5, -0.5, row == 1u) * clip.w;
     return o;
   }
-  // Phone atlas 2048 x 4096. Near is the top half, far the bottom half.
-  if (ci == 0u) {
-    o.y = clip.y * 0.5 + clip.w * 0.5;
+  // u.csm.w is the atlas height. 4096 stacks two 2048 maps. 3072 is a
+  // 2048 near map over a 1024 far map on the left.
+  if (u.csm.w > 3500.0) {
+    if (ci == 0u) {
+      o.y = clip.y * 0.5 + clip.w * 0.5;
+      return o;
+    }
+    o.y = clip.y * 0.5 - clip.w * 0.5;
     return o;
   }
-  o.y = clip.y * 0.5 - clip.w * 0.5;
+  if (ci == 0u) {
+    o.y = clip.y * (2.0 / 3.0) + clip.w * (1.0 / 3.0);
+    return o;
+  }
+  o.x = clip.x * 0.5 - clip.w * 0.5;
+  o.y = clip.y * (1.0 / 3.0) - clip.w * (2.0 / 3.0);
   return o;
 }
 fn tileOf(ci: f32) -> vec4f {
@@ -172,64 +182,50 @@ fn tileOf(ci: f32) -> vec4f {
     let row = floor(ci / 2.0);
     return vec4f(col * 0.5, row * 0.5, col * 0.5 + 0.5, row * 0.5 + 0.5);
   }
-  if (ci < 0.5) { return vec4f(0.0, 0.0, 1.0, 0.5); }
-  return vec4f(0.0, 0.5, 1.0, 1.0);
+  if (u.csm.w > 3500.0) {
+    if (ci < 0.5) { return vec4f(0.0, 0.0, 1.0, 0.5); }
+    return vec4f(0.0, 0.5, 1.0, 1.0);
+  }
+  if (ci < 0.5) { return vec4f(0.0, 0.0, 1.0, 2.0 / 3.0); }
+  return vec4f(0.0, 2.0 / 3.0, 0.5, 1.0);
 }
 fn shadowUv(q: vec4f, ci: f32) -> vec2f {
   let ndc = vec2f(q.x * 0.5 + 0.5, 0.5 - q.y * 0.5);
   let tile = tileOf(ci);
   return vec2f(mix(tile.x, tile.z, ndc.x), mix(tile.y, tile.w, ndc.y));
 }
-fn clampTile(uv: vec2f, tile: vec4f) -> vec2f {
+// 1.5 texels keeps a bilinear footprint inside the tile. Half a texel still
+// reads the next cascade across the 2048 boundary.
+fn clampTileInset(uv: vec2f, tile: vec4f, inset: f32) -> vec2f {
   let dims = vec2f(textureDimensions(smap));
-  let h = 0.5 / dims;
+  let h = inset / dims;
   return clamp(uv, tile.xy + h, tile.zw - h);
 }
-fn depthLit(pix: vec2i, zRef: f32) -> f32 {
-  let dims = vec2i(textureDimensions(smap));
-  let p = clamp(pix, vec2i(0), dims - vec2i(1));
-  return select(0.0, 1.0, textureLoad(smap, p, 0) >= zRef);
-}
-// Bilinear compare of the four depth texels. The comparison sampler on this
-// GPU does not match those texels, so the weights are applied here. The
-// sampler is still read so the binding stays live.
-fn cmpBilinear(uv: vec2f, zRef: f32) -> f32 {
+// Four bilinear compares. Together they cover a 3x3 of depth tests.
+// less-equal on this stack is stored >= reference (0 at the sun, 1 at the far side).
+fn hw4(uv: vec2f, zRef: f32, penM: f32, texelM: f32, tile: vec4f) -> f32 {
   let dims = vec2f(textureDimensions(smap));
-  let p = uv * dims - 0.5;
-  let i = vec2i(floor(p));
-  let f = fract(p);
-  let s00 = depthLit(i, zRef);
-  let s10 = depthLit(i + vec2i(1, 0), zRef);
-  let s01 = depthLit(i + vec2i(0, 1), zRef);
-  let s11 = depthLit(i + vec2i(1, 1), zRef);
-  let sw = mix(mix(s00, s10, f.x), mix(s01, s11, f.x), f.y);
-  let hw = textureSampleCompareLevel(smap, scmp, uv, zRef);
-  return select(sw, sw, hw >= 0.0);
-}
-// 3x3 of those taps. step is the spacing in atlas UV, from the world penumbra.
-fn pcf3(uv: vec2f, zRef: f32, step: vec2f, tile: vec4f) -> f32 {
+  let rad = max(penM * 0.5 / max(texelM, 1e-4), 0.0);
+  let inset = max(rad + 1.0, 1.5);
+  let o = vec2f(rad / dims.x, rad / dims.y);
+  let z = clamp(zRef, 0.0, 1.0);
   var s = 0.0;
-  for (var j = -1; j <= 1; j++) {
-    for (var i = -1; i <= 1; i++) {
-      s += cmpBilinear(clampTile(uv + vec2f(f32(i), f32(j)) * step, tile), zRef);
-    }
-  }
-  return s / 9.0;
+  s += textureSampleCompareLevel(smap, scmp, clampTileInset(uv + vec2f(-o.x, -o.y), tile, inset), z);
+  s += textureSampleCompareLevel(smap, scmp, clampTileInset(uv + vec2f(o.x, -o.y), tile, inset), z);
+  s += textureSampleCompareLevel(smap, scmp, clampTileInset(uv + vec2f(-o.x, o.y), tile, inset), z);
+  s += textureSampleCompareLevel(smap, scmp, clampTileInset(uv + vec2f(o.x, o.y), tile, inset), z);
+  return s * 0.25;
 }
-fn penumbraM(w: vec3f) -> f32 {
-  // World metres, the same at a fixed point for every camera. A camera-varying
-  // radius would shimmer. 12 cm hides a near texel without washing out a band.
-  return u.soft.z + w.x * 0.0;
+fn viewBand(w: vec3f) -> f32 {
+  let dist = length(w.xz - u.cam.xz);
+  return smoothstep(16.0, 32.0, dist);
 }
 fn shadeCascade(ci: f32, q: vec4f, bias: f32, texelM: f32, penM: f32) -> f32 {
   if (q.z < 0.0 || q.z > 1.0) { return 1.0; }
   let uv = shadowUv(q, ci);
   let tile = tileOf(ci);
   if (uv.x < tile.x || uv.y < tile.y || uv.x > tile.z || uv.y > tile.w) { return 1.0; }
-  let dims = vec2f(textureDimensions(smap));
-  let texels = max(penM * 0.5 / max(texelM, 1e-4), 0.5);
-  let step = vec2f(texels / dims.x, texels / dims.y);
-  return pcf3(uv, q.z - bias, step, tile);
+  return hw4(uv, q.z - bias, penM, texelM, tile);
 }
 fn slopeBias(z: f32) -> f32 {
   let slope = min(max(abs(dpdx(z)), abs(dpdy(z))), 0.0004);
@@ -242,20 +238,21 @@ fn cascadePair(w: vec3f, nrm: vec3f) -> vec4f {
   let b0 = slopeBias(q0.z);
   let b1 = slopeBias(q1.z);
   let e0 = max(abs(q0.x), abs(q0.y));
-  let pen = penumbraM(w);
-  let s0 = shadeCascade(0.0, q0, b0, u.soft.x, pen);
-  let s1 = shadeCascade(1.0, q1, b1, u.soft.y, pen);
-  return vec4f(s0, s1, e0, max(abs(q1.x), abs(q1.y)));
+  let band = viewBand(w);
+  // penlock (soft.w > 1) forces one width, for the IoU-vs-width table.
+  // Otherwise the far map is at least two of its texels, and the near map
+  // opens to that same width across the view-depth band.
+  let farW = select(max(u.soft.z, u.soft.y * 2.0), u.soft.z, u.soft.w > 1.5);
+  let nearW = mix(u.soft.z, farW, band);
+  let s0 = shadeCascade(0.0, q0, b0, u.soft.x, nearW);
+  let s1 = shadeCascade(1.0, q1, b1, u.soft.y, farW);
+  return vec4f(s0, s1, e0, band);
 }
 fn shadowPhone(w: vec3f, nrm: vec3f) -> f32 {
   let p = cascadePair(w, nrm);
-  let s0 = p.x;
-  let s1 = p.y;
   let e0 = p.z;
-  let e1 = p.w;
-  let wBlend = smoothstep(0.75, 0.97, e0);
-  if (e0 >= 0.995) { return select(1.0, s1, e1 < 0.995); }
-  return mix(s0, s1, wBlend);
+  if (e0 >= 0.995) { return p.y; }
+  return mix(p.x, p.y, p.w);
 }
 fn shadowHigh(w: vec3f, nrm: vec3f) -> f32 {
   let ws = w + nrm * 0.035;
@@ -264,7 +261,7 @@ fn shadowHigh(w: vec3f, nrm: vec3f) -> f32 {
   let b0 = slopeBias(q0.z);
   let b1 = slopeBias(q1.z);
   let e0 = max(abs(q0.x), abs(q0.y));
-  let pen = penumbraM(w);
+  let pen = u.soft.z;
   if (e0 < 0.98) { return shadeCascade(0.0, q0, b0, u.soft.x, pen); }
   return shadeCascade(1.0, q1, b1, u.soft.y, pen);
 }
@@ -279,8 +276,7 @@ fn cascadeMix(w: vec3f) -> f32 {
     let q = u.c0 * vec4f(w, 1.0);
     return smoothstep(0.75, 0.95, max(abs(q.x), abs(q.y)));
   }
-  let q = u.c0 * vec4f(w, 1.0);
-  return smoothstep(0.75, 0.97, max(abs(q.x), abs(q.y)));
+  return viewBand(w);
 }
 struct SH {
   @builtin(position) p: vec4f,

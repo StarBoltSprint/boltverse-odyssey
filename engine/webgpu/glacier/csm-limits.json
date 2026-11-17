@@ -20,7 +20,7 @@
   "phoneFpsSoftOk": 50,
   "phoneSize": [540, 960],
   "cascades": {
-    "phone": { "count": 2, "splitsM": [0, 25.8, 120], "lambda": 0.7, "atlas": [2048, 4096], "near": 2048, "far": 2048, "memoryBytes": 33554432, "pcf": "3x3 bilinear compare, world penumbra 6 cm to 80 cm" },
+    "phone": { "count": 2, "splitsM": [0, 25.8, 120], "lambda": 0.7, "atlas": [2048, 3072], "near": 2048, "far": 1024, "memoryBytes": 25165824, "pcf": "4 bilinear less-equal taps, near 8 cm, far at least 2 texels" },
     "high": { "count": 4, "lambda": 0.7, "nearM": 1, "farM": 120, "atlas": [2048, 2048], "tile": 1024, "pcf": "poisson-16", "flag": "csm=high", "default": false }
   },
   "accounting": "Colour draws stay 9. The shadow depth pass is 2 draws: one batched caster draw (world, icicle, chunk, drift baked into one buffer) and the sun-facing Bolt card. Both cascades are instances of those draws, so the cascade count does not add a draw. Colour plus shadow is 11, inside the 12-draw ceiling. Unique triangles stay 195634. The shadow pass re-rasterises those meshes and that fill is reported separately. Polygon depth bias is 0. The receiver uses a 2 cm normal offset and one depth bias. The near kernel widens across the cascade blend. The grade pass stays outside the list.",

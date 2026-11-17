@@ -39,6 +39,17 @@
     "note": "Every standard time is inside 0.15 and 0.85. The sun sits behind the runner and 48 degrees toward +X, at 28 degrees elevation. Peach colour and exposure are unchanged."
   },
   "select": "Among samples that pass coverage on every standard time, keep the one whose path is a mix of lit snow and cast bands. Do not move the sun to chase IoU, seam, or the tone map.",
+  "round5": {
+    "reason": "11.70 s at azimuth 132 was 0.893, over the 0.85 ceiling. A smaller move that stays behind the runner was surveyed at elevation 28.",
+    "tried": {
+      "az124el28": [0.539, 0.537, 0.550, 0.544, 0.556, 0.522],
+      "az140el28": "0.97 to 0.98, over the ceiling",
+      "az148el28": "0.99, over the ceiling",
+      "az132el30": [0.806, 0.807, 0.804, 0.805, 0.804, 0.798]
+    },
+    "chosen": null,
+    "note": "A shadow-only survey at azimuth 124 looked inside the band. The full stills at that direction were not: 7.9 s 0.978, 11.70 s 0.996, 24 s 0.965. The sun stays at azimuth 132."
+  },
   "forwardMeasured": {
     "direction": [0.0161, 0.3907, -0.9204],
     "elevationDeg": 23,

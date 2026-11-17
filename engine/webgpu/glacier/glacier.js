@@ -867,8 +867,10 @@ async function main() {
     magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
     addressModeU: 'repeat', addressModeV: 'repeat',
   });
+  // Stored depth is 0 at the sun and 1 at the far side. This implementation
+  // compares (reference, texel), so less-equal is stored >= reference.
   const scmp = dev.createSampler({
-    compare: 'greater-equal', magFilter: 'linear', minFilter: 'linear',
+    compare: 'less-equal', magFilter: 'linear', minFilter: 'linear',
     addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge',
   });
   const smTex = dev.createTexture({
@@ -1125,7 +1127,9 @@ async function main() {
     // Four centimetres into the snow. The card size stays 1.15 m.
     U[56] = pawLy + 0.04;
     U.set([0.70, 0.78, 0.88, 0], 44);
-    U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
+    const liveSun = window.__glacierSun;
+    const sunNow = Array.isArray(liveSun) && liveSun.length === 3 ? norm3(liveSun) : sunDir;
+    U.set([sunNow[0], sunNow[1], sunNow[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
     const maskOn = LMASK === 'shadow' || maskForce > 0;
     U[53] = maskOn ? 4 : 0;
@@ -1142,19 +1146,21 @@ async function main() {
       U[67 + i * 4] = p.yaw;
     }
     const casc = buildCascades({
-      eye: lastEye, tgt: lastTgt, fovY: FOV_Y, aspect: W / H, sun: sunDir, tier: CSM_TIER,
+      eye: lastEye, tgt: lastTgt, fovY: FOV_Y, aspect: W / H, sun: sunNow, tier: CSM_TIER,
     });
     lastCascades = casc;
     for (let i = 0; i < 4; i++) U.set(casc.mats[Math.min(i, casc.mats.length - 1)], 112 + i * 16);
     U[176] = CSM_OFF ? 1 : 0;
     U[177] = maskOn ? 1 : 0;
     U[178] = casc.count;
-    U[179] = casc.tile;
+    U[179] = casc.atlas[1];
     const tex = (i) => (2 * casc.radii[Math.min(i, casc.radii.length - 1)]) / casc.tiles[Math.min(i, casc.tiles.length - 1)];
     U[180] = tex(0);
     U[181] = tex(1);
-    U[182] = 0.14;
-    U[183] = casc.memoryBytes || 0;
+    const penLive = window.__glacierPen;
+    const penQ = Number.isFinite(penLive) ? penLive : Number(qs.get('pen'));
+    U[182] = Number.isFinite(penQ) && penQ >= 0 ? penQ : 0.08;
+    U[183] = (window.__glacierPenlock === 1 || qs.get('penlock') === '1') ? 2 : 0;
   }
 
   function beginPass(enc, clear) {

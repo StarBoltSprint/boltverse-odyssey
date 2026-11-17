@@ -65,6 +65,12 @@ function dropToSnow(p, sun, heightAt) {
   }
   return null;
 }
+// Reference mask: a hard CPU raster of spire triangles only (materials 1, 2, 3, 6, 7),
+// not the baked props and not Bolt. Each cascade is a 384² depth image in the same
+// light projection the GPU uses. A snow vertex is occluded when the stored depth is
+// more than 0.008 closer than the receiver. The GPU side of the IoU is the rendered
+// shadow factor, binarized at 0.5 (below 0.5 counts as shadowed). This is not the
+// csmoff picture and not a ray trace. The bar and this reference stay put.
 function cpuOcclusion(world, eye, tgt, W, H) {
   const casc = buildCascades({
     eye, tgt, fovY: FOV_Y, aspect: W / H, sun: norm3(LIGHT.sun.direction), tier: 'phone',
@@ -257,6 +263,34 @@ if (fs.existsSync(path.join(root, 'shimmer.json'))) {
     shim.worldSamples = n;
     shim.worldFlip = flip;
     shim.worldFraction = n ? flip / n : 0;
+    const sun = norm3(LIGHT.sun.direction);
+    const ca = buildCascades({ eye: shim.eyeA, tgt: shim.tgtA, fovY: FOV_Y, aspect: A.w / A.h, sun, tier: 'phone' });
+    const cb = buildCascades({ eye: shim.eyeB, tgt: shim.tgtB, fovY: FOV_Y, aspect: B.w / B.h, sun, tier: 'phone' });
+    shim.radiusA = ca.radii.map((v) => +v.toFixed(4));
+    shim.radiusB = cb.radii.map((v) => +v.toFixed(4));
+    shim.radiusConstant = ca.radii.every((v, i) => Math.abs(v - cb.radii[i]) < 1e-6);
+    let mapFlip = 0;
+    let recvFlip = 0;
+    for (let t = 0; t < world.verts.length; t += 8 * 2) {
+      if (Math.round(world.verts[t + 3]) !== 0) continue;
+      const p = [world.verts[t], world.verts[t + 1], world.verts[t + 2]];
+      if ((p[0] - shim.eyeA[0]) ** 2 + (p[2] - shim.eyeA[2]) ** 2 > 50 * 50) continue;
+      const pa = project(mul(persp(FOV_Y, A.w / A.h, 0.08, 14000), lookAt(shim.eyeA, shim.tgtA, [0, 1, 0])), p, A.w, A.h);
+      const pb = project(mul(persp(FOV_Y, B.w / B.h, 0.08, 14000), lookAt(shim.eyeB, shim.tgtB, [0, 1, 0])), p, B.w, B.h);
+      if (!pa || !pb || pa[0] < 2 || pb[0] < 2 || pa[1] < 2 || pb[1] < 2 || pa[0] >= A.w - 2 || pb[0] >= B.w - 2 || pa[1] >= A.h - 2 || pb[1] >= B.h - 2) continue;
+      const ga = A.raw[((pa[1] | 0) * A.w + (pa[0] | 0)) * 3] / 255;
+      const gb = B.raw[((pb[1] | 0) * B.w + (pb[0] | 0)) * 3] / 255;
+      if (Math.abs(ga - gb) <= 0.1) continue;
+      const qa = applyMat(ca.mats[0], p);
+      const qb = applyMat(cb.mats[0], p);
+      const du = Math.hypot(qa[0] - qb[0], qa[1] - qb[1]) * (ca.tiles[0] * 0.5);
+      if (du > 0.5) mapFlip++;
+      else recvFlip++;
+    }
+    shim.mapFlip = mapFlip;
+    shim.receiverFlip = recvFlip;
+    shim.mapFraction = n ? mapFlip / n : 0;
+    shim.receiverFraction = n ? recvFlip / n : 0;
   }
   rows.push({ shimmer: shim });
   if (!(shim.fraction <= limits.edgeShimmerMax)) bad(`edge_shimmer ${shim.fraction}`);
