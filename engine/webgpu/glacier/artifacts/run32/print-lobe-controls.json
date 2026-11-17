@@ -1,0 +1,31 @@
+{
+  "mean": [
+    0.85,
+    1
+  ],
+  "hfMin": 0.6,
+  "fixture": {
+    "file": "t24-print.jpg",
+    "w": 240,
+    "h": 200,
+    "prints": [
+      {
+        "n": 813,
+        "max": 207.7,
+        "p95": 179.1,
+        "ratio": 0.967,
+        "hf": 1.433,
+        "lobe": true,
+        "verdict": "FAIL"
+      }
+    ],
+    "verdict": "FAIL"
+  },
+  "clean": {
+    "file": "clean-snow.jpg",
+    "w": 240,
+    "h": 200,
+    "prints": [],
+    "verdict": "PASS"
+  }
+}
