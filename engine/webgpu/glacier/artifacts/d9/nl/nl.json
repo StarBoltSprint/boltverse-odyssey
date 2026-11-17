@@ -1,0 +1,74 @@
+[
+  {
+    "t": 5.1,
+    "pixels": 29243,
+    "fitN": 22477,
+    "zeroN": 2893,
+    "shaderDeg": 46.003,
+    "analyticDeg": 50.085,
+    "shaderErr": 4.083,
+    "visibleFraction": 0.41,
+    "onScreen": 117,
+    "visible": 48
+  },
+  {
+    "t": 5.567,
+    "pixels": 29129,
+    "fitN": 21926,
+    "zeroN": 2926,
+    "shaderDeg": 45.74,
+    "analyticDeg": 50.108,
+    "shaderErr": 4.368,
+    "visibleFraction": 0.436,
+    "onScreen": 117,
+    "visible": 51
+  },
+  {
+    "t": 7.9,
+    "pixels": 26123,
+    "fitN": 21757,
+    "zeroN": 3231,
+    "shaderDeg": 42.773,
+    "analyticDeg": 50.414,
+    "shaderErr": 7.641,
+    "visibleFraction": 0.351,
+    "onScreen": 111,
+    "visible": 39
+  },
+  {
+    "t": 11.7,
+    "pixels": 31798,
+    "fitN": 25559,
+    "zeroN": 3088,
+    "shaderDeg": 45.177,
+    "analyticDeg": 50.119,
+    "shaderErr": 4.942,
+    "visibleFraction": 0.453,
+    "onScreen": 117,
+    "visible": 53
+  },
+  {
+    "t": 24,
+    "pixels": 17231,
+    "fitN": 13291,
+    "zeroN": 2190,
+    "shaderDeg": 35.869,
+    "analyticDeg": 50.513,
+    "shaderErr": 14.644,
+    "visibleFraction": 0.321,
+    "onScreen": 109,
+    "visible": 35
+  },
+  {
+    "t": 30,
+    "pixels": 20856,
+    "fitN": 15494,
+    "zeroN": 2306,
+    "shaderDeg": 42.43,
+    "analyticDeg": 50.287,
+    "shaderErr": 7.856,
+    "visibleFraction": 0.359,
+    "onScreen": 117,
+    "visible": 42
+  }
+]
