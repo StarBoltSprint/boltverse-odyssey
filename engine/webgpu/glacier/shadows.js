@@ -396,17 +396,89 @@ struct PR {
   @location(0) w: vec3f,
   @location(1) n: vec3f,
 };
-@vertex fn vsShadeProbe(@location(0) p: vec4f, @location(1) nrm: vec4f, @builtin(vertex_index) vi: u32) -> PR {
-  let col = vi % 512u;
-  let row = vi / 512u;
+@vertex fn vsShadeProbe(@location(0) p: vec4f, @location(1) nrm: vec4f, @builtin(vertex_index) vi: u32, @builtin(instance_index) ii: u32) -> PR {
+  // A 1px point sits on the pixel boundary and the top-left rule drops it, so the
+  // clear value (0) was read back as a full shadow. One triangle covers the pixel.
+  let col = ii % 512u;
+  let row = ii / 512u;
+  var xy = vec2f(f32(col) / 512.0, f32(row) / 256.0);
+  if (vi == 0u) { xy = xy + vec2f(-0.2 / 512.0, -0.2 / 256.0); }
+  if (vi == 1u) { xy = xy + vec2f(1.2 / 512.0, -0.2 / 256.0); }
+  if (vi == 2u) { xy = xy + vec2f(0.5 / 512.0, 1.4 / 256.0); }
   var o: PR;
-  o.p = vec4f((f32(col) + 0.5) / 512.0 * 2.0 - 1.0, 1.0 - (f32(row) + 0.5) / 256.0 * 2.0, 0.0, 1.0);
+  o.p = vec4f(xy.x * 2.0 - 1.0, 1.0 - xy.y * 2.0, 0.0, 1.0);
   o.w = p.xyz;
   o.n = nrm.xyz;
   return o;
 }
 @fragment fn fsShadeProbe(v: PR) -> @location(0) vec4f {
   return vec4f(shadowAt(v.w, v.n), 0.0, 0.0, 1.0);
+}
+struct TL {
+  @builtin(position) p: vec4f,
+  @location(0) w: vec3f,
+  @location(1) n: vec3f,
+  @location(2) @interpolate(flat) slot: u32,
+};
+@vertex fn vsTapLog(@location(0) p: vec4f, @location(1) nrm: vec4f) -> TL {
+  let code = u32(p.w + 0.5);
+  let col = code / 4u;
+  let corner = code % 4u;
+  let row = u32(nrm.w + 0.5);
+  var xy = vec2f(f32(col) / 8.0, f32(row) / 20.0);
+  if (corner == 0u) { xy = xy + vec2f(-0.2 / 8.0, -0.2 / 20.0); }
+  if (corner == 1u) { xy = xy + vec2f(1.2 / 8.0, -0.2 / 20.0); }
+  if (corner == 2u) { xy = xy + vec2f(0.5 / 8.0, 1.4 / 20.0); }
+  var o: TL;
+  o.p = vec4f(xy.x * 2.0 - 1.0, 1.0 - xy.y * 2.0, 0.0, 1.0);
+  o.w = p.xyz;
+  o.n = nrm.xyz;
+  o.slot = col;
+  return o;
+}
+@fragment fn fsTapLog(v: TL) -> @location(0) vec4f {
+  let ws = v.w + v.n * 0.035;
+  let q0 = u.c0 * vec4f(ws, 1.0);
+  let q1 = u.c1 * vec4f(ws, 1.0);
+  let e0 = max(abs(q0.x), abs(q0.y));
+  let band = viewBand(v.w);
+  let width = max(u.soft.z, u.soft.y);
+  let useFar = e0 >= 0.995;
+  let q = select(q0, q1, useFar);
+  let ci = select(0.0, 1.0, useFar);
+  let texelM = select(u.soft.x, u.soft.y, useFar);
+  let bias = 0.00004;
+  let zRef = q.z - bias;
+  let uv = shadowUv(q, ci);
+  let tile = tileOf(ci);
+  let inside = q.z >= 0.0 && q.z <= 1.0 && uv.x >= tile.x && uv.y >= tile.y && uv.x <= tile.z && uv.y <= tile.w;
+  let dims = vec2f(textureDimensions(smap));
+  let rad = max(width * 0.5 / max(texelM, 1e-4), 0.0);
+  let step = vec2f(rad / dims.x, rad / dims.y);
+  let inset = max(rad + 1.0, 1.5);
+  var tapUv: vec2f;
+  if (v.slot == 0u) { tapUv = uv + vec2f(-step.x, -step.y); }
+  else if (v.slot == 1u) { tapUv = uv + vec2f(step.x, -step.y); }
+  else if (v.slot == 2u) { tapUv = uv + vec2f(-step.x, step.y); }
+  else { tapUv = uv + vec2f(step.x, step.y); }
+  let clamped = clampTileInset(tapUv, tile, inset);
+  let pix = vec2i(clamp(clamped, vec2f(0.0), vec2f(0.999)) * dims);
+  let stored = textureLoad(smap, pix, 0);
+  let cmpv = textureSampleCompareLevel(smap, scmp, clamped, clamp(zRef, 0.0, 1.0));
+  let s0 = shadeCascade(0.0, q0, bias, u.soft.x, width);
+  let s1 = shadeCascade(1.0, q1, bias, u.soft.y, width);
+  let factor = shadowAt(v.w, v.n);
+  let uv0 = shadowUv(q0, 0.0);
+  let uv1 = shadowUv(q1, 1.0);
+  let d0 = textureLoad(smap, vec2i(clamp(uv0, vec2f(0.0), vec2f(0.999)) * dims), 0);
+  let d1 = textureLoad(smap, vec2i(clamp(uv1, vec2f(0.0), vec2f(0.999)) * dims), 0);
+  if (v.slot == 4u) { return vec4f(select(0.0, 1.0, useFar), e0, band, factor); }
+  if (v.slot == 5u) { return vec4f(uv.x, uv.y, zRef, select(0.0, 1.0, inside)); }
+  if (v.slot == 6u) { return vec4f(s0, s1, q0.z, q1.z); }
+  // Centre texel of each cascade, then the centre the shader actually samples.
+  if (v.slot == 7u) { return vec4f(d0, d1, select(d0, d1, useFar), textureSampleCompareLevel(smap, scmp, clamp(uv, vec2f(0.001), vec2f(0.999)), clamp(zRef, 0.0, 1.0))); }
+  if (v.slot > 3u) { return vec4f(0.0); }
+  return vec4f(clamped.x, clamped.y, stored, cmpv);
 }
 `;
 }

@@ -1061,17 +1061,35 @@ async function main() {
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
   });
   const probeRb = dev.createBuffer({ size: 512 * 256 * 4, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
-  const pProbe = dev.createRenderPipeline({
+  const tapTex = dev.createTexture({
+    size: [8, 20], format: 'rgba16float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
+  const tapRb = dev.createBuffer({ size: 256 * 20, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const tapBuf = dev.createBuffer({ size: 20 * 8 * 3 * 32, usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+  const pTap = dev.createRenderPipeline({
     layout,
     vertex: {
-      module: mod, entryPoint: 'vsShadeProbe',
+      module: mod, entryPoint: 'vsTapLog',
       buffers: [{ arrayStride: 32, attributes: [
         { shaderLocation: 0, offset: 0, format: 'float32x4' },
         { shaderLocation: 1, offset: 16, format: 'float32x4' },
       ] }],
     },
+    fragment: { module: mod, entryPoint: 'fsTapLog', targets: [{ format: 'rgba16float' }] },
+    primitive: { topology: 'triangle-list' },
+  });
+  const pProbe = dev.createRenderPipeline({
+    layout,
+    vertex: {
+      module: mod, entryPoint: 'vsShadeProbe',
+      buffers: [{ arrayStride: 32, stepMode: 'instance', attributes: [
+        { shaderLocation: 0, offset: 0, format: 'float32x4' },
+        { shaderLocation: 1, offset: 16, format: 'float32x4' },
+      ] }],
+    },
     fragment: { module: mod, entryPoint: 'fsShadeProbe', targets: [{ format: 'rgba8unorm' }] },
-    primitive: { topology: 'point-list' },
+    primitive: { topology: 'triangle-list' },
   });
   const pBoltSh = dev.createRenderPipeline({
     layout: shBoltLayout,
@@ -1930,9 +1948,89 @@ async function main() {
     gateMode = prevMode;
     return { png: await blobOf(frame.src, 'image/png'), info: poseInfo(frame.gpuErr) };
   };
-  window.__glacierCasterHist = async (t, points) => {
+  function half(h) {
+    const s = (h & 0x8000) >> 15;
+    const e = (h & 0x7c00) >> 10;
+    const f = h & 0x03ff;
+    if (e === 0) return (s ? -1 : 1) * 2 ** -14 * (f / 1024);
+    if (e === 31) return f ? NaN : (s ? -Infinity : Infinity);
+    return (s ? -1 : 1) * 2 ** (e - 15) * (1 + f / 1024);
+  }
+  window.__glacierTapLog = async (t, points, eye, tgt) => {
     const dt = 1 / 60;
     while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    if (eye && tgt) gatePose = { eye, tgt };
+    const n = Math.min(20, points.length);
+    const data = new Float32Array(n * 8 * 3 * 8);
+    for (let i = 0; i < n; i++) {
+      const p = points[i];
+      for (let s = 0; s < 8; s++) {
+        for (let c = 0; c < 3; c++) {
+          const o = ((i * 8 + s) * 3 + c) * 8;
+          data[o] = p[0]; data[o + 1] = p[1]; data[o + 2] = p[2]; data[o + 3] = s * 4 + c;
+          data[o + 4] = p[3]; data[o + 5] = p[4]; data[o + 6] = p[5]; data[o + 7] = i;
+        }
+      }
+    }
+    dev.queue.writeBuffer(tapBuf, 0, data);
+    fillU(sim);
+    dev.queue.writeBuffer(ub, 0, U);
+    const enc = dev.createCommandEncoder();
+    const sp = enc.beginRenderPass({
+      colorAttachments: [],
+      depthStencilAttachment: { view: smTex.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'store' },
+    });
+    sp.setBindGroup(0, shBg);
+    sp.setPipeline(pWorldSh);
+    sp.setVertexBuffer(0, casterBuf);
+    sp.draw(casterVerts, nC);
+    sp.setPipeline(pBoltSh);
+    sp.setBindGroup(0, shBoltBg);
+    sp.draw(6, nC);
+    sp.end();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: tapTex.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] }],
+    });
+    pass.setPipeline(pTap);
+    pass.setBindGroup(0, drawBg);
+    pass.setVertexBuffer(0, tapBuf);
+    pass.draw(n * 8 * 3);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: tapTex }, { buffer: tapRb, bytesPerRow: 256 }, [8, 20]);
+    dev.queue.submit([enc.finish()]);
+    await tapRb.mapAsync(GPUMapMode.READ);
+    const raw = new Uint16Array(tapRb.getMappedRange());
+    const rows = [];
+    for (let i = 0; i < n; i++) {
+      const pix = (slot) => {
+        const o = (i * (256 / 2)) + slot * 4;
+        return [half(raw[o]), half(raw[o + 1]), half(raw[o + 2]), half(raw[o + 3])];
+      };
+      const taps = [0, 1, 2, 3].map(pix);
+      const head = pix(4);
+      const uv = pix(5);
+      const fac = pix(6);
+      const centre = pix(7);
+      const texel = (u, v) => [Math.floor(u * 2048), Math.floor(v * 3072)];
+      rows.push({
+        cascade: head[0], extent: +head[1].toFixed(3), band: +head[2].toFixed(3), factor: +head[3].toFixed(3),
+        uv: uv.slice(0, 2).map((v) => +v.toFixed(4)), texel: texel(uv[0], uv[1]),
+        zRef: +uv[2].toFixed(4), inside: uv[3],
+        near: +fac[0].toFixed(3), far: +fac[1].toFixed(3), z0: +fac[2].toFixed(4), z1: +fac[3].toFixed(4),
+        centreStored: [+centre[0].toFixed(4), +centre[1].toFixed(4)],
+        centreChosen: +centre[2].toFixed(4), centreCmp: +centre[3].toFixed(3),
+        taps: taps.map((t) => ({ uv: [+t[0].toFixed(4), +t[1].toFixed(4)], texel: texel(t[0], t[1]), stored: +t[2].toFixed(4), cmp: +t[3].toFixed(3) })),
+      });
+    }
+    const head = Array.from(raw.slice(0, 24));
+    tapRb.unmap();
+    gatePose = null;
+    return { rows, head };
+  };
+  window.__glacierCasterHist = async (t, points, eye, tgt) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    if (eye && tgt) gatePose = { eye, tgt };
     fillU(sim);
     dev.queue.writeBuffer(ub, 0, U);
     const enc = dev.createCommandEncoder();
@@ -2024,9 +2122,31 @@ async function main() {
       bump(hist, name);
       if (examples.length < 6) examples.push({ name, draw, prim: best.prim, writer, ci: best.ci, stored: +best.stored.toFixed(4), qz: +best.qz.toFixed(4) });
     }
+    const strip = [];
+    if (points[0]) {
+      const q = applyMat(casc.mats[0], points[0]);
+      const tile = [0, 0, 1, 2 / 3];
+      const u = tile[0] + (tile[2] - tile[0]) * (q[0] * 0.5 + 0.5);
+      const v = tile[1] + (tile[3] - tile[1]) * (0.5 - q[1] * 0.5);
+      const y = Math.max(0, Math.min(atlas[1] - 1, (v * atlas[1]) | 0));
+      const x0 = Math.max(0, Math.min(atlas[0] - 1, (u * atlas[0]) | 0));
+      let run = null;
+      for (let x = Math.max(0, x0 - 250); x <= Math.min(atlas[0] - 1, x0 + 250); x++) {
+        const stored = depthF[y * (depthBpr / 4) + x];
+        const prim = stored < 0.999 ? idU[y * (idBpr / 4) + x * 2 + 1] : 0;
+        if (run && run.prim === prim && Math.abs(run.z - stored) < 0.002) run.x1 = x;
+        else {
+          if (run && run.prim) strip.push(run);
+          run = { x0: x, x1: x, prim, z: +stored.toFixed(4) };
+        }
+      }
+      if (run && run.prim) strip.push(run);
+      strip.meta = { y, x: x0 };
+    }
     idRb.unmap();
     depthRb.unmap();
-    return { n: points.length, hist, bleed, examples, ranges: casterRanges };
+    gatePose = null;
+    return { n: points.length, hist, bleed, examples, ranges: casterRanges, both, strip, stripAt: strip.meta };
   };
   window.__glacierVertShadow = async (eye, tgt, snap) => {
     window.__glacierSnap = snap ? 1 : 0;
@@ -2039,7 +2159,7 @@ async function main() {
     pass.setPipeline(pProbe);
     pass.setBindGroup(0, drawBg);
     pass.setVertexBuffer(0, probeBuf);
-    pass.draw(probeCount);
+    pass.draw(3, probeCount);
     pass.end();
     enc.copyTextureToBuffer({ texture: probeTex }, { buffer: probeRb, bytesPerRow: 512 * 4 }, [512, 256]);
     dev.queue.submit([enc.finish()]);

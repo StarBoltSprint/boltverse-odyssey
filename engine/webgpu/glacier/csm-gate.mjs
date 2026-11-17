@@ -172,6 +172,8 @@ if (!root) {
   process.exit(2);
 }
 const world = buildWorld();
+const factorPath = path.join(root, 'vertex-factors.json');
+const vertFactors = fs.existsSync(factorPath) ? JSON.parse(fs.readFileSync(factorPath, 'utf8')) : null;
 const tags = JSON.parse(fs.readFileSync(path.join(root, 'tags.json'), 'utf8'));
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
@@ -211,19 +213,23 @@ for (const tag of tags) {
     }
   }
   const cpu = cpuOcclusion(world, info.eye, info.tgt, w, h);
+  const factorBytes = vertFactors && vertFactors[tag] ? Buffer.from(vertFactors[tag], 'base64') : null;
+  let fi = 0;
   const vp = mul(persp(FOV_Y, w / h, 0.08, 14000), lookAt(info.eye, info.tgt, [0, 1, 0]));
   let inter = 0, union = 0, gN = 0, cN = 0;
+  let agree = 0, factorOnly = 0, cpuOnly = 0, bothLit = 0;
   let interS = 0, unionS = 0, cS = 0;
   const stride = 4;
   for (let t = 0; t < world.verts.length; t += 8 * stride) {
     if (Math.round(world.verts[t + 3]) !== 0) continue;
+    const fv = factorBytes ? factorBytes[fi++] / 255 : null;
     const p = [world.verts[t], world.verts[t + 1], world.verts[t + 2]];
     if ((p[0] - info.eye[0]) ** 2 + (p[2] - info.eye[2]) ** 2 > 70 * 70) continue;
     const scr = project(vp, p, w, h);
     if (!scr || scr[0] < 1 || scr[1] < 1 || scr[0] >= w - 1 || scr[1] >= h - 1) continue;
     const pix = (scr[1] | 0) * w + (scr[0] | 0);
     if (!snow[pix]) continue;
-    const g = gpu[pix] === 1;
+    const g = fv == null ? gpu[pix] === 1 : fv < 0.5;
     const c = cpu.blocked(p);
     const cs = cpu.blockedSpire(p);
     if (g) gN++;
@@ -233,7 +239,12 @@ for (const tag of tags) {
     if (g && c) inter++;
     if (g || cs) unionS++;
     if (g && cs) interS++;
+    if (g && c) agree++;
+    else if (g) factorOnly++;
+    else if (c) cpuOnly++;
+    else bothLit++;
   }
+  if (factorBytes) console.log(tag, 'split', 'both', agree, 'factorOnly', factorOnly, 'cpuOnly', cpuOnly, 'bothLit', bothLit);
   const iou = union ? inter / union : 0;
   const iouSpire = unionS ? interS / unionS : 0;
   if (iou < limits.csmIouMin) bad(`csm_iou ${tag} ${iou.toFixed(3)} gpu ${gN} cpu ${cN}`);

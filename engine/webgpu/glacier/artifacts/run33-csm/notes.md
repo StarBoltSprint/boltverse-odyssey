@@ -1,3 +1,24 @@
+# Run 33 — cascaded sun shadows, round 9
+
+Not a KEEP. Not merged. Exposure was not changed. The 34° sun, the 16–32 m band, and the ~20 cm filter stay.
+
+The picture mask is the shadow factor of whatever fragment won the pixel. The IoU reference tests the snow vertex. Those are not the same sample. At 11.70 s, ten vertices whose picture reads 0 have a shader factor of 1: the centre texel is empty (stored 1) on both cascades, the four taps are stored 1, and the less-equal compare is lit. The depth clear is 1. A cleared texel compares lit. Every logged vertex is inside its tile, so the out-of-tile path (return lit) is not what shaded them. The cascade the shader uses is the near map while the extent is under 0.995, and the far map only once a vertex falls out of the near square. Round 8 read the follow camera and the cascade with the smallest stored depth, which is not the cascade this shader samples.
+
+The other half of the contradiction was the mesh. Node and Chrome each walked the wall and the ground by feeding the next z into the hash. One ulp and the walks split: Chrome had 4,475,616 floats, Node had 4,471,200, and primitive 147663 was a different wall triangle. The GPU wrote that triangle's depth where Node's raster had no caster. Both walks now round every step to 0.1 mm. Both engines then build 4,458,336 floats and the same primitive positions. The IoU reference is that mesh. The GPU bit is the vertex shadow factor, the same function as the vertex shimmer probe. A 1 px point was missing its pixel and the clear (0) was being read as a full shadow, so the probe now covers each pixel with a triangle.
+
+| time | vertex IoU | seam | path shadow |
+| --- | --- | --- | --- |
+| 5.10 | 0.992 | 0.035 | 0.834 |
+| 5.567 | 0.982 | 0.053 | 0.249 |
+| 7.9 | 0.988 | no pair inside 16 px | 0.579 |
+| 11.70 | 0.983 | 0.057 | 0.630 |
+| 24 | 0.979 | 0.017 | 0.214 |
+| 30 | 0.993 | 0.051 | 0.767 |
+
+The 0.80 bar is unchanged and every time clears it. The seam floor is unchanged. Five times are still over 0.03, and 7.9 s has no snow pair with one cascade weight under 0.15 and another over 0.85 inside 16 px. The band was not widened. Coverage stays inside 0.15–0.85. Round 2 coverage is still 0.999–1.000. The round 3 blocky stills, scored on their frozen masks, still fail IoU, and their 5.567 s seam is still 0.086.
+
+Snapped vertex shimmer is 0 (max delta 0.0039). Unsnapped is 0.0323 and still fails the 0.5% bar. The screen metric is 1.75% of edge pixels. Keyscore is 91.0. Snow p50 is still about 0.052 under the key 0.708 on four times. Exposure was not moved. SwiftShader at 540×960 is 14.1 s/frame, 9 colour draws and 2 shadow draws, 195,098 triangles. The chase is 720×1280, 30 fps, 2.0 s.
+
 # Run 33 — cascaded sun shadows, round 8
 
 The shadow pass can write a caster id (draw and primitive) next to the depth. At the class-(b) vertices the centre texel is usually empty. Where it is written, the writer is the world mesh.

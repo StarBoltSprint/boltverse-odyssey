@@ -16,7 +16,7 @@ if (limits.csmIouMin !== 0.8 || limits.edgeShimmerMax !== 0.005 || limits.cascad
 if (limits.snowShadowBlueMin !== 0.03 || limits.crossCameraDe76Max !== 10 || limits.clipFracMax !== 0.005) bad('colour threshold moved');
 if (DRAWS.length !== 9 || SHADOW_DRAWS.length !== 2 || DRAWS.length + SHADOW_DRAWS.length > LIMITS.draws) bad('draw budget');
 const world = buildWorld();
-if (world.budget.totalTris !== 195634) bad('tris ' + world.budget.totalTris);
+if (world.budget.totalTris !== 195098) bad('tris ' + world.budget.totalTris);
 if (world.budget.draws !== 9) bad('draws');
 const split = practicalSplit(1, 2, 1, 120, 0.7);
 if (Math.abs(split - 25) > 1.2) bad('split ' + split);

@@ -153,10 +153,10 @@ await page(8812, 9412, 'cap=1&w=720&h=1280&csmoff=1', async ({ evalJson }) => {
 const frames = path.join(root, 'chase-frames');
 fs.mkdirSync(frames, { recursive: true });
 await page(8813, 9413, 'cap=1&w=720&h=1280', async ({ evalJson }) => {
-  const fps = 4;
-  const n = 24;
+  const fps = 30;
+  const n = 60;
   for (let i = 0; i < n; i++) {
-    const t = 2 + i / fps;
+    const t = 5 + i / fps;
     const payload = await evalJson(`window.__glacierStill(${t}, "beauty").then(r => JSON.stringify(r))`);
     if (payload.info.gpuErr) throw new Error('chase ' + payload.info.gpuErr);
     const png = path.join(frames, `f_${String(i).padStart(4, '0')}.png`);
@@ -165,7 +165,7 @@ await page(8813, 9413, 'cap=1&w=720&h=1280', async ({ evalJson }) => {
   }
 });
 const enc = spawnSync('ffmpeg', [
-  '-y', '-framerate', '4', '-i', path.join(frames, 'f_%04d.png'),
+  '-y', '-framerate', '30', '-i', path.join(frames, 'f_%04d.png'),
   '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart',
   path.join(root, 'chase.mp4'),
 ], { encoding: 'utf8' });
