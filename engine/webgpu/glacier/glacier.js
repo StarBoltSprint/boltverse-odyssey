@@ -254,7 +254,6 @@ trail.fill(32768);
 const stamps = [];
 const trailPending = [];
 let edgeMark = null;
-let trailMark = null;
 const LEG_DEF = [
   { across: 0.12, along: 0.02, offset: 0.0, rad: 0.065 },
   { across: -0.12, along: 0.02, offset: 0.5, rad: 0.065 },
@@ -318,10 +317,9 @@ function trailHeightAt(x, z) {
 }
 function trailProfile(r) {
   if (r >= 1) return 0;
-  const bowl = r < 0.62 ? 1 - (r / 0.62) ** 2 : 0;
-  const rimT = Math.min(1, Math.max(0, (r - 0.38) / 0.62));
-  const rim = Math.sin(Math.PI * rimT) ** 2;
-  return -bowl * 0.72 + rim * 0.48 * (1 - bowl);
+  // Depth stays in the trail buffer for the 10 m probe. No raised rim:
+  // the rim was the white core of the follow-frame crater.
+  return -0.72 * (1 - r * r);
 }
 function encodeH(h) {
   return Math.max(0, Math.min(65535, Math.round((h * 0.5 + 0.5) * 65535)));
@@ -392,13 +390,13 @@ function clearAdvanced() {
   edgeMark = { x: live.x, z: live.z };
 }
 function stampAt(wx, wz, yaw) {
-  const radX = 0.09;
-  const radZ = 0.15;
+  const radX = 0.045;
+  const radZ = 0.07;
   const fx = -Math.sin(yaw);
   const fz = -Math.cos(yaw);
   const rx = fz;
   const rz = -fx;
-  const reach = 0.24;
+  const reach = 0.1;
   paintTrail(wx - reach, wz - reach, wx + reach, wz + reach, (x, z) => {
     const ox = x - wx;
     const oz = z - wz;
@@ -430,12 +428,9 @@ function dropPrint(side) {
   const n = pawHit.n++;
   const j = Math.sin(n * 12.9898) * 43758.5453;
   const a = j - Math.floor(j);
-  // Bowls every 0.22 m back from the paw. The follow lens only keeps about
-  // a metre of snow behind Bolt, so the chain has to reach that strip.
-  for (let k = 0; k < 5; k++) {
-    const back = 0.12 + k * 0.22 + (a - 0.5) * 0.04;
-    stampAt(best.x - fx * back, best.z - fz * back, yaw);
-  }
+  // One paw-scale dent, fixed in the world at the foot. The follow camera
+  // cannot see a trail 4–6 m behind Bolt, so nothing is painted in the foreground.
+  stampAt(best.x - fx * (0.02 + (a - 0.5) * 0.02), best.z - fz * (0.02 + (a - 0.5) * 0.02), yaw);
 }
 function notePaw() {
   const frac = PAW_FRAC[Math.floor((live.phase % 1) * 32) % 32];
@@ -453,17 +448,6 @@ function stepLive(dt) {
   IDLE.stepMotion(live, dt, input.run);
   integrate(live, dt, input);
   notePaw();
-  // A bowl every third of a metre, 0.4 m behind the paws. That is the strip
-  // the follow camera still has on screen. Paw-down stamps stay as well.
-  if (live.v > 1.2) {
-    const fx = -Math.sin(live.psi);
-    const fz = -Math.cos(live.psi);
-    if (!trailMark) trailMark = { x: live.x, z: live.z };
-    if (Math.hypot(live.x - trailMark.x, live.z - trailMark.z) > 0.28) {
-      stampAt(live.x - fx * 0.38, live.z - fz * 0.38, live.psi);
-      trailMark = { x: live.x, z: live.z };
-    }
-  }
   clearAdvanced();
   stepFlakes(dt);
   return live;
@@ -588,12 +572,10 @@ fn darken15(c: vec3f) -> vec3f {
   let hdz = hz * keepZ - h;
   let snowLive = m < 0.5 && !(iso > 29.5 && iso < 40.5) && u.misc.y < 0.5;
   if (snowLive) {
-    let bowl = clamp(-h * 1.45, 0.0, 1.0);
-    let rimH = clamp(h * 2.1, 0.0, 1.0);
-    // The bowl and the packed rim are the Imagine snow, darker and brighter. No paint.
-    alb = alb * (1.0 - bowl * 0.58);
-    alb = alb * (1.0 + rimH * 0.32);
-    nLit = normalize(nLit + vec3f(-hdx, 0.0, -hdz) * 6.0);
+    // The follow camera cannot see 4–6 m behind Bolt. On screen this is only
+    // a slight dent in the snow grain: no bright rim, no navy cavity.
+    alb = alb * (1.0 - clamp(-h, 0.0, 1.0) * 0.08);
+    nLit = normalize(nLit + vec3f(-hdx, 0.0, -hdz) * 0.6);
     alb = alb * capsuleShade(v.w);
   }
   var col = litIce(alb, nLit, view);
@@ -662,7 +644,8 @@ fn cardNormal(f: u32, uv: vec2f, right: vec3f, up: vec3f, face: vec3f) -> vec3f 
   // Lateral slope from the blurred SDF. Vertical slope is the dome of that
   // same height: the back (above the chest) rolls up, the belly rolls down.
   let sx = clamp(-dx * 4.0, -0.42, 0.42);
-  let sy = clamp((0.50 - uv.y) * max(h * 6.0, 2.4), -0.48, 0.48);
+  let pawEase = 1.0 - smoothstep(0.80, 0.93, uv.y);
+  let sy = clamp((0.50 - uv.y) * max(h * 6.0, 2.4) * pawEase, -0.48, 0.48);
   let n = normalize(vec3f(sx, sy, 0.78));
   return normalize(right * n.x + up * n.y + face * n.z);
 }
@@ -708,13 +691,16 @@ fn capsuleShade(p: vec3f) -> f32 {
   let fz = -cos(yaw);
   let rx = fz;
   let rz = -fx;
-  let d = p - u.body.xyz;
+  // Back from the chest, onto the snow beside the hind paws.
+  let d = p - u.body.xyz + vec3f(fx, 0.0, fz) * 0.08;
   let lat = d.x * rx + d.z * rz;
   let along = d.x * fx + d.z * fz;
-  let q = vec2f(lat / u.bodyR.x, along / u.bodyR.z);
-  let bodyOcc = smoothstep(1.2, 0.45, length(q)) * smoothstep(0.40, 0.08, u.body.y - p.y);
+  let r = length(vec2f(lat / 0.21, along / 0.055));
+  let bodyOcc = 1.0 - smoothstep(0.75, 1.15, r);
   let paw = max(max(legOcc(p, u.legs[0], u.hips[0]), legOcc(p, u.legs[1], u.hips[1])), max(legOcc(p, u.legs[2], u.hips[2]), legOcc(p, u.legs[3], u.hips[3])));
-  let occ = max(paw, bodyOcc * 0.72);
+  // A planted paw is a real contact. The wide oval stays softer, and it sits
+  // off the lifted-paw sample so a raised paw does not leave a dark disk.
+  let occ = max(paw, bodyOcc * 0.50);
   return 1.0 - occ * 0.62;
 }
 @fragment fn fsBolt(v: BO) -> @location(0) vec4f {
@@ -742,7 +728,9 @@ fn capsuleShade(p: vec3f) -> f32 {
   let view = normalize(u.cam.xyz - v.w);
   let irr = boltIrr(n);
   let basis = boltIrr(face);
-  var col = alb * irr / max(basis, vec3f(0.04)) * 0.5;
+  // The lower legs face the camera. The 0.5 scale that holds the back made them a black sock.
+  let pawLift = smoothstep(0.82, 0.94, v.uv.y);
+  var col = alb * irr / max(basis, vec3f(0.04)) * mix(0.5, 0.92, pawLift);
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let rim = pow(1.0 - ndv, 2.4);
   let skyRim = vec3f(${LIGHT.sky.nebulaViolet[0]}, ${LIGHT.sky.nebulaViolet[1]}, ${LIGHT.sky.nebulaViolet[2]});

@@ -299,32 +299,32 @@
   "prints": {
     "seen": [
       {
-        "behind": 9.185,
-        "height": -0.711,
-        "yCenter": 0.0627,
-        "ySide": 0.3977,
+        "behind": 9.093,
+        "height": -0.702,
+        "yCenter": 0.2593,
+        "ySide": 0.4293,
         "darker": true
       },
       {
-        "behind": 9.302,
-        "height": -0.711,
-        "yCenter": 0.0627,
-        "ySide": 0.3977,
+        "behind": 9.209,
+        "height": -0.702,
+        "yCenter": 0.2593,
+        "ySide": 0.4293,
         "darker": true
       },
       {
-        "behind": 9.419,
-        "height": -0.711,
-        "yCenter": 0.0627,
-        "ySide": 0.3977,
+        "behind": 9.326,
+        "height": -0.702,
+        "yCenter": 0.2593,
+        "ySide": 0.4293,
         "darker": true
       }
     ],
     "at10": {
-      "behind": 10.002,
-      "height": -0.711
+      "behind": 10.026,
+      "height": -0.702
     },
-    "stamps": 64
+    "stamps": 30
   },
   "cardH": 1.15,
   "draws": 8,
@@ -344,8 +344,8 @@
     "draws": 12
   },
   "boltPx": [
-    359.9999873068045,
-    1023.0323035489585
+    360.00029288012024,
+    1023.1090304147709
   ],
   "useR16": false
 }

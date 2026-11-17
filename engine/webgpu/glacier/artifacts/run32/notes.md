@@ -1,42 +1,52 @@
-# Run 32 round 2 — coat bands, back roll, readable prints
+# Run 32 round 3 — no crater, soft contact
 
 Not a KEEP. Draft only. Director reviews the captures.
 
-The no-bands gate was committed before this light change. Limit: mean vertical (B−R) steps on the torso crop ≤ 0.5. The blue-band fixture fails (worst 4.06). The pre-D card passes (worst 0.03). The new stills pass (worst 0).
+Round 2 coat work stays: no blue bands, dawn on the back, darker belly, no spec. The no-bands gate was not moved. The print and contact gates were committed before this change. The round-2 stills fail both. The pre-D card passes both.
 
-## Light
+## What changed
 
-The distance field is blurred into a dome before the gradient, so the back is not a flat plateau. The vertical slope of that dome rolls the back up and the belly down. The slope is clamped and the facing component stays large, so a ripple cannot become a stripe.
+The sliding foreground bowl is gone. Nothing is stamped along the path behind Bolt. A paw-down writes one paw-scale dent (about 9 cm by 14 cm) at the foot, fixed in the world. The trail buffer still holds that dent: a print at 10.03 m is height −0.702, and the snow there is darker than the snow beside it. The follow camera cannot show a print 4–6 m behind Bolt. That trail is off the frame. The shader does not invent one. On screen the dent is a slight darkening of the Imagine snow (8% at full depth) and a small normal nudge. There is no bright rim and no navy cavity.
 
-Bolt uses the dawn ambient and the dawn sun, the same record as the snow. The sun is applied on upward normals. The belly stays on the ambient. There is no blue grade and no white specular.
+The contact oval is back under the hind paws: a wide, short multiply of the snow, about the pre-D 24 s footprint. A planted paw still darkens its own disk. The oval sits off the lifted-paw sample, so a raised paw does not leave a black disk.
 
-## Prints
+The lower legs use more of the card albedo. The 0.5 scale that holds the back stays on the belly band (uv.y through 0.78). The unlit card paw at 5.10 s is already about (45, 37, 35). The lit paw is within CIE76 1.5 of that. The pre-D paw was brighter because of the old grade, which is not the card.
 
-Paw-down still stamps the 16-bit trail. A bowl is also laid every 0.28 m, 0.38 m behind the paws, because that is the snow the follow camera still has. The lens loses the ground about 0.8 m behind Bolt, so a print 4–6 m behind him is off the frame. The print in the chase sits at the bottom of the frame, about 2 m from the camera, and is a dark bowl in the Imagine snow (no painted colour). The 10 m buffer still holds: a print at 10.00 m is height −0.711.
-
-This SwiftShader has no `texture-formats-tier1`, so the 16-bit value is packed in RG8. `r16unorm` is used when the feature exists.
+The sun term and the 0.5 back exposure were not raised. Lab b and B/R match the round-2 coat numbers.
 
 ## Gates
 
 | Gate | Result | Limit |
 | --- | --- | --- |
+| Print rings, round-2 fixture | 155–270 | must fail (> 12) |
+| Print blob, round-2 fixture | 3974–7272 | must fail (> 1106, paw 48 px) |
+| Contact ratio, round-2 fixture | 0.902 | must fail (pre-D 0.829 ± 0.045) |
+| Print rings, pre-D | 0 | ≤ 12 |
+| Print blob, pre-D | 0–501 | ≤ 1106 |
+| Contact ratio, pre-D 24 s | 0.829 | 0.829 ± 0.045 |
+| Print rings, round 3 | 0 on all six | ≤ 12 |
+| Print blob, round 3 | 0, 0, 0, 120, 785, 0 | ≤ 1106 |
+| Contact ratio, round 3 24 s | 0.857 | 0.829 ± 0.045 |
 | No bands, blue-band fixture | FAIL (worst 4.06) | must fail |
 | No bands, pre-D | PASS (worst 0.03) | ≤ 0.5 |
-| No bands, new stills | PASS (worst 0) | ≤ 0.5 |
+| No bands, round 3 | PASS (worst 0) | ≤ 0.5 |
 | Base colour CIE76 | mean 0.49, worst 1.78 | ≤ 3 |
 | Lab b, back − belly | 12.77, 12.13, 10.97, 10.48 | ≥ 3 |
 | Belly B/R above back | 0.543>0.419, 0.591>0.428, 0.498>0.429, 0.478>0.415 | greater |
 | Paw down / up | 0.379–0.401 / 0.986 | ≤ 0.55 / ≥ 0.85 |
 | Paw correlation | 0.946 | ≥ 0.7 |
-| Prints at 7.5–10 m | behind 9.19, 9.30, 9.42 then 10.00 m, height −0.711 | held |
+| Prints at 7.5–10 m | behind 9.09, 9.21, 9.33 then 10.03 m, height −0.702 | held |
 | Card / draws | 1.15 m, screen x 360, 8 draws | unchanged / ≤ 12 |
-| Triangles | CPU gate 195634, live page 195818 | ≤ 200000 |
-| Texel gate | PASS | 2048 px/m |
+| Triangles | live page 195818 | ≤ 200000 |
+
+This SwiftShader has no `texture-formats-tier1`. The 16-bit trail value is packed in RG8. `r16unorm` is used when the feature exists.
 
 ## Still open
 
-The follow camera cannot show a print that is 4–6 m behind Bolt. The readable print is the near bowl at the bottom of the frame.
+A print 4–6 m behind Bolt is not in the follow frame. The buffer holds it. The picture does not.
 
-The back is warmer than the belly, but the roll is a smooth dome, not a sculpted ribcage. Frame 24's belly is the least blue of the four.
+The left paw matches the dark paw in the card. It is not the brighter pre-D grade.
+
+The chase is 720×1280, 8.0 s, 80 frames, 10 fps, Bolt centred at x 360. At the times where round 2 slid a crater through the stance (1.0, 1.4, 2.6, 4.2, 5.0, 6.0, 7.0, 7.8 s) the ring count is 0, 1, 0, 0, 0, 0, 0, 0. The limit is 12.
 
 The thin dark horizon line from run 31 is still there. Shoulder-ice and range-serac are still one still short. No 45 s chase. This film is 8 s at 10 fps.
