@@ -258,7 +258,9 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
   }
   if (m > 5.5 && m < 6.5) {
-    let wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+    // Near walls keep the native mip. Far walls stay one bias coarser so the repeat does not column.
+    let wallBias = select(4.0, 1.0, length(p - u.cam.xyz) < 140.0);
+    let wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, wallBias);
     let cap = smoothstep(0.42, 0.75, nrm.y);
     return mix(wallIce, snow, cap);
   }

@@ -2,14 +2,16 @@
 //   node horizon-gate.mjs
 // The camera position is the t=30 chase eye on the sealed route (speed 7, accel 9).
 // mcam is the level look yaw in radians: 0 is world -Z, 1.57 is world +X.
-import { MAT } from './biome.js';
-import { buildWorld, spawn, integrate, chaseInput, pathX, floorH } from './world.js';
+import { MAT, GLACIER } from './biome.js';
+import { buildWorld, spawn, integrate, chaseInput, pathX, floorH, floorHalf } from './world.js';
 import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
 
 export const HORIZON_MIN = 0.98;
 export const SHOULDER_DROP_MAX = 0.4;
 export const SLAB_SHEETS_MAX = 0;
 export const SLAB_CAPS_MAX = 0;
+export const TRIS_MAX = 197000;
+export const CORRIDOR_CLEARANCE_M = 0.5;
 export const MCAMS = [0, 0.9, 1.57];
 const W = 720;
 const H = 1280;
@@ -167,10 +169,62 @@ function nearSlabs() {
   return { sheets, caps };
 }
 
+// The player can reach |lat| <= max(6, floorHalf - 1.3) from z0 to z1.
+// Horizon geometry inside that volume, above the floor, blocks the run.
+function corridorHalf(z) {
+  return Math.max(6, floorHalf(z) - 1.3);
+}
+
+function triHeight(x, z, a, b, c) {
+  const den = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2]);
+  if (Math.abs(den) < 1e-6) return null;
+  const u = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / den;
+  const v = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / den;
+  const w = 1 - u - v;
+  if (u < -0.02 || v < -0.02 || w < -0.02) return null;
+  return u * a[1] + v * b[1] + w * c[1];
+}
+
+function corridorBlock() {
+  const bins = new Map();
+  for (let t = 0; t + 24 <= verts.length; t += 24) {
+    if (Math.round(verts[t + 3]) !== MAT.horizon) continue;
+    const P = [0, 8, 16].map((k) => [verts[t + k], verts[t + k + 1], verts[t + k + 2]]);
+    const z0 = Math.min(P[0][2], P[1][2], P[2][2]);
+    const z1 = Math.max(P[0][2], P[1][2], P[2][2]);
+    const tri = { P, z0, z1 };
+    for (let k = Math.floor(z0 / 40); k <= Math.floor(z1 / 40); k++) {
+      let list = bins.get(k);
+      if (!list) { list = []; bins.set(k, list); }
+      list.push(tri);
+    }
+  }
+  let hits = 0;
+  let worst = null;
+  for (let z = GLACIER.z0; z >= GLACIER.z1; z -= 4) {
+    const list = bins.get(Math.floor(z / 40));
+    if (!list) continue;
+    const half = corridorHalf(z);
+    for (let lat = -half; lat <= half; lat += 2) {
+      const x = pathX(z) + lat;
+      const floor = floorH(x, z);
+      for (const tri of list) {
+        const y = triHeight(x, z, tri.P[0], tri.P[1], tri.P[2]);
+        if (y == null || y <= floor + CORRIDOR_CLEARANCE_M) continue;
+        hits++;
+        const rise = y - floor;
+        if (!worst || rise > worst.rise) worst = { z, lat: +lat.toFixed(1), rise: +rise.toFixed(1) };
+      }
+    }
+  }
+  return { hits, worst };
+}
+
 const pose = chase(30);
 const horizons = MCAMS.map((yaw) => horizonAt(pose.eye, yaw));
 const shoulder = shoulderDrop();
 const slabs = nearSlabs();
+const corridor = corridorBlock();
 const report = {
   tris: world.budget.totalTris,
   draws: world.budget.draws,
@@ -178,11 +232,14 @@ const report = {
   horizons,
   shoulder,
   slabs,
+  corridor,
   limits: {
     horizon: HORIZON_MIN,
     shoulderDrop: SHOULDER_DROP_MAX,
     slabSheets: SLAB_SHEETS_MAX,
     slabCaps: SLAB_CAPS_MAX,
+    tris: TRIS_MAX,
+    corridorHits: 0,
   },
 };
 let fail = 0;
@@ -192,6 +249,8 @@ for (const h of horizons) {
 if (shoulder.metres > SHOULDER_DROP_MAX) fail++;
 if (slabs.sheets > SLAB_SHEETS_MAX) fail++;
 if (slabs.caps > SLAB_CAPS_MAX) fail++;
+if (world.budget.totalTris > TRIS_MAX) fail++;
+if (corridor.hits > 0) fail++;
 console.log(JSON.stringify(report, null, 2));
 if (fail) {
   console.error('FAIL horizon-gate', fail);

@@ -1349,3 +1349,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | A world-fixed berm and ring on material `horizon` (no dither, hex triplanar, mip bias 1, serac plus crust). The ditch term is gone. Near sheets and caps are 0. The tonemap gate still misses 11.70 s snow p50 by 0.001, 24 s p99 by 0.003, and 30 s grey_bright by 0.004. Limits were not moved. |
 | Guard | `node engine/webgpu/glacier/horizon-gate.mjs`. horizon_closed ≥ 0.98 at mcam 0, 0.9, 1.57. Shoulder drop ≤ 0.40 m. |
 | Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/albedo.js`, `engine/webgpu/glacier/artifacts/run33-horizon/DIAGNOSIS.md`. |
+
+### 2026-11-17 — A closed horizon and an open corridor are not the same surface
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 2. Not a KEEP. |
+| Defect | The round-1 berms cross the run at z=-340 and z=-560. The corridor gate records 595 hits, worst rise 36.7 m. |
+| Root cause | The ice walls already cover the eye-level row. Rays that stay inside the reachable lat hit those walls. A fin outside that lat cannot catch them. Covering every outside hit still leaves the row at 0.9485. The 0.9986 score was a surface across the corridor. |
+| Fix | Berms no longer cross. Fins sit beside the reachable lat. A ridge sits at z=-4640, past the course end. Corridor hits are 0. mcam 0 horizon_closed is 0.8866, under 0.98. CPU tris 194290. Near walls use mip bias 1 inside 140 m. |
+| Guard | `node engine/webgpu/glacier/horizon-gate.mjs`. Corridor hits must be 0. horizon_closed bar stays 0.98. |
+| Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/horizon-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/notes.md`. |

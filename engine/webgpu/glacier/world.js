@@ -750,88 +750,61 @@ function addSlopeGrid(mesh, grid, toward) {
   }
 }
 
-function addBerm(mesh, zCrest, height) {
-  const cols = 80;
+// Reachable half-width. Same clamp as integrate(). Horizon geometry stays outside it.
+function corridorHalf(z) {
+  return Math.max(6, floorHalf(z) - 1.3);
+}
+
+// Coarse banks beside the run. The inner edge is outside the corridor.
+function addFin(mesh, x0, x1, y0, y1, z) {
+  face(mesh, [x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z], MAT.horizon, [0, 0.05, 1]);
+}
+
+function addSideBerms(mesh) {
+  // Small constant-z fins beside the run, in front of the dithered walls.
+  // Each fin stays under a 10 m edge so it is not a sheet. They do not cross.
+  for (const side of [-1, 1]) {
+    for (let z = 80; z > -1600; z -= 12) {
+      const edge = corridorHalf(z) + 2;
+      const base = floorH(pathX(z), z);
+      const tooth = 0.6 + 0.4 * Math.abs(Math.sin(z * 0.05 + side));
+      for (let k = 0; k < 3; k++) {
+        const x0 = pathX(z) + side * (edge + k * 6);
+        const x1 = pathX(z) + side * (edge + (k + 1) * 6);
+        const y0 = base + k * 6;
+        const y1 = y0 + 5 * tooth;
+        addFin(mesh, x0, x1, y0, y1, z);
+      }
+    }
+  }
+}
+
+// A camera-facing ridge past the course end. Constant z so the normal stays on Z
+// and a level look is not a grazing edge. It does not enter the run.
+function addEndRidge(mesh) {
+  const z = GLACIER.z1 - 140;
   const rows = 4;
-  const depth = 16;
-  const xMin = -700;
-  const xMax = 700;
+  const cols = 28;
+  const xMin = -2400;
+  const xMax = 2400;
+  const height = 96;
   const grid = [];
   for (let j = 0; j <= rows; j++) {
     const t = j / rows;
-    const z = zCrest + (1 - t) * depth;
     const row = [];
     for (let i = 0; i <= cols; i++) {
       const u = i / cols;
-      const x = xMin + (xMax - xMin) * u;
-      const tooth = 0.78 + 0.22 * Math.abs(Math.sin(u * 22 + zCrest * 0.013));
-      const base = floorH(pathX(z), z);
-      row.push([x, base + 0.5 + t * height * tooth, z]);
+      const tooth = 0.7 + 0.3 * Math.abs(Math.sin(u * 7 + 0.4));
+      row.push([xMin + (xMax - xMin) * u, t * height * tooth, z]);
     }
     grid.push(row);
   }
-  // Faces the chase, which comes from +z.
-  addSlopeGrid(mesh, grid, [0, 0.55, 1]);
-}
-
-function addRidgeRing(mesh) {
-  const cx = 0;
-  const cz = -460;
-  const r0 = 520;
-  const segs = 360;
-  const rows = 6;
-  const radial = 36;
-  const grid = [];
-  for (let j = 0; j <= rows; j++) {
-    const t = j / rows;
-    const r = r0 + t * radial;
-    const row = [];
-    for (let i = 0; i <= segs; i++) {
-      const a = (i / segs) * Math.PI * 2;
-      const x = cx + Math.cos(a) * r;
-      const z = cz + Math.sin(a) * r;
-      const tooth = 0.82 + 0.18 * Math.abs(Math.sin(i * 0.08 + 1.7));
-      const base = floorH(pathX(z), z);
-      const y = base + 1.2 + t * 16 * tooth;
-      row.push([x, y, z]);
-    }
-    grid.push(row);
-  }
-  addSlopeGrid(mesh, grid, [0, 0.6, 0]);
-}
-
-function addSideSkirt(mesh) {
-  const z0 = 120;
-  const z1 = -680;
-  const step = 10;
-  const radial = 4;
-  const reach = 8;
-  for (const side of [-1, 1]) {
-    const zs = [];
-    for (let z = z0; z >= z1; z -= step) zs.push(z);
-    let prev = null;
-    for (const z of zs) {
-      const edge = floorHalf(z) + 2;
-      const base = floorH(pathX(z), z);
-      const row = [];
-      for (let i = 0; i <= radial; i++) {
-        const lat = edge + i * reach;
-        row.push([pathX(z) + side * lat, base + 0.3 + i * 9, z]);
-      }
-      if (prev) {
-        const grid = [prev, row];
-        addSlopeGrid(mesh, grid, [side * 0.35, 0.75, 0]);
-      }
-      prev = row;
-    }
-  }
+  addSlopeGrid(mesh, grid, [0, 0.15, 1]);
 }
 
 function addHorizonSeal(mesh) {
-  addBerm(mesh, -340, 34);
-  addBerm(mesh, -560, 42);
-  addRidgeRing(mesh);
-  addSideSkirt(mesh);
+  addSideBerms(mesh);
+  addEndRidge(mesh);
 }
 
 export function buildWorld() {
