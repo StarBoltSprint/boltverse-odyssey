@@ -302,6 +302,7 @@ const WGSL = /* wgsl */`
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
   prints: array<vec4f, 12>,
+  prev: mat4x4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -312,6 +313,10 @@ struct U {
 @group(0) @binding(6) var fallArr: texture_2d_array<f32>;
 @group(0) @binding(7) var archArr: texture_2d_array<f32>;
 @group(0) @binding(8) var seracArr: texture_2d_array<f32>;
+@group(0) @binding(9) var taaSamp: sampler;
+@group(0) @binding(10) var taaCur: texture_2d<f32>;
+@group(0) @binding(11) var taaHist: texture_2d<f32>;
+@group(0) @binding(12) var taaDepth: texture_depth_multisampled_2d;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f, @location(5) err: f32 };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
@@ -390,6 +395,10 @@ fn darken15(c: vec3f) -> vec3f {
   let lodN = smoothstep(0.02, 0.08, mpp);
   let nShade = select(nUv, nFilt, spire && lodN > 0.5);
   var n = nShade;
+  // Change of the shade normal across this pixel. That is the mip variance
+  // of the normal field. Taken here so the derivative is in uniform flow.
+  let nDx = dpdx(n);
+  let nDy = dpdy(n);
   // G-buffer for the no-fog / flicker gate. Not the picture.
   if (u.misc.z > 2.5 && u.misc.z < 3.5) {
     let ndlG = clamp(dot(normalize(v.lit), sunN()), 0.0, 1.0);
@@ -418,10 +427,14 @@ fn darken15(c: vec3f) -> vec3f {
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
   var col = litIce(alb, nLit, view);
-  // Toksvig on the ice sheen. Snow stays on litIce. Not a function of distance.
+  // Toksvig. The filtered-normal length and the normal's change across the
+  // pixel both widen the sheen. The sheen stays the albedo colour. Metal is 0.
   if (spire) {
     let pwr = 36.0;
-    let ft = nLen / max(nLen + pwr * (1.0 - nLen), 1e-4);
+    let sLen = nLen / max(nLen + pwr * (1.0 - nLen), 1e-4);
+    let sigma = dot(nDx, nDx) + dot(nDy, nDy);
+    let sMip = 1.0 / (1.0 + sigma * pwr);
+    let ft = min(sLen, sMip);
     let ndh = clamp(dot(nLit, normalize(sunN() + view)), 0.0, 1.0);
     let spec = pow(ndh, pwr);
     let specF = pow(ndh, max(pwr * ft, 1.0));
@@ -617,6 +630,62 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   else if (v.layer > 0.2) { gain = 0.74; }
   let a = soft * v.fade * gain;
   return vec4f(col, a);
+}
+fn rgbYCoCg(c: vec3f) -> vec3f {
+  return vec3f(dot(c, vec3f(0.25, 0.5, 0.25)), dot(c, vec3f(0.5, 0.0, -0.5)), dot(c, vec3f(-0.25, 0.5, -0.25)));
+}
+fn ycocgRgb(c: vec3f) -> vec3f {
+  return vec3f(c.x + c.y - c.z, c.x + c.z, c.x - c.y - c.z);
+}
+struct TaaOut { @location(0) color: vec4f, @location(1) hist: vec4f };
+@fragment fn fsTaa(@builtin(position) pos: vec4f) -> TaaOut {
+  let pix = vec2i(pos.xy);
+  let dim = vec2f(720.0, 1280.0);
+  let uv = pos.xy / dim;
+  let curS = textureLoad(taaCur, pix, 0).rgb;
+  let cur = pow(max(curS, vec3f(0.0)), vec3f(2.2));
+  var out = cur;
+  let enabled = u.grid.x > -1.0;
+  let inBolt = enabled && pos.x >= u.grid.x && pos.x <= u.grid.z && pos.y >= u.grid.y && pos.y <= u.grid.w;
+  let d = textureLoad(taaDepth, pix, 0);
+  var pc = vec4f(0.0);
+  var puv = vec2f(0.0);
+  if (enabled && !inBolt && d < 1.0) {
+    let ndc = vec4f(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, d, 1.0);
+    let hw = u.ivp * ndc;
+    let world = hw.xyz / max(hw.w, 1e-6);
+    pc = u.prev * vec4f(world, 1.0);
+    puv = vec2f(pc.x / pc.w * 0.5 + 0.5, 0.5 - pc.y / pc.w * 0.5);
+    if (pc.w > 0.0 && puv.x > 0.0 && puv.x < 1.0 && puv.y > 0.0 && puv.y < 1.0) {
+      let h = textureSampleLevel(taaHist, taaSamp, puv, 0.0).rgb;
+      var lo = rgbYCoCg(cur);
+      var hi = lo;
+      for (var oy = -1; oy <= 1; oy++) {
+        for (var ox = -1; ox <= 1; ox++) {
+          let q = clamp(pix + vec2i(ox, oy), vec2i(0), vec2i(719, 1279));
+          let n = rgbYCoCg(pow(max(textureLoad(taaCur, q, 0).rgb, vec3f(0.0)), vec3f(2.2)));
+          lo = min(lo, n);
+          hi = max(hi, n);
+        }
+      }
+      let hc = clamp(rgbYCoCg(h), lo, hi);
+      let hist = ycocgRgb(hc);
+      out = mix(cur, hist, 0.9);
+    }
+  }
+  let blur = (
+    pow(max(textureLoad(taaCur, clamp(pix + vec2i(1, 0), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2)) +
+    pow(max(textureLoad(taaCur, clamp(pix + vec2i(-1, 0), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2)) +
+    pow(max(textureLoad(taaCur, clamp(pix + vec2i(0, 1), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2)) +
+    pow(max(textureLoad(taaCur, clamp(pix + vec2i(0, -1), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2))
+  ) * 0.25;
+  out = out + (out - blur) * 0.15;
+  out = max(out, vec3f(0.0));
+  let srgb = pow(out, vec3f(1.0 / 2.2));
+  var o: TaaOut;
+  o.color = vec4f(srgb, 1.0);
+  o.hist = vec4f(out, 1.0);
+  return o;
 }
 `;
 
@@ -917,7 +986,7 @@ async function main() {
     fragment: { module: mod, entryPoint: fs, targets: [{ format: fmt, blend: alpha ? { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } : undefined }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES, alphaToCoverageEnabled: vs === 'vsBolt' },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: depthWrite, depthCompare },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: depthWrite, depthCompare },
   });
   const instBuf = { arrayStride: 32, stepMode: 'instance', attributes: [
     { shaderLocation: 2, offset: 0, format: 'float32x4' },
@@ -932,7 +1001,7 @@ async function main() {
     fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less' },
   });
   const pLod = dev.createRenderPipeline({
     layout,
@@ -940,7 +1009,7 @@ async function main() {
     fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES, alphaToCoverageEnabled: true },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less', depthBias: 2, depthBiasSlopeScale: 2, depthBiasClamp: 0 },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less', depthBias: 2, depthBiasSlopeScale: 2, depthBiasClamp: 0 },
   });
   const pInst = dev.createRenderPipeline({
     layout,
@@ -948,7 +1017,7 @@ async function main() {
     fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less' },
   });
   const pSky = pipe('vsSky', 'fsSky', false, false, 'always');
   const pBolt = pipe('vsBolt', 'fsBolt', false, true, 'less');
@@ -960,7 +1029,7 @@ async function main() {
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
     // The decal sits on the snow. A negative bias keeps it from losing the depth test.
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less', depthBias: -8, depthBiasSlopeScale: -4, depthBiasClamp: 0 },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'less', depthBias: -8, depthBiasSlopeScale: -4, depthBiasClamp: 0 },
   });
   const flakeStep = { arrayStride: 32, stepMode: 'instance', attributes: [
     { shaderLocation: 0, offset: 0, format: 'float32x4' },
@@ -972,7 +1041,7 @@ async function main() {
     fragment: { module: mod, entryPoint: 'fsFlake', targets: [{ format: fmt, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'less' },
   });
   const flakeGpu = new Float32Array(FLAKE_N * 8);
   const flakeBuf = dev.createBuffer({
@@ -980,12 +1049,71 @@ async function main() {
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
   });
   const msaa = dev.createTexture({ size: [W, H], format: fmt, sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT });
-  const depth = dev.createTexture({ size: [W, H], format: 'depth24plus', sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT });
+  const depth = dev.createTexture({
+    size: [W, H], format: 'depth32float', sampleCount: SAMPLES,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+  });
+  const raw = dev.createTexture({
+    size: [W, H], format: fmt,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+  });
   const off = dev.createTexture({ size: [W, H], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
+  const histTex = [0, 1].map(() => dev.createTexture({
+    size: [W, H], format: 'rgba16float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+  }));
+  let histI = 0;
+  let taaReady = false;
+  const taaSamp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge' });
+  const taaBgl = dev.createBindGroupLayout({ entries: [
+    { binding: 0, visibility: GPUShaderStage.FRAGMENT, buffer: {} },
+    { binding: 9, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+    { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 11, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'float' } },
+    { binding: 12, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'depth', multisampled: true } },
+  ] });
+  const taaLayout = dev.createPipelineLayout({ bindGroupLayouts: [taaBgl] });
+  const pTaa = dev.createRenderPipeline({
+    layout: taaLayout,
+    vertex: { module: mod, entryPoint: 'vsSky' },
+    fragment: {
+      module: mod, entryPoint: 'fsTaa',
+      targets: [
+        { format: fmt },
+        { format: 'rgba16float' },
+      ],
+    },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+  });
+  const taaGroup = (hist) => dev.createBindGroup({
+    layout: taaBgl,
+    entries: [
+      { binding: 0, resource: { buffer: ub } },
+      { binding: 9, resource: taaSamp },
+      { binding: 10, resource: raw.createView() },
+      { binding: 11, resource: hist.createView() },
+      { binding: 12, resource: depth.createView() },
+    ],
+  });
   const bpr = Math.ceil(W * 4 / 256) * 256;
   const rb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
   const U = new Float32Array(128);
+  const prevVp = new Float32Array(16);
+  const currentVp = new Float32Array(16);
+  let taaN = 1;
   let lastEye = [0, 0, 0];
+  function halton(index, base) {
+    let f = 1, r = 0, i = index;
+    while (i > 0) { f /= base; r += f * (i % base); i = Math.floor(i / base); }
+    return r;
+  }
+  function projectFrom(vp, p) {
+    const x = vp[0] * p[0] + vp[4] * p[1] + vp[8] * p[2] + vp[12];
+    const y = vp[1] * p[0] + vp[5] * p[1] + vp[9] * p[2] + vp[13];
+    const w = vp[3] * p[0] + vp[7] * p[1] + vp[11] * p[2] + vp[15];
+    if (!(w > 0)) return null;
+    return [(x / w * 0.5 + 0.5) * W, (1 - (y / w * 0.5 + 0.5)) * H];
+  }
   const worldVerts = world.verts.length / 8;
 
   let snowDiag = 0;
@@ -1003,9 +1131,18 @@ async function main() {
     }
     const view = lookAt(eye, tgt, [0, 1, 0]);
     const proj = persp(FOV_Y, W / H, 0.08, 14000);
+    const useTaa = gateMode === 0 && window.__glacierSingle !== true;
+    if (useTaa) {
+      const jx = (halton(taaN, 2) - 0.5) * (2 / W);
+      const jy = (halton(taaN, 3) - 0.5) * (2 / H);
+      proj[8] = -jx;
+      proj[9] = -jy;
+    }
     const vp = mul(proj, view);
+    currentVp.set(vp);
     U.set(vp, 0);
     U.set(invertMat4(vp), 16);
+    U.set(prevVp, 112);
     lastEye = [eye[0], eye[1], eye[2]];
     U.set([eye[0], eye[1], eye[2], t], 32);
     U.set([bp[0], bp[1], bp[2], live.psi], 36);
@@ -1018,7 +1155,19 @@ async function main() {
     const pawLy = (pawFrac - 6 / 652) * 1.15 - 0.095;
     // Four centimetres into the snow. The card size stays 1.15 m.
     U[56] = pawLy + 0.04;
-    U.set([0.70, 0.78, 0.88, 0], 44);
+    if (useTaa && taaReady) {
+      const feet = [live.x, bp[1], live.z];
+      const pf = projectFrom(vp, feet);
+      const ph = projectFrom(vp, [feet[0], feet[1] + 1.45, feet[2]]);
+      if (pf && ph) {
+        const cx = pf[0];
+        U.set([cx - 150, Math.min(pf[1], ph[1]) - 40, cx + 150, Math.max(pf[1], ph[1]) + 40], 44);
+      } else {
+        U.set([-2, -2, -2, -2], 44);
+      }
+    } else {
+      U.set([-2, -2, -2, -2], 44);
+    }
     U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
     U[53] = 0;
@@ -1036,11 +1185,36 @@ async function main() {
     }
   }
 
-  function beginPass(enc, clear) {
+  function beginPass(enc, clear, target, keepDepth) {
     return enc.beginRenderPass({
-      colorAttachments: [{ view: msaa.createView(), resolveTarget: off.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear }],
-      depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
+      colorAttachments: [{ view: msaa.createView(), resolveTarget: target.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear }],
+      depthStencilAttachment: {
+        view: depth.createView(),
+        depthLoadOp: 'clear', depthClearValue: 1,
+        depthStoreOp: keepDepth ? 'store' : 'discard',
+      },
     });
+  }
+  function drawWorld(pass) {
+    pass.setBindGroup(0, drawBg);
+    pass.setPipeline(pSky); pass.draw(3);
+    pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
+    pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.setVertexBuffer(1, shadeVb); pass.draw(worldVerts);
+    pass.setPipeline(pLod); pass.setVertexBuffer(0, lodVb); pass.setVertexBuffer(1, lodShade); pass.draw(lodVerts);
+    pass.setPipeline(pInst);
+    pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
+    pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
+    pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
+  }
+  function drawActors(pass) {
+    if (gatePose) return;
+    pass.setPipeline(pContact); pass.draw(96);
+    if (!(snowDiag > 29.5 && snowDiag < 37.5) && !hideFlakes) {
+      pass.setPipeline(pFlake);
+      pass.setVertexBuffer(0, flakeBuf);
+      pass.draw(6, FLAKE_N);
+    }
+    pass.setPipeline(pBolt); pass.draw(6);
   }
 
   function renderFixed(t) {
@@ -1064,26 +1238,30 @@ async function main() {
       dev.queue.writeBuffer(flakeBuf, 0, flakeGpu);
     }
     const enc = dev.createCommandEncoder();
-    const pass = beginPass(enc, [0, 0, 0, 1]);
-    pass.setBindGroup(0, drawBg);
-    pass.setPipeline(pSky); pass.draw(3);
-    pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
-    pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.setVertexBuffer(1, shadeVb); pass.draw(worldVerts);
-    pass.setPipeline(pLod); pass.setVertexBuffer(0, lodVb); pass.setVertexBuffer(1, lodShade); pass.draw(lodVerts);
-    pass.setPipeline(pInst);
-    pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
-    pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
-    pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
-    if (!gatePose) {
-      pass.setPipeline(pContact); pass.draw(96);
-      if (!(snowDiag > 29.5 && snowDiag < 37.5) && !hideFlakes) {
-        pass.setPipeline(pFlake);
-        pass.setVertexBuffer(0, flakeBuf);
-        pass.draw(6, FLAKE_N);
-      }
-      pass.setPipeline(pBolt); pass.draw(6);
-    }
+    const useTaa = gateMode === 0 && window.__glacierSingle !== true;
+    const sceneTarget = useTaa ? raw : off;
+    const pass = beginPass(enc, [0, 0, 0, 1], sceneTarget, useTaa);
+    drawWorld(pass);
+    drawActors(pass);
     pass.end();
+    if (useTaa) {
+      const histIn = histTex[histI];
+      const histOut = histTex[1 - histI];
+      const passT = enc.beginRenderPass({
+        colorAttachments: [
+          { view: off.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] },
+          { view: histOut.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] },
+        ],
+      });
+      passT.setPipeline(pTaa);
+      passT.setBindGroup(0, taaGroup(histIn));
+      passT.draw(3);
+      passT.end();
+      histI = 1 - histI;
+      prevVp.set(currentVp);
+      taaReady = true;
+      taaN += 1;
+    }
     enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
     if (!CAP) {
       const show = enc2(dev, ctx, off, W, H);
@@ -1250,7 +1428,7 @@ async function main() {
   }
   function renderBoltMask() {
     const enc = dev.createCommandEncoder();
-    const pass = beginPass(enc, [0, 0, 0, 1]);
+    const pass = beginPass(enc, [0, 0, 0, 1], off, false);
     pass.setBindGroup(0, drawBg);
     pass.setPipeline(pBolt);
     pass.draw(6);
@@ -1626,9 +1804,19 @@ async function main() {
     return src[i + 1] / 255 * 4000;
   }
   const SPIRE = new Set([1, 2, 6, 7]);
+  async function warmTaa(n) {
+    for (let i = 0; i < n; i++) {
+      dev.pushErrorScope('validation');
+      renderFixed(simClock);
+      const err = await dev.popErrorScope();
+      if (err) throw new Error(String(err.message || err));
+      await dev.queue.onSubmittedWorkDone();
+    }
+  }
   window.__glacierD8 = async (t) => {
     const step = 1 / 60;
     while (sim < t - 1e-5) { const h = Math.min(step, t - sim); stepLive(h); sim += h; }
+    if (window.__glacierSingle !== true) await warmTaa(3);
     hideFlakes = true;
     gateMode = window.__glacierAlbedo ? 2 : 0;
     const colourA = await readFrame();
@@ -1799,6 +1987,7 @@ async function main() {
   window.__glacierFilm = async (t) => {
     const dt = 1 / 60;
     while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    if (window.__glacierSingle !== true && !taaReady) await warmTaa(3);
     const frame = await readFrame();
     const jpg = await blobOf(frame.src, 'image/jpeg', 0.92);
     const pix = projectPixel([live.x, pawGround(), live.z]);

@@ -67,8 +67,9 @@ for (const t of TIMES) {
 
 const albedo = fs.readFileSync(path.join(here, 'albedo.js'), 'utf8');
 if (/fn farLevel/.test(albedo)) bad('forced mip-10 farLevel is still in the ice sampler');
-if (!/fn farAniso/.test(albedo)) bad('far ice has no anisotropic mip clamp');
-if (!/clamp\(natMinor, 3\.0, 5\.0\)/.test(albedo)) bad('far ice is not clamped to mip 3-5');
+if (/fn farAniso/.test(albedo)) bad('manual grazing mip clamp is back');
+if (/clamp\(natMinor, 3\.0, 5\.0\)/.test(albedo)) bad('short-axis mip is still clamped to 3-5');
+if (!/textureSampleGrad\(arr, samp/.test(albedo)) bad('far ice is not on hardware gradients');
 
 const world = buildWorld();
 const candidate = process.argv[2];

@@ -52,37 +52,11 @@ fn variantW(id: vec2f) -> vec4f {
     select(0.05, 0.85, lead == 3)
   );
 }
-// One scale for both axes, so the footprint stays anisotropic. Far ice is held in mip 3-5.
+// One scale for both axes, so the footprint stays anisotropic.
 fn lodScale(du: vec2f, dv: vec2f, lo: f32, hi: f32) -> f32 {
   let rho = max(max(length(du), length(dv)), 1e-8) * 1024.0;
   let lod = log2(max(rho, 1.0));
   return exp2(clamp(lod, lo, hi) - lod);
-}
-// Grazing ice. Eight taps along the long axis of the pixel. The short axis
-// stays in mip 3-5, which is where a tall wall still has grain. du/dv are
-// the real footprint, with the ice bias already removed.
-fn farAniso(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, id: vec2f, gain: vec4f) -> vec3f {
-  let lu = length(du);
-  let lv = length(dv);
-  let minor = min(lu, lv);
-  let natMinor = log2(max(minor * 1024.0, 1.0));
-  let lod = clamp(natMinor, 3.0, 5.0);
-  let along = select(dv, du, lu >= lv);
-  let lead = i32(floor(hash21(id + vec2f(8.0, 1.0)) * 4.0)) % 4;
-  let g = gain[lead];
-  var acc = vec3f(0.0);
-  for (var i = 0; i < 8; i++) {
-    let o = along * ((f32(i) - 3.5) / 8.0);
-    acc += textureSampleLevel(arr, samp, uv + o, lead, lod).rgb;
-  }
-  return acc * (g / 8.0);
-}
-fn level4(arr: texture_2d_array<f32>, uv: vec2f, lod: f32, w: vec4f, gain: vec4f) -> vec3f {
-  let s0 = textureSampleLevel(arr, samp, uv, 0, lod).rgb * gain.x;
-  let s1 = textureSampleLevel(arr, samp, uv, 1, lod).rgb * gain.y;
-  let s2 = textureSampleLevel(arr, samp, uv, 2, lod).rgb * gain.z;
-  let s3 = textureSampleLevel(arr, samp, uv, 3, lod).rgb * gain.w;
-  return s0 * w.x + s1 * w.y + s2 * w.z + s3 * w.w;
 }
 fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f, gain: vec4f) -> vec3f {
   let s0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb * gain.x;
@@ -139,28 +113,12 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let uv1 = m1 * ${repeats};
   let uv2 = m2 * ${repeats};
   // Ice only. Snow bias stays 2 and never takes this branch.
-  // The ice bias of 4 is undone here so the footprint is the real pixel.
-  // A face looking at the camera keeps that mip (anisotropy 16). A grazing
-  // face keeps mip 3-5 on its short axis and filters along the long one.
+  // Bias 4 is undone. Hardware trilinear and anisotropy 16 pick the mip.
   let farIce = bias >= 3.5 && length(px) + length(py) > 0.05;
   if (farIce) {
-    let su0 = du0 / 4.0; let sv0 = dv0 / 4.0;
-    let su1 = du1 / 4.0; let sv1 = dv1 / 4.0;
-    let su2 = du2 / 4.0; let sv2 = dv2 / 4.0;
-    let ratio = max(length(su0), length(sv0)) / max(min(length(su0), length(sv0)), 1e-4);
-    if (ratio > 2.5) {
-      let f0 = farAniso(arr, uv0, su0, sv0, i, gain);
-      let f1 = farAniso(arr, uv1, su1, sv1, id1, gain);
-      let f2 = farAniso(arr, uv2, su2, sv2, id2, gain);
-      return f0 * w.x + f1 * w.y + f2 * w.z;
-    }
-    // The pixel's own mip, and never the 1x1. Grain stays, the crawl does not.
-    let lod0 = clamp(log2(max(max(length(su0), length(sv0)) * 1024.0, 1.0)), 3.0, 7.5);
-    let lod1 = clamp(log2(max(max(length(su1), length(sv1)) * 1024.0, 1.0)), 3.0, 7.5);
-    let lod2 = clamp(log2(max(max(length(su2), length(sv2)) * 1024.0, 1.0)), 3.0, 7.5);
-    let h0 = level4(arr, uv0, lod0, variantW(i), gain);
-    let h1 = level4(arr, uv1, lod1, variantW(id1), gain);
-    let h2 = level4(arr, uv2, lod2, variantW(id2), gain);
+    let h0 = blend4(arr, uv0, du0 / 4.0, dv0 / 4.0, variantW(i), gain);
+    let h1 = blend4(arr, uv1, du1 / 4.0, dv1 / 4.0, variantW(id1), gain);
+    let h2 = blend4(arr, uv2, du2 / 4.0, dv2 / 4.0, variantW(id2), gain);
     return h0 * w.x + h1 * w.y + h2 * w.z;
   }
   let s0 = lodScale(du0, dv0, 0.0, 12.0);
