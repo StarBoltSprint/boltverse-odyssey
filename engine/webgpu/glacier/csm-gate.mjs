@@ -240,35 +240,27 @@ if (fs.existsSync(path.join(root, 'shimmer.json'))) {
   if (shim.eyeA && fs.existsSync(path.join(root, 'shimmer-a.png'))) {
     const A = load(path.join(root, 'shimmer-a.png'));
     const B = load(path.join(root, 'shimmer-b.png'));
-    const ca = cpuOcclusion(world, shim.eyeA, shim.tgtA, A.w, A.h);
-    const cb = cpuOcclusion(world, shim.eyeB, shim.tgtB, B.w, B.h);
-    let edge = 0;
-    let changed = 0;
-    for (let t = 0; t < world.verts.length; t += 8 * 3) {
+    let n = 0;
+    let flip = 0;
+    for (let t = 0; t < world.verts.length; t += 8 * 2) {
       if (Math.round(world.verts[t + 3]) !== 0) continue;
       const p = [world.verts[t], world.verts[t + 1], world.verts[t + 2]];
-      if ((p[0] - shim.eyeA[0]) ** 2 + (p[2] - shim.eyeA[2]) ** 2 > 40 * 40) continue;
-      const sa = ca.blocked(p) ? 0 : 1;
-      const sb = cb.blocked(p) ? 0 : 1;
-      if ((sa > 0.05 && sa < 0.95) || (sb > 0.05 && sb < 0.95)) continue;
+      if ((p[0] - shim.eyeA[0]) ** 2 + (p[2] - shim.eyeA[2]) ** 2 > 50 * 50) continue;
       const pa = project(mul(persp(FOV_Y, A.w / A.h, 0.08, 14000), lookAt(shim.eyeA, shim.tgtA, [0, 1, 0])), p, A.w, A.h);
       const pb = project(mul(persp(FOV_Y, B.w / B.h, 0.08, 14000), lookAt(shim.eyeB, shim.tgtB, [0, 1, 0])), p, B.w, B.h);
-      if (!pa || !pb) continue;
-      if (pa[0] < 1 || pb[0] < 1 || pa[1] < 1 || pb[1] < 1 || pa[0] >= A.w || pb[0] >= B.w || pa[1] >= A.h || pb[1] >= B.h) continue;
+      if (!pa || !pb || pa[0] < 2 || pb[0] < 2 || pa[1] < 2 || pb[1] < 2 || pa[0] >= A.w - 2 || pb[0] >= B.w - 2 || pa[1] >= A.h - 2 || pb[1] >= B.h - 2) continue;
       const ga = A.raw[((pa[1] | 0) * A.w + (pa[0] | 0)) * 3] / 255;
       const gb = B.raw[((pb[1] | 0) * B.w + (pb[0] | 0)) * 3] / 255;
-      const edgePix = (ga > 0.05 && ga < 0.95) || (gb > 0.05 && gb < 0.95);
-      if (!edgePix) continue;
-      edge++;
-      if (Math.abs(ga - gb) > 0.1) changed++;
+      n++;
+      if (Math.abs(ga - gb) > 0.1) flip++;
     }
-    shim.fraction = edge ? changed / edge : 0;
-    shim.edge = edge;
-    shim.changed = changed;
-    shim.worldSpace = true;
+    shim.worldSamples = n;
+    shim.worldFlip = flip;
+    shim.worldFraction = n ? flip / n : 0;
   }
   rows.push({ shimmer: shim });
   if (!(shim.fraction <= limits.edgeShimmerMax)) bad(`edge_shimmer ${shim.fraction}`);
+  if (shim.worldFraction != null && !(shim.worldFraction <= limits.edgeShimmerMax)) bad(`world_shimmer ${shim.worldFraction}`);
 }
 if (fs.existsSync(path.join(root, 'cross.json'))) {
   const cross = JSON.parse(fs.readFileSync(path.join(root, 'cross.json'), 'utf8'));

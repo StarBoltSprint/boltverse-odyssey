@@ -1826,7 +1826,7 @@ async function main() {
     return {
       x: live.x, z: live.z, psi: live.psi, y: pawGround(),
       eye: lastEye, tgt: lastTgt, W, H,
-      tris: world.budget.totalTris, draws: DRAWS.length,
+      tris: world.budget.totalTris, draws: DRAWS.length, presentPass: 1,
       shadowDraws: CSM_OFF ? 0 : SHADOW_DRAWS.length,
       gpuErr,
       csm: lastCascades && { tier: lastCascades.tier, splits: lastCascades.splits, radii: lastCascades.radii, count: lastCascades.count },

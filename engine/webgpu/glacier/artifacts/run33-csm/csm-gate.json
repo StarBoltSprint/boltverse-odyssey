@@ -1,0 +1,158 @@
+{
+  "limits": {
+    "csmIouMin": 0.8,
+    "edgeShimmerMax": 0.005,
+    "cascadeSeamJumpMax": 0.03,
+    "snowShadowBlueMin": 0.03
+  },
+  "rows": [
+    {
+      "tag": "51",
+      "iou": 0.8455,
+      "gpu": 2459,
+      "cpu": 2116,
+      "inter": 2096,
+      "union": 2479,
+      "spireTris": 61739,
+      "blueDelta": 0.1477,
+      "seam": 0.0282,
+      "seamN": 1014,
+      "greyBright": 0.0426,
+      "iceBlue": 0.1427,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 5
+    },
+    {
+      "tag": "5567",
+      "iou": 0.8363,
+      "gpu": 2319,
+      "cpu": 1965,
+      "inter": 1951,
+      "union": 2333,
+      "spireTris": 62158,
+      "blueDelta": 0.1488,
+      "seam": 0.0375,
+      "seamN": 868,
+      "greyBright": 0.0464,
+      "iceBlue": 0.1414,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 5
+    },
+    {
+      "tag": "79",
+      "iou": 0.845,
+      "gpu": 2009,
+      "cpu": 1799,
+      "inter": 1744,
+      "union": 2064,
+      "spireTris": 60720,
+      "blueDelta": 0.1479,
+      "seam": 0.0219,
+      "seamN": 839,
+      "greyBright": 0.0369,
+      "iceBlue": 0.1414,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 5
+    },
+    {
+      "tag": "117",
+      "iou": 0.8779,
+      "gpu": 1892,
+      "cpu": 1661,
+      "inter": 1661,
+      "union": 1892,
+      "spireTris": 56267,
+      "blueDelta": 0.1469,
+      "seam": 0.0281,
+      "seamN": 606,
+      "greyBright": 0.0445,
+      "iceBlue": 0.1407,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 5
+    },
+    {
+      "tag": "24",
+      "iou": 0.9243,
+      "gpu": 1554,
+      "cpu": 1444,
+      "inter": 1440,
+      "union": 1558,
+      "spireTris": 41099,
+      "blueDelta": 0.1503,
+      "seam": 0.0146,
+      "seamN": 810,
+      "greyBright": 0.0496,
+      "iceBlue": 0.141,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 5
+    },
+    {
+      "tag": "30",
+      "iou": 0.8316,
+      "gpu": 1253,
+      "cpu": 1042,
+      "inter": 1042,
+      "union": 1253,
+      "spireTris": 31426,
+      "blueDelta": 0.1509,
+      "seam": 0.0053,
+      "seamN": 690,
+      "greyBright": 0.0364,
+      "iceBlue": 0.1417,
+      "clip": 0,
+      "draws": 9,
+      "shadowDraws": 5
+    },
+    {
+      "shimmer": {
+        "fraction": 0.003612991557009204,
+        "edge": 26294,
+        "changed": 95,
+        "eyeA": [
+          12.383962783250904,
+          1.5247049325059825,
+          -30.493974469615175
+        ],
+        "tgtA": [
+          11.871566429147737,
+          1.111852833452261,
+          -35.01503075949941
+        ],
+        "eyeB": [
+          12.38132876481943,
+          1.5247049325059825,
+          -30.496984776394
+        ],
+        "tgtB": [
+          11.868932410716264,
+          1.111852833452261,
+          -35.018041066278236
+        ],
+        "worldSamples": 3837,
+        "worldFlip": 3,
+        "worldFraction": 0.0007818608287724785
+      }
+    },
+    {
+      "cross": {
+        "de76": 0.2847534869292601,
+        "at": [
+          12.025285335378687,
+          1.2,
+          -33.658713872534136
+        ],
+        "eye2": [
+          15.583962783250904,
+          2.1247049325059826,
+          -29.093974469615176
+        ]
+      }
+    }
+  ],
+  "verdict": "FAIL"
+}
