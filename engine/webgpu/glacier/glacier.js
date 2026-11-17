@@ -419,6 +419,11 @@ fn darken15(c: vec3f) -> vec3f {
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
   let sh = shadowAt(v.w, n);
+  if (u.csm.y > 0.5 && u.soft.w > 3.5) {
+    let sp = cascadePair(v.w, n);
+    return vec4f(sp.x, sp.y, sp.w, 1.0);
+  }
+  if (u.csm.y > 0.5 && u.soft.w > 2.5) { return depthProbe(v.w); }
   if (u.csm.y > 0.5) { return vec4f(sh, cascadeMix(v.w), 0.0, 1.0); }
   var col = litIce(alb, nLit, view, sh);
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
@@ -1043,6 +1048,31 @@ async function main() {
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     depthStencil: shDepth,
   });
+  const probeFloats = [];
+  for (let t = 0; t < world.verts.length && probeFloats.length < 512 * 256 * 8; t += 32) {
+    if (Math.round(world.verts[t + 3]) !== 0) continue;
+    probeFloats.push(world.verts[t], world.verts[t + 1], world.verts[t + 2], 1, world.verts[t + 4], world.verts[t + 5], world.verts[t + 6], 0);
+  }
+  const probeCount = probeFloats.length / 8;
+  const probeBuf = dev.createBuffer({ size: Math.max(32, probeFloats.length * 4), usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST });
+  dev.queue.writeBuffer(probeBuf, 0, new Float32Array(probeFloats));
+  const probeTex = dev.createTexture({
+    size: [512, 256], format: 'rgba8unorm',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
+  const probeRb = dev.createBuffer({ size: 512 * 256 * 4, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const pProbe = dev.createRenderPipeline({
+    layout,
+    vertex: {
+      module: mod, entryPoint: 'vsShadeProbe',
+      buffers: [{ arrayStride: 32, attributes: [
+        { shaderLocation: 0, offset: 0, format: 'float32x4' },
+        { shaderLocation: 1, offset: 16, format: 'float32x4' },
+      ] }],
+    },
+    fragment: { module: mod, entryPoint: 'fsShadeProbe', targets: [{ format: 'rgba8unorm' }] },
+    primitive: { topology: 'point-list' },
+  });
   const pBoltSh = dev.createRenderPipeline({
     layout: shBoltLayout,
     vertex: { module: mod, entryPoint: 'vsBoltSh' },
@@ -1147,6 +1177,7 @@ async function main() {
     }
     const casc = buildCascades({
       eye: lastEye, tgt: lastTgt, fovY: FOV_Y, aspect: W / H, sun: sunNow, tier: CSM_TIER,
+      snap: window.__glacierSnap !== 0,
     });
     lastCascades = casc;
     for (let i = 0; i < 4; i++) U.set(casc.mats[Math.min(i, casc.mats.length - 1)], 112 + i * 16);
@@ -1160,7 +1191,7 @@ async function main() {
     const penLive = window.__glacierPen;
     const penQ = Number.isFinite(penLive) ? penLive : Number(qs.get('pen'));
     U[182] = Number.isFinite(penQ) && penQ >= 0 ? penQ : 0.08;
-    U[183] = (window.__glacierPenlock === 1 || qs.get('penlock') === '1') ? 2 : 0;
+    U[183] = qs.get('split') === '1' ? 4 : (qs.get('depthprobe') === '1' ? 3 : ((window.__glacierPenlock === 1 || qs.get('penlock') === '1') ? 2 : 0));
   }
 
   function beginPass(enc, clear) {
@@ -1863,6 +1894,32 @@ async function main() {
     maskForce = prevMask;
     gateMode = prevMode;
     return { png: await blobOf(frame.src, 'image/png'), info: poseInfo(frame.gpuErr) };
+  };
+  window.__glacierVertShadow = async (eye, tgt, snap) => {
+    window.__glacierSnap = snap ? 1 : 0;
+    gatePose = { eye, tgt };
+    renderFixed(sim);
+    const enc = dev.createCommandEncoder();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: probeTex.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] }],
+    });
+    pass.setPipeline(pProbe);
+    pass.setBindGroup(0, drawBg);
+    pass.setVertexBuffer(0, probeBuf);
+    pass.draw(probeCount);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: probeTex }, { buffer: probeRb, bytesPerRow: 512 * 4 }, [512, 256]);
+    dev.queue.submit([enc.finish()]);
+    await probeRb.mapAsync(GPUMapMode.READ);
+    const raw = new Uint8Array(probeRb.getMappedRange()).slice();
+    probeRb.unmap();
+    gatePose = null;
+    window.__glacierSnap = 1;
+    const values = new Uint8Array(probeCount);
+    for (let i = 0; i < probeCount; i++) values[i] = raw[(i * 4)];
+    let bin = '';
+    for (let i = 0; i < values.length; i += 4000) bin += String.fromCharCode(...values.subarray(i, i + 4000));
+    return { n: probeCount, b64: btoa(bin) };
   };
   window.__glacierPose = async (eye, tgt, mode) => {
     gatePose = { eye, tgt };

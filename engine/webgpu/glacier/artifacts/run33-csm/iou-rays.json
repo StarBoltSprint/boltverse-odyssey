@@ -1,0 +1,40 @@
+{
+  "24": {
+    "gpuOnly": 170,
+    "terrain": 25,
+    "drift": 0,
+    "wall": 13,
+    "none": 132,
+    "other": 0,
+    "refBlocked": 1197,
+    "refHit": 80,
+    "refMiss": 0,
+    "shift": {
+      "terrain": 25,
+      "none": 131,
+      "other": 14
+    },
+    "a": 25,
+    "b": 132,
+    "c": 13
+  },
+  "117": {
+    "gpuOnly": 557,
+    "terrain": 71,
+    "drift": 2,
+    "wall": 12,
+    "none": 472,
+    "other": 0,
+    "refBlocked": 1243,
+    "refHit": 80,
+    "refMiss": 0,
+    "shift": {
+      "terrain": 71,
+      "none": 472,
+      "other": 14
+    },
+    "a": 73,
+    "b": 472,
+    "c": 12
+  }
+}

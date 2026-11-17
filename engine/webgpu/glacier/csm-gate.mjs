@@ -217,7 +217,6 @@ for (const tag of tags) {
   const stride = 4;
   for (let t = 0; t < world.verts.length; t += 8 * stride) {
     if (Math.round(world.verts[t + 3]) !== 0) continue;
-    // The shader samples 3.5 cm along the normal, which is where the GPU shadow is read.
     const p = [world.verts[t], world.verts[t + 1], world.verts[t + 2]];
     if ((p[0] - info.eye[0]) ** 2 + (p[2] - info.eye[2]) ** 2 > 70 * 70) continue;
     const scr = project(vp, p, w, h);
@@ -361,6 +360,14 @@ if (fs.existsSync(path.join(root, 'shimmer.json'))) {
   rows.push({ shimmer: shim });
   if (!(shim.fraction <= limits.edgeShimmerMax)) bad(`edge_shimmer ${shim.fraction}`);
   if (shim.worldFraction != null && !(shim.worldFraction <= limits.edgeShimmerMax)) bad(`world_shimmer ${shim.worldFraction}`);
+  const vertPath = path.join(root, 'vert-shimmer.json');
+  if (fs.existsSync(vertPath)) {
+    const vert = JSON.parse(fs.readFileSync(vertPath, 'utf8'));
+    rows.push({ vertShadow: vert });
+    if (!(vert.unsnapped && vert.unsnapped.fraction > limits.edgeShimmerMax)) bad('unsnapped vertex fixture did not fail');
+    if (!(vert.snapped && vert.snapped.fraction <= limits.edgeShimmerMax)) bad(`snapped vertex shimmer ${vert.snapped && vert.snapped.fraction}`);
+    console.log('vertex', 'snapped', vert.snapped.fraction, 'unsnapped', vert.unsnapped.fraction, 'screen', shim.fraction);
+  }
 }
 if (fs.existsSync(path.join(root, 'cross.json'))) {
   const cross = JSON.parse(fs.readFileSync(path.join(root, 'cross.json'), 'utf8'));

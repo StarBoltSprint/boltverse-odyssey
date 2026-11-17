@@ -108,7 +108,7 @@ export function cascadeMatrix(center, radius, sun) {
   ];
 }
 
-export function buildCascades({ eye, tgt, fovY, aspect, sun, tier = 'phone' }) {
+export function buildCascades({ eye, tgt, fovY, aspect, sun, tier = 'phone', snap = true }) {
   const cfg = tierConfig(tier);
   const forward = norm([tgt[0] - eye[0], tgt[1] - eye[1], tgt[2] - eye[2]]);
   const mats = [];
@@ -120,7 +120,7 @@ export function buildCascades({ eye, tgt, fovY, aspect, sun, tier = 'phone' }) {
     const radius = fixedRadius(fovY, aspect, d0, d1);
     const mid = (d0 + d1) * 0.5;
     const raw = [eye[0] + forward[0] * mid, eye[1] + forward[1] * mid, eye[2] + forward[2] * mid];
-    const center = snapCenter(raw, sun, radius, cfg.tiles[i]);
+    const center = snap === false ? raw : snapCenter(raw, sun, radius, cfg.tiles[i]);
     mats.push(cascadeMatrix(center, radius, sun));
     radii.push(radius);
     centers.push(center);
@@ -263,6 +263,14 @@ fn shadowHigh(w: vec3f, nrm: vec3f) -> f32 {
   if (e0 < 0.98) { return shadeCascade(0.0, q0, b0, u.soft.x, pen); }
   return shadeCascade(1.0, q1, b1, u.soft.y, pen);
 }
+fn depthProbe(w: vec3f) -> vec4f {
+  let q = u.c0 * vec4f(w, 1.0);
+  let uv = shadowUv(q, 0.0);
+  let dims = vec2f(textureDimensions(smap));
+  let stored = textureLoad(smap, vec2i(clamp(uv, vec2f(0.0), vec2f(0.999)) * dims), 0);
+  let hw = textureSampleCompareLevel(smap, scmp, clamp(uv, vec2f(0.001), vec2f(0.999)), q.z);
+  return vec4f(stored, q.z, hw, 1.0);
+}
 fn shadowAt(w: vec3f, nrm: vec3f) -> f32 {
   if (u.csm.x > 0.5) { return 1.0; }
   let nn = normalize(nrm);
@@ -354,6 +362,23 @@ fn boltShA(f: u32, uv: vec2f) -> f32 {
   let lift = 0.045 * lw * ((1.0 - sw) * max(sin(gph), 0.0) + sw * max(-sin(gph), 0.0)) * smoothstep(0.25, 1.2, spd) * (1.0 - u.misc.x);
   let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
   if (mix(boltShA(a, uvs), boltShA(bb, uvs), k) < 0.03) { discard; }
+}
+struct PR {
+  @builtin(position) p: vec4f,
+  @location(0) w: vec3f,
+  @location(1) n: vec3f,
+};
+@vertex fn vsShadeProbe(@location(0) p: vec4f, @location(1) nrm: vec4f, @builtin(vertex_index) vi: u32) -> PR {
+  let col = vi % 512u;
+  let row = vi / 512u;
+  var o: PR;
+  o.p = vec4f((f32(col) + 0.5) / 512.0 * 2.0 - 1.0, 1.0 - (f32(row) + 0.5) / 256.0 * 2.0, 0.0, 1.0);
+  o.w = p.xyz;
+  o.n = nrm.xyz;
+  return o;
+}
+@fragment fn fsShadeProbe(v: PR) -> @location(0) vec4f {
+  return vec4f(shadowAt(v.w, v.n), 0.0, 0.0, 1.0);
 }
 `;
 }

@@ -1,0 +1,23 @@
+{
+  "snapped": {
+    "n": 65562,
+    "edge": 1959,
+    "flip": 0,
+    "fraction": 0,
+    "maxD": 0
+  },
+  "unsnapped": {
+    "n": 65562,
+    "edge": 2018,
+    "flip": 59,
+    "fraction": 0.02923686818632309,
+    "maxD": 1
+  },
+  "screen": {
+    "fraction": 0.017848403279089684,
+    "worldFraction": null
+  },
+  "bar": 0.005,
+  "unsnappedFails": true,
+  "snappedPasses": true
+}
