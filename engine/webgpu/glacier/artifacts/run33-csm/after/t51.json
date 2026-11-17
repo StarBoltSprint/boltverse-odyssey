@@ -18,7 +18,7 @@
   "tris": 195818,
   "draws": 9,
   "presentPass": 1,
-  "shadowDraws": 5,
+  "shadowDraws": 2,
   "gpuErr": null,
   "csm": {
     "tier": "phone",

@@ -17,7 +17,8 @@
   "H": 1280,
   "tris": 195818,
   "draws": 9,
-  "shadowDraws": 5,
+  "presentPass": 1,
+  "shadowDraws": 2,
   "gpuErr": null,
   "csm": {
     "tier": "phone",

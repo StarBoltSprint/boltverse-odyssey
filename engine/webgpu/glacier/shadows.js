@@ -4,7 +4,7 @@
 // The receiver offset is along the normal, smaller than one shadow texel.
 import { lookAt, mul } from '../engine/bricks/follow-cam.js';
 
-export const SHADOW_DRAWS = ['world', 'icicle', 'chunk', 'drift', 'bolt'];
+export const SHADOW_DRAWS = ['casters', 'bolt'];
 const RADIUS_PAD = 1.08;
 
 function norm(a) {
@@ -156,8 +156,7 @@ fn shadowUv(q: vec4f, ci: f32) -> vec2f {
   return vec2f(mix(tile.x, tile.z, ndc.x), mix(tile.y, tile.w, ndc.y));
 }
 fn csmOne(M: mat4x4f, ci: f32, bias: f32, w: vec3f, nrm: vec3f, o: vec2f) -> f32 {
-  let off = select(0.045, 0.015, ci < 0.5);
-  let ws = w + nrm * off;
+  let ws = w + nrm * 0.02;
   let q = M * vec4f(ws, 1.0);
   if (q.z < 0.0 || q.z > 1.0) { return 1.0; }
   let uv = shadowUv(q, ci) + o;
@@ -170,9 +169,19 @@ fn csmOne(M: mat4x4f, ci: f32, bias: f32, w: vec3f, nrm: vec3f, o: vec2f) -> f32
   let loadLit = select(0.0, 1.0, stored >= zRef);
   return min(cmp, loadLit);
 }
-fn csmTap(M: mat4x4f, ci: f32, bias: f32, w: vec3f, nrm: vec3f, four: bool) -> f32 {
+fn csmStored(M: mat4x4f, ci: f32, w: vec3f, nrm: vec3f) -> vec4f {
+  let q = M * vec4f(w + nrm * 0.02, 1.0);
+  let uv = shadowUv(q, ci);
+  let dims = vec2f(textureDimensions(smap));
+  let stored = textureLoad(smap, vec2i(clamp(uv, vec2f(0.0), vec2f(0.999)) * dims), 0);
+  return vec4f(q.xyz, stored);
+}
+fn csmTap(M: mat4x4f, ci: f32, bias: f32, w: vec3f, nrm: vec3f, four: bool, radius: f32) -> f32 {
+  let info = csmStored(M, ci, w, nrm);
+  let pen = clamp((info.z - info.w) * 10.0, 0.0, 1.0);
+  let rad = radius * mix(1.0, 2.6, pen);
   if (!four) { return csmOne(M, ci, bias, w, nrm, vec2f(0.0)); }
-  let tx = select(vec2f(1.0 / 2048.0), vec2f(1.0 / 2048.0, 1.0 / 1024.0), u.csm.z < 3.0);
+  let tx = select(vec2f(1.0 / 2048.0), vec2f(1.0 / 2048.0, 1.0 / 1024.0), u.csm.z < 3.0) * rad;
   return 0.25 * (
     csmOne(M, ci, bias, w, nrm, vec2f(-tx.x, -tx.y)) +
     csmOne(M, ci, bias, w, nrm, vec2f(tx.x, -tx.y)) +
@@ -211,11 +220,15 @@ fn extentOf(M: mat4x4f, w: vec3f) -> f32 {
 fn shadowPhone(w: vec3f, nrm: vec3f) -> f32 {
   let e0 = extentOf(u.c0, w);
   let e1 = extentOf(u.c1, w);
+  // One bias. The near kernel widens to the far texel as the blend opens,
+  // so the two maps meet instead of stepping.
+  let bias = 0.0005;
+  let wBlend = smoothstep(0.40, 0.98, e0);
   var s1 = 1.0;
-  if (e1 < 0.99) { s1 = mix(1.0, csmTap(u.c1, 1.0, 0.0008, w, nrm, false), smoothstep(0.99, 0.85, e1)); }
-  if (e0 >= 0.95) { return s1; }
-  let s0 = csmTap(u.c0, 0.0, 0.0003, w, nrm, true);
-  return mix(s0, s1, smoothstep(0.75, 0.95, e0));
+  if (e1 < 0.995) { s1 = mix(1.0, csmTap(u.c1, 1.0, bias, w, nrm, false, 1.0), smoothstep(0.995, 0.86, e1)); }
+  if (e0 >= 0.995) { return s1; }
+  let s0 = csmTap(u.c0, 0.0, bias, w, nrm, true, mix(1.0, 4.4, wBlend));
+  return mix(s0, s1, wBlend);
 }
 fn shadowHigh(w: vec3f, nrm: vec3f) -> f32 {
   let e0 = extentOf(u.c0, w);
@@ -242,7 +255,7 @@ fn cascadeMix(w: vec3f) -> f32 {
     if (e1 < 0.95) { return (1.0 + smoothstep(0.75, 0.95, e1)) / 3.0; }
     return 1.0;
   }
-  return smoothstep(0.75, 0.95, extentOf(u.c0, w));
+  return smoothstep(0.40, 0.98, extentOf(u.c0, w));
 }
 struct SH {
   @builtin(position) p: vec4f,

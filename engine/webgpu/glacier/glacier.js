@@ -323,7 +323,7 @@ struct U {
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
-struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
+struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32, @location(2) wp: vec3f };
 
 ${lightWgsl(LIGHT)}
 fn lin1(c: f32) -> f32 {
@@ -380,6 +380,9 @@ fn darken15(c: vec3f) -> vec3f {
 @fragment fn fsSky(v: SO) -> @location(0) vec4f {
   let hw = u.ivp * vec4f(v.ndc, 1.0, 1.0);
   var sky = skyColour(normalize(hw.xyz / hw.w - u.cam.xyz));
+  // Open-sky highlights. The ground is in shadow, so the bright end of the frame is the sky.
+  let skyY = dot(sky, vec3f(0.2126, 0.7152, 0.0722));
+  sky = sky * (1.0 + 0.70 * smoothstep(0.30, 0.55, skyY));
   if (u.spin.z > 0.5) {
     let s = clamp(v.p.x / 720.0, 0.0, 1.0);
     sky = sky + vec3f(0.045, 0.02, 0.07) * s + vec3f(0.03, 0.0, 0.05) * fract(u.spin.w * 0.37);
@@ -535,7 +538,7 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
     let fade = (1.0 - smoothstep(7.5, 10.0, behind)) * smoothstep(-0.04, 0.22, behind);
     kind = select(-1.0, 3.0 + fade, pr.y > -10.0);
   }
-  var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; return o;
+  var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; o.wp = w; return o;
 }
 @fragment fn fsContact(v: CO) -> @location(0) vec4f {
   if (v.k < 0.0) { discard; }
@@ -543,14 +546,16 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   if (r2 > 1.0) { discard; }
   let r = sqrt(r2);
   let soft = 1.0 - smoothstep(0.15, 1.0, r);
+  // The cascaded shadow already darkens this snow. Do not paint a second blot.
+  let keep = select(1.0, smoothstep(0.08, 0.7, shadowAt(v.wp, vec3f(0.0, 1.0, 0.0))), v.k < 2.5);
   if (v.k < 0.5) {
-    return vec4f(toLin(vec3f(0.16, 0.18, 0.26)), soft * 0.46);
+    return vec4f(toLin(vec3f(0.16, 0.18, 0.26)), soft * 0.46 * keep);
   }
   if (v.k < 1.5) {
-    return vec4f(toLin(vec3f(0.18, 0.20, 0.32)), soft * 0.34);
+    return vec4f(toLin(vec3f(0.18, 0.20, 0.32)), soft * 0.34 * keep);
   }
   if (v.k < 2.5) {
-    return vec4f(toLin(vec3f(0.14, 0.16, 0.24)), soft * 0.40);
+    return vec4f(toLin(vec3f(0.14, 0.16, 0.24)), soft * 0.40 * keep);
   }
   // The still prefilter scores the snow. Prints stay out of that pass.
   if (u.sun.w > 29.5 && u.sun.w < 37.5) { discard; }
@@ -868,18 +873,34 @@ async function main() {
     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
   });
   const nC = CSM_CFG.count;
-  const expandInst = (data) => {
-    const stride = 8;
-    const count = data.length / stride;
-    const out = new Float32Array(count * nC * stride);
+  const bakeProps = (proto, data) => {
+    const vCount = proto.length / 8;
+    const count = data.length / 8;
+    const out = new Float32Array(vCount * count * 8);
+    let o = 0;
     for (let i = 0; i < count; i++) {
-      for (let c = 0; c < nC; c++) out.set(data.subarray(i * stride, i * stride + stride), (i * nC + c) * stride);
+      const ix = data[i * 8], iy = data[i * 8 + 1], iz = data[i * 8 + 2], yaw = data[i * 8 + 3];
+      const sx = data[i * 8 + 4], sy = data[i * 8 + 5], sz = data[i * 8 + 6], tilt = data[i * 8 + 7];
+      const cl = Math.cos(tilt), sl = Math.sin(tilt), c = Math.cos(yaw), s = Math.sin(yaw);
+      for (let v = 0; v < vCount; v++) {
+        const px = proto[v * 8] * sx, py = proto[v * 8 + 1] * sy, pz = proto[v * 8 + 2] * sz;
+        const pLx = cl * px - sl * py, pLy = sl * px + cl * py, pLz = pz;
+        out[o++] = c * pLx + s * pLz + ix;
+        out[o++] = pLy + iy;
+        out[o++] = -s * pLx + c * pLz + iz;
+        out[o++] = proto[v * 8 + 3];
+        out[o++] = 0; out[o++] = 1; out[o++] = 0; out[o++] = proto[v * 8 + 7];
+      }
     }
     return out;
   };
-  const shIcicle = mk(expandInst(world.instances.icicle.data), GPUBufferUsage.VERTEX);
-  const shChunk = mk(expandInst(world.instances.chunk.data), GPUBufferUsage.VERTEX);
-  const shDrift = mk(expandInst(world.instances.drift.data), GPUBufferUsage.VERTEX);
+  const baked = ['icicle', 'chunk', 'drift'].map((name) => bakeProps(world.instances[name].proto, world.instances[name].data));
+  const caster = new Float32Array(world.verts.length + baked.reduce((s, p) => s + p.length, 0));
+  caster.set(world.verts, 0);
+  let casterOff = world.verts.length;
+  for (const part of baked) { caster.set(part, casterOff); casterOff += part.length; }
+  const casterBuf = mk(caster, GPUBufferUsage.VERTEX);
+  const casterVerts = caster.length / 8;
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
@@ -1012,13 +1033,6 @@ async function main() {
   const pWorldSh = dev.createRenderPipeline({
     layout: shLayout,
     vertex: { module: mod, entryPoint: 'vsWorldSh', buffers: [vbuf] },
-    fragment: { module: mod, entryPoint: 'fsShadowClip', targets: [] },
-    primitive: { topology: 'triangle-list', cullMode: 'none' },
-    depthStencil: shDepth,
-  });
-  const pInstSh = dev.createRenderPipeline({
-    layout: shLayout,
-    vertex: { module: mod, entryPoint: 'vsInstSh', buffers: [vbuf, instBuf] },
     fragment: { module: mod, entryPoint: 'fsShadowClip', targets: [] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     depthStencil: shDepth,
@@ -1184,18 +1198,8 @@ async function main() {
     if (!CSM_OFF) {
       sp.setBindGroup(0, shBg);
       sp.setPipeline(pWorldSh);
-      sp.setVertexBuffer(0, vb);
-      sp.draw(worldVerts, nC);
-      sp.setPipeline(pInstSh);
-      sp.setVertexBuffer(0, icicleI.proto);
-      sp.setVertexBuffer(1, shIcicle);
-      sp.draw(icicleI.verts, icicleI.count * nC);
-      sp.setVertexBuffer(0, chunkI.proto);
-      sp.setVertexBuffer(1, shChunk);
-      sp.draw(chunkI.verts, chunkI.count * nC);
-      sp.setVertexBuffer(0, driftI.proto);
-      sp.setVertexBuffer(1, shDrift);
-      sp.draw(driftI.verts, driftI.count * nC);
+      sp.setVertexBuffer(0, casterBuf);
+      sp.draw(casterVerts, nC);
       sp.setPipeline(pBoltSh);
       sp.setBindGroup(0, shBoltBg);
       sp.draw(6, nC);

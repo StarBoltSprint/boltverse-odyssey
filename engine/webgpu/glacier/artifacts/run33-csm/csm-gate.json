@@ -8,54 +8,54 @@
   "rows": [
     {
       "tag": "51",
-      "iou": 0.8455,
-      "gpu": 2459,
+      "iou": 0.8536,
+      "gpu": 2479,
       "cpu": 2116,
-      "inter": 2096,
+      "inter": 2116,
       "union": 2479,
       "spireTris": 61739,
-      "blueDelta": 0.1477,
-      "seam": 0.0282,
-      "seamN": 1014,
-      "greyBright": 0.0426,
-      "iceBlue": 0.1427,
+      "blueDelta": 0.1145,
+      "seam": 0.009,
+      "seamN": 821,
+      "greyBright": 0.0398,
+      "iceBlue": 0.1217,
       "clip": 0,
       "draws": 9,
-      "shadowDraws": 5
+      "shadowDraws": 2
     },
     {
       "tag": "5567",
-      "iou": 0.8363,
-      "gpu": 2319,
+      "iou": 0.8423,
+      "gpu": 2333,
       "cpu": 1965,
-      "inter": 1951,
+      "inter": 1965,
       "union": 2333,
       "spireTris": 62158,
-      "blueDelta": 0.1488,
-      "seam": 0.0375,
-      "seamN": 868,
-      "greyBright": 0.0464,
-      "iceBlue": 0.1414,
+      "blueDelta": 0.1144,
+      "seam": 0.0134,
+      "seamN": 526,
+      "greyBright": 0.044,
+      "iceBlue": 0.1204,
       "clip": 0,
       "draws": 9,
-      "shadowDraws": 5
+      "shadowDraws": 2
     },
     {
       "tag": "79",
-      "iou": 0.845,
-      "gpu": 2009,
+      "iou": 0.8653,
+      "gpu": 2051,
       "cpu": 1799,
-      "inter": 1744,
+      "inter": 1786,
       "union": 2064,
       "spireTris": 60720,
-      "blueDelta": 0.1479,
-      "seam": 0.0219,
-      "seamN": 839,
-      "greyBright": 0.0369,
-      "iceBlue": 0.1414,
+      "blueDelta": 0.1162,
+      "seam": 0.003,
+      "seamN": 55,
+      "greyBright": 0.0359,
+      "iceBlue": 0.1209,
       "clip": 0,
       "draws": 9,
-      "shadowDraws": 5
+      "shadowDraws": 2
     },
     {
       "tag": "117",
@@ -65,14 +65,14 @@
       "inter": 1661,
       "union": 1892,
       "spireTris": 56267,
-      "blueDelta": 0.1469,
-      "seam": 0.0281,
-      "seamN": 606,
-      "greyBright": 0.0445,
-      "iceBlue": 0.1407,
+      "blueDelta": 0.1102,
+      "seam": 0.0137,
+      "seamN": 551,
+      "greyBright": 0.0434,
+      "iceBlue": 0.1201,
       "clip": 0,
       "draws": 9,
-      "shadowDraws": 5
+      "shadowDraws": 2
     },
     {
       "tag": "24",
@@ -82,14 +82,14 @@
       "inter": 1440,
       "union": 1558,
       "spireTris": 41099,
-      "blueDelta": 0.1503,
-      "seam": 0.0146,
-      "seamN": 810,
-      "greyBright": 0.0496,
-      "iceBlue": 0.141,
+      "blueDelta": 0.115,
+      "seam": 0.0248,
+      "seamN": 170,
+      "greyBright": 0.0471,
+      "iceBlue": 0.1201,
       "clip": 0,
       "draws": 9,
-      "shadowDraws": 5
+      "shadowDraws": 2
     },
     {
       "tag": "30",
@@ -99,20 +99,20 @@
       "inter": 1042,
       "union": 1253,
       "spireTris": 31426,
-      "blueDelta": 0.1509,
-      "seam": 0.0053,
-      "seamN": 690,
-      "greyBright": 0.0364,
-      "iceBlue": 0.1417,
+      "blueDelta": 0.117,
+      "seam": 0.0282,
+      "seamN": 221,
+      "greyBright": 0.032,
+      "iceBlue": 0.118,
       "clip": 0,
       "draws": 9,
-      "shadowDraws": 5
+      "shadowDraws": 2
     },
     {
       "shimmer": {
-        "fraction": 0.003612991557009204,
-        "edge": 26294,
-        "changed": 95,
+        "fraction": 0.003669303978901502,
+        "edge": 26163,
+        "changed": 96,
         "eyeA": [
           12.383962783250904,
           1.5247049325059825,
@@ -140,7 +140,7 @@
     },
     {
       "cross": {
-        "de76": 0.2847534869292601,
+        "de76": 0.006116058534844093,
         "at": [
           12.025285335378687,
           1.2,
@@ -154,5 +154,5 @@
       }
     }
   ],
-  "verdict": "FAIL"
+  "verdict": "PASS"
 }

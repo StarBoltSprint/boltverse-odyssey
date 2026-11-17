@@ -28,14 +28,34 @@ export function shadeAt(light, ndl, ny = 0) {
   return { rgb, luma: luma(rgb) };
 }
 
-// sh multiplies only the direct sun. Ambient stays, so a full shadow stays blue.
+// Order-1 sky dome. Upward snow sees zenith and horizon. Downward faces keep
+// the dark blue ambient. sh is not in this term.
+const SKY_ZEN_W = 0.70;
+const SKY_GAIN = 1.43;
+// Circumsolar sky lobe. It is sky light, so the shadow map does not zero it.
+// The lobe opens only toward the sun, which is where shaded snow still sees the aureole.
+const CIRCUM = 0.016;
+export function skyDomeIrr(light, ny = 1) {
+  const z = (light.sky && light.sky.zenith) || light.ambient.rgb;
+  const h = (light.sky && light.sky.horizon) || light.ambient.rgb;
+  const up = clamp01(ny);
+  const zenW = 0.35 + (SKY_ZEN_W - 0.35) * up;
+  const dome = h.map((hv, i) => (hv * (1 - zenW) + z[i] * zenW) * SKY_GAIN);
+  const skyW = clamp01(0.15 + 0.85 * up);
+  return dome.map((d, i) => d * skyW + light.ambient.rgb[i] * (1 - skyW));
+}
+
+// sh multiplies only the direct sun. The shade is the sky dome, so it stays blue.
 export function shadeAtSh(light, ndl, ny = 0, sh = 1) {
   const n = clamp01(ndl);
   const up = clamp01(ny);
   const face = 1 + (light.flatScale - 1) * up * up;
   const sun = sunOf(light);
   const s = Math.min(1, Math.max(0, sh));
-  const rgb = light.ambient.rgb.map((a, i) => a + sun.rgb[i] * sun.intensity * n * face * s);
+  const dome = skyDomeIrr(light, ny);
+  const lt = Math.min(1, Math.max(0, (n - 0.18) / (0.42 - 0.18)));
+  const lobe = lt * lt * (3 - 2 * lt);
+  const rgb = dome.map((d, i) => d + sun.rgb[i] * (lobe * CIRCUM + sun.intensity * n * face * s));
   return { rgb, luma: luma(rgb) };
 }
 
@@ -58,7 +78,12 @@ fn dawnIrrSh(n: vec3f, sh: f32) -> vec3f {
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   let up = clamp(n.y, 0.0, 1.0);
   let face = mix(1.0, ${light.flatScale}, up * up);
-  return ${v3(light.ambient.rgb)} + ${v3(sun.rgb)} * (${sun.intensity} * ndl * face * sh);
+  let zenW = 0.35 + ${(SKY_ZEN_W - 0.35).toFixed(4)} * up;
+  let dome = mix(${v3(light.sky.zenith)}, ${v3(light.sky.horizon)}, 1.0 - zenW) * ${SKY_GAIN};
+  let skyW = clamp(0.15 + 0.85 * up, 0.0, 1.0);
+  let lobe = smoothstep(0.18, 0.42, ndl);
+  let shade = mix(${v3(light.ambient.rgb)}, dome, skyW) + ${v3(sun.rgb)} * (lobe * ${CIRCUM.toFixed(4)});
+  return shade + ${v3(sun.rgb)} * (${sun.intensity} * ndl * face * sh);
 }
 // Linear scene colour into the rgba16float target. The grade pass owns exposure,
 // the tone map, and the sRGB OETF. Nothing here clamps highlights to 1.
