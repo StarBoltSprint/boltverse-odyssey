@@ -54,3 +54,49 @@ The chase file is `glacier-chase-30s.mp4`: 720×1280, the same route, 5 frames a
 - Instanced drifts and icicles do not darken on their own vertices.
 - The open field is brighter and a little cooler. That is the sky integral sitting in the old ambient slot. Sunlit peaks clamp.
 - The thin dark horizon line from run 31 is still there. This pass did not touch it.
+
+## Round 2 — ground occlusion and shaded-snow warmth
+
+Not a KEEP. The gates above were not lowered. The shaded-snow gate was added in `GATES.md` before these frames and was not lowered.
+
+### Ground occlusion
+
+Snow reads a top-down occlusion texture, world XZ, r8unorm, 0.125 m/texel, bounds X −180..180 and Z 60..−320. Size 2880×3040, 12 mips, 11,673,522 bytes. The same 64-ray hemisphere. Texels far from a caster stay 255 and are not raytraced. Traced 833,677, dark 410,437. Map bake about 78–86 s. Walls and spires keep the vertex factor. Instanced drifts and icicles sample the texture at their base. Draws stay 9. Triangles stay 195,634.
+
+The paired projector (0.5 m window against a 3 m window) did not land a flat-snow pair at any of the six times. The nearest visible occluder was a fall at 5.10, 5.567, 7.90, and 11.70, and a wall at 24 and 30. On the rendered frames, snow with `ny > 0.8`, `ndl` in 0.10–0.50, and AO under 0.55 versus snow in that same band with AO over 0.98:
+
+| t (s) | dark pixels | darken |
+| --- | --- | --- |
+| 5.10 | 688 | 0.338 |
+| 5.567 | 622 | 0.359 |
+| 7.90 | 1260 | 0.473 |
+| 11.70 | 354 | 0.312 |
+| 24 | 140 | 0.327 |
+| 30 | 110 | 0.456 |
+
+All six are over 15%. With AO forced off there are no pixels under 0.55, so the fixture still fails the contact bar. Open snow, AO on versus AO off with the SH held fixed, moved 0% at every time. Under 2%.
+
+### Shaded snow
+
+The crop is the cast sun shadow ahead of Bolt: snow the contact decal darkened by at least 6 L\*. The key is the run-31 shadow on `artifacts/run31/frames/t24.jpg`, Lab `[59.0, 5.1, -3.9]`. Pass is b\* inside −4.4..−3.2 and CIE76 ≤ 10 including lightness.
+
+The warmth is the irradiance the run-31 mauve is missing from the sky-only up face, divided by the snow albedo. Axis `[0.425, 0.260, 0.034]`. Scale 0.90, so the added term is `[0.383, 0.234, 0.030]` on every direction. The decal model runs 2.42 b\* bluer than this crop, and the scale is the one that scores the crop. It is not a picked RGB. Up-facing B−R is −0.144 and down-facing is −0.323, so the up face stays the cooler of the two.
+
+| t (s) | b\* | CIE76 vs key | face CIE76 | constant-ambient b\* |
+| --- | --- | --- | --- | --- |
+| 5.10 | −4.85 | 2.97 | 0.05 | −7.71 |
+| 5.567 | −3.50 | 8.70 | 0.14 | −6.96 |
+| 7.90 | −3.34 | 10.45 | 0.15 | −5.89 |
+| 11.70 | −4.03 | 6.76 | 0.13 | −7.86 |
+| 24 | −3.51 | 7.57 | 0.25 | −6.07 |
+| 30 | −3.84 | 8.26 | 0.08 | −6.73 |
+
+Face CIE76 is the existing shaded-face match against albedo × irradiance. The new columns are the cast-shadow crop. 5.567, 11.70, 24, and 30 pass both new bars. 5.10 misses the b\* band by 0.45 (CIE76 2.97). 7.90 misses CIE76 by 0.45 because that shadow is L\* 69.4 against the key’s 59 (b\* is inside the band). The constant-ambient crop is outside the b\* band at every time, so the fixture fails the gate. AO on and AO off give the same six rows: the shadow sits on open snow, where the occlusion factor is 1.
+
+Open-snow luma versus the constant ambient, SH versus old, per time: +75.4%, +73.7%, +63.6%, +82.2%, +62.7%, +69.7%. The flat-face prediction is +70.8%. Not re-exposed. Snow linear p50 across the six frames is 0.6632. The multiplier that would put that p50 at 0.708 is **1.068**. It was not applied. A face aimed at the sun reaches 1.448 before `present()` clamps (authored albedo × irradiance; the irradiance channel itself peaks at 1.856). The up-facing snow field stays under 0.96. Bolt luma did not move. Screen x stays 360.
+
+### What is still wrong
+
+- One warmth cannot put all six shadows in a 1.2-wide b\* band and under CIE76 10 against one Lab. 5.10 stays 0.45 too blue. 7.90 stays 0.45 over the lightness limit.
+- The paired 0.5 m / 3 m projector still does not find a flat window. The darkening above is low-AO snow against open snow in one normal band, not a named base at two distances.
+- The open field is much brighter than the constant ambient. That is the bounce energy. Exposure was left alone. Sunlit peaks clamp harder than the old 1.149.

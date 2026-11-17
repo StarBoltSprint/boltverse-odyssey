@@ -14,6 +14,7 @@ import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
 const LEGACY = qs.get('legacy') === '1';
+const AO_OFF = LEGACY || qs.get('ao') === '0';
 const DEMO = qs.get('demo') === '1' || CAP;
 const SHOT = qs.get('shot');
 const hud = document.getElementById('hud');
@@ -314,6 +315,24 @@ struct U {
 @group(0) @binding(6) var fallArr: texture_2d_array<f32>;
 @group(0) @binding(7) var archArr: texture_2d_array<f32>;
 @group(0) @binding(8) var seracArr: texture_2d_array<f32>;
+@group(0) @binding(9) var aoTex: texture_2d<f32>;
+@group(0) @binding(10) var aoSamp: sampler;
+fn groundAoUv(xz: vec2f) -> vec3f {
+  let u = (xz.x - ${world.groundAo.x0}) / ${world.groundAo.spanX};
+  let v = (${world.groundAo.z0} - xz.y) / ${world.groundAo.spanZ};
+  let inside = select(0.0, 1.0, u >= 0.0 && v >= 0.0 && u <= 1.0 && v <= 1.0);
+  return vec3f(clamp(u, 0.0, 1.0), clamp(v, 0.0, 1.0), inside);
+}
+fn groundAoFrag(xz: vec2f) -> f32 {
+  let q = groundAoUv(xz);
+  let s = textureSample(aoTex, aoSamp, q.xy).r;
+  return mix(1.0, s, q.z);
+}
+fn groundAoVert(xz: vec2f) -> f32 {
+  let q = groundAoUv(xz);
+  let s = textureSampleLevel(aoTex, aoSamp, q.xy, 0.0).r;
+  return mix(1.0, s, q.z);
+}
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f, @location(5) ao: f32 };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
@@ -350,7 +369,7 @@ ${IDLE.wgsl}
   let nr = normalize(vec3f(c * nL.x + s * nL.z, nL.y, -s * nL.x + c * nL.z));
   var o: VO;
   o.p = u.vp * vec4f(pr, 1.0);
-  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w; o.ao = 1.0;
+  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w; o.ao = groundAoVert(i0.xz);
   return o;
 }
 @vertex fn vsSky(@builtin(vertex_index) vi: u32) -> SO {
@@ -408,7 +427,9 @@ fn darken15(c: vec3f) -> vec3f {
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
   let ndlLit = clamp(dot(nLit, sunN()), 0.0, 1.0);
   let ndvLit = clamp(dot(nLit, view), 0.0, 1.0);
-  let ao = ${LEGACY ? '1.0' : 'v.ao'};
+  let gAo = groundAoFrag(v.w.xz);
+  let aoUse = select(v.ao, gAo, m < 0.5);
+  let ao = ${AO_OFF ? '1.0' : 'aoUse'};
   if (mode > 2.5 && mode < 3.5) { return vec4f(nLit * 0.5 + 0.5, ao); }
   if (mode > 4.5 && mode < 5.5) { return vec4f((m + 0.5) / 8.0, ndlLit, ndvLit, ao); }
   var col = litIce(alb, nLit, view, ao);
@@ -854,6 +875,35 @@ async function main() {
     magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
     addressModeU: 'repeat', addressModeV: 'repeat',
   });
+  const aoSamp = dev.createSampler({
+    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear',
+    addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge',
+  });
+  const gAo = world.groundAo;
+  const aoTex = dev.createTexture({
+    size: [gAo.w, gAo.h],
+    format: 'r8unorm',
+    mipLevelCount: gAo.levels.length,
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  });
+  {
+    let mw = gAo.w;
+    let mh = gAo.h;
+    for (let level = 0; level < gAo.levels.length; level++) {
+      const row = Math.ceil(mw / 256) * 256;
+      const padded = new Uint8Array(row * mh);
+      const src = gAo.levels[level];
+      for (let y = 0; y < mh; y++) padded.set(src.subarray(y * mw, y * mw + mw), y * row);
+      dev.queue.writeTexture(
+        { texture: aoTex, mipLevel: level },
+        padded,
+        { bytesPerRow: row },
+        [mw, mh, 1],
+      );
+      mw = Math.max(1, mw >> 1);
+      mh = Math.max(1, mh >> 1);
+    }
+  }
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
@@ -864,6 +914,8 @@ async function main() {
     { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 9, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 10, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, sampler: {} },
   ] });
   const snowEntries = (snow) => [
     { binding: 0, resource: { buffer: ub } },
@@ -875,6 +927,8 @@ async function main() {
     { binding: 6, resource: fallTex.createView({ dimension: '2d-array' }) },
     { binding: 7, resource: archTex.createView({ dimension: '2d-array' }) },
     { binding: 8, resource: seracTex.createView({ dimension: '2d-array' }) },
+    { binding: 9, resource: aoTex.createView() },
+    { binding: 10, resource: aoSamp },
   ];
   const bg = dev.createBindGroup({ layout: bgl, entries: snowEntries(snowTex) });
   const bgAstc = snowAstc ? dev.createBindGroup({ layout: bgl, entries: snowEntries(snowAstc) }) : null;
@@ -1083,6 +1137,7 @@ async function main() {
     ao: world.budget.ao,
     shadeBytes: world.budget.shadeBytes,
     legacy: LEGACY,
+    aoOff: AO_OFF,
     extentZ: world.extentZ,
     columns: world.columns,
     bolt: 'bolt439_atlas',
@@ -1687,7 +1742,7 @@ async function main() {
         cardH: IDLE.cfg.cardH, cardW: IDLE.cfg.cardW,
         tris: world.budget.totalTris, draws: DRAWS.length,
         ao: world.budget.ao, shadeBytes: world.budget.shadeBytes, vertBytes: world.budget.vertBytes,
-        legacy: LEGACY, W, H,
+        legacy: LEGACY, aoOff: AO_OFF, groundAo: world.budget.ao.ground, W, H,
         gpuErr: beauty.gpuErr || surface.gpuErr || shade.gpuErr || normal.gpuErr || albedo.gpuErr,
       },
     };

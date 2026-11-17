@@ -359,8 +359,10 @@ export function bakeVertexAo(verts, extras, floorAt, energy) {
     if (ao[i] > 0.999) { open += ao[i]; openN++; }
     else { contact += ao[i]; contactN++; }
   }
+  const groundMap = bakeGroundMap(solid, groundBvh, floorAt, fit.power);
   return {
     ao,
+    groundMap,
     ms: Date.now() - t0,
     rays: RAYS,
     radius: RADIUS,
@@ -375,5 +377,107 @@ export function bakeVertexAo(verts, extras, floorAt, energy) {
     meanOpenAo: openN ? +(open / openN).toFixed(4) : null,
     openVerts: openN,
     contactVerts: contactN,
+  };
+}
+
+// Top-down occlusion for the snow the chase actually walks. 0.125 m texels.
+// Open snow stays 1. Only texels near a caster are raytraced.
+const G_TEXEL = 0.125;
+const G_X0 = -180;
+const G_X1 = 180;
+const G_Z0 = 60;
+const G_Z1 = -320;
+
+function bakeGroundMap(solid, groundBvh, floorAt, power) {
+  const t0 = Date.now();
+  const gw = Math.ceil((G_X1 - G_X0) / G_TEXEL);
+  const gh = Math.ceil((G_Z0 - G_Z1) / G_TEXEL);
+  const mask = new Uint8Array(gw * gh);
+  const tri = solid.tri;
+  const spanX = G_X1 - G_X0;
+  const spanZ = G_Z0 - G_Z1;
+  for (let i = 0; i < solid.order.length; i++) {
+    const o = solid.order[i] * 18;
+    const miny = Math.min(tri[o + 1], tri[o + 4], tri[o + 7]);
+    if (miny > 16) continue;
+    const minx = Math.min(tri[o], tri[o + 3], tri[o + 6]) - RADIUS;
+    const maxx = Math.max(tri[o], tri[o + 3], tri[o + 6]) + RADIUS;
+    const minz = Math.min(tri[o + 2], tri[o + 5], tri[o + 8]) - RADIUS;
+    const maxz = Math.max(tri[o + 2], tri[o + 5], tri[o + 8]) + RADIUS;
+    if (maxx < G_X0 || minx > G_X1 || maxz < G_Z1 || minz > G_Z0) continue;
+    const ix0 = Math.max(0, Math.floor((minx - G_X0) / G_TEXEL));
+    const ix1 = Math.min(gw - 1, Math.floor((maxx - G_X0) / G_TEXEL));
+    const iz0 = Math.max(0, Math.floor((G_Z0 - maxz) / G_TEXEL));
+    const iz1 = Math.min(gh - 1, Math.floor((G_Z0 - minz) / G_TEXEL));
+    // A mountain face covers the whole map. Contact casters are local.
+    if ((ix1 - ix0 + 1) * (iz1 - iz0 + 1) > 12000) continue;
+    for (let iz = iz0; iz <= iz1; iz++) {
+      const row = iz * gw;
+      for (let ix = ix0; ix <= ix1; ix++) mask[row + ix] = 1;
+    }
+  }
+  const img = new Uint8Array(gw * gh);
+  img.fill(255);
+  let traced = 0;
+  let dark = 0;
+  for (let iz = 0; iz < gh; iz++) {
+    const z = G_Z0 - (iz + 0.5) * G_TEXEL;
+    const row = iz * gw;
+    for (let ix = 0; ix < gw; ix++) {
+      if (!mask[row + ix]) continue;
+      const x = G_X0 + (ix + 0.5) * G_TEXEL;
+      const y = floorAt(x, z) + 0.06;
+      const vis = visibilityAt(x, y, z, 0, 1, 0, solid, groundBvh, true);
+      const ao = vis >= 0.999 ? 1 : Math.pow(Math.max(0, vis), power);
+      img[row + ix] = Math.max(0, Math.min(255, Math.round(ao * 255)));
+      traced++;
+      if (ao < 0.98) dark++;
+    }
+  }
+  const levels = [img];
+  let cw = gw;
+  let ch = gh;
+  let src = img;
+  while (cw > 1 || ch > 1) {
+    const nw = Math.max(1, cw >> 1);
+    const nh = Math.max(1, ch >> 1);
+    const dst = new Uint8Array(nw * nh);
+    for (let y = 0; y < nh; y++) {
+      for (let x = 0; x < nw; x++) {
+        let sum = 0;
+        let n = 0;
+        for (let oy = 0; oy < 2; oy++) {
+          for (let ox = 0; ox < 2; ox++) {
+            const sx = Math.min(cw - 1, x * 2 + ox);
+            const sy = Math.min(ch - 1, y * 2 + oy);
+            sum += src[sy * cw + sx];
+            n++;
+          }
+        }
+        dst[y * nw + x] = Math.round(sum / n);
+      }
+    }
+    levels.push(dst);
+    src = dst;
+    cw = nw;
+    ch = nh;
+  }
+  let bytes = 0;
+  for (const level of levels) bytes += level.length;
+  return {
+    w: gw,
+    h: gh,
+    texel: G_TEXEL,
+    x0: G_X0,
+    x1: G_X1,
+    z0: G_Z0,
+    z1: G_Z1,
+    spanX,
+    spanZ,
+    levels,
+    bytes,
+    traced,
+    dark,
+    ms: Date.now() - t0,
   };
 }

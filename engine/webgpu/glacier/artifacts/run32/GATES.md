@@ -30,6 +30,23 @@ Shaded-face colour in those same follow frames: `ndl < 0.12`, `ndv > 0.45`, surf
 
 Sign: among shaded pixels, sky-facing (`ny > 0.25`) is cooler than snow-facing (`ny < -0.05`): mean linear `(B - R)` of the sky-facing class is greater. Frames that contain both classes must agree. The bake’s own up-versus-down eval must agree even when a frame lacks one class.
 
+## Shaded snow (blocking)
+
+Added after the contact trial, before this measurement. Not a replacement for the shaded-face CIE76 above.
+
+At each of the six times, the crop is the cast sun shadow on snow ahead of Bolt: snow pixels in the follow frame, in the band just in front of the paws, where the beauty is at least 6 L\* darker than the surface. That darkening is the contact shadow along the dawn sun.
+
+The key is the run-31 cast shadow ahead of Bolt (`artifacts/run31/frames/t24.jpg`), Lab `[59.0, 5.1, -3.9]`. Its b\* sits in the mauve band **-4.4 to -3.2**.
+
+Both must hold, on every time:
+
+- median b\* of the crop is inside **-4.4 .. -3.2**
+- CIE76 of that median Lab against the key is **<= 10, including lightness**
+
+The limit is the existing CIE76 limit. It is not raised. The fixture is the constant-ambient frames (`run32/before`). That build must **fail** this gate.
+
+The lever is the snow-bounce warmth. Its colour is the irradiance the run-31 mauve is missing from the sky-only up face (`scene(mauve) / snow albedo − sky up`), and its scale is the one that puts this crop on the key. It is not a hand-set RGB.
+
 ## What is reported, not retuned
 
 If the SH changes mean open-snow luma, the delta is reported. Exposure, the present curve, and sun intensity stay as they are. No EV compensation.

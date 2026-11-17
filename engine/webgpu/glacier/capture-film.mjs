@@ -26,7 +26,7 @@ try {
   await withChrome({
     debugPort: 9441,
     url,
-    tries: 500,
+      tries: 900,
     fn: async ({ evalJson }) => {
       for (let i = 0; i < frames; i++) {
         const t = i / fps;

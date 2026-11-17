@@ -1047,6 +1047,16 @@ export function buildWorld() {
     meanContactAo: aoBake.meanContactAo,
     meanOpenAo: aoBake.meanOpenAo,
     drawsAdded: 0,
+    ground: aoBake.groundMap ? {
+      w: aoBake.groundMap.w,
+      h: aoBake.groundMap.h,
+      texel: aoBake.groundMap.texel,
+      bytes: aoBake.groundMap.bytes,
+      mips: aoBake.groundMap.levels.length,
+      traced: aoBake.groundMap.traced,
+      dark: aoBake.groundMap.dark,
+      ms: aoBake.groundMap.ms,
+    } : null,
   };
   budget.shadeBytes = shadeNormals.byteLength;
   budget.vertBytes = verts.byteLength;
@@ -1063,6 +1073,7 @@ export function buildWorld() {
     extentZ: [GLACIER.z1, GLACIER.z0],
     columns: columnsN,
     heightAt: snowHeightAt(verts),
+    groundAo: aoBake.groundMap,
   };
 }
 
