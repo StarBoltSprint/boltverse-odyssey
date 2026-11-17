@@ -100,3 +100,5 @@ Open-snow luma versus the constant ambient, SH versus old, per time: +75.4%, +73
 - One warmth cannot put all six shadows in a 1.2-wide b\* band and under CIE76 10 against one Lab. 5.10 stays 0.45 too blue. 7.90 stays 0.45 over the lightness limit.
 - The paired 0.5 m / 3 m projector still does not find a flat window. The darkening above is low-AO snow against open snow in one normal band, not a named base at two distances.
 - The open field is much brighter than the constant ambient. That is the bounce energy. Exposure was left alone. Sunlit peaks clamp harder than the old 1.149.
+
+The 2.0 s clip is `glacier-t24-2s-30fps.mp4`: 720×1280, 30/1, 60 frames, from t=24, this lighting. The overview is `glacier-chase-30s.mp4`: 720×1280, 5/1, 150 frames, 30 s, this lighting. The run-32 overview does not include the ground map or this bounce.
