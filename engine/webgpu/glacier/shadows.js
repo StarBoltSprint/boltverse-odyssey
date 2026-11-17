@@ -236,7 +236,7 @@ fn cascadePair(w: vec3f, nrm: vec3f) -> vec4f {
   let q0 = u.c0 * vec4f(ws, 1.0);
   let q1 = u.c1 * vec4f(ws, 1.0);
   let b0 = slopeBias(q0.z);
-  let b1 = slopeBias(q1.z);
+  let b1 = slopeBias(q1.z) + u.extra.x;
   let e0 = max(abs(q0.x), abs(q0.y));
   let band = viewBand(w);
   // One world width on both maps. Two far texels on the far map and 8 cm on
@@ -413,6 +413,52 @@ struct PR {
 }
 @fragment fn fsShadeProbe(v: PR) -> @location(0) vec4f {
   return vec4f(shadowAt(v.w, v.n), 0.0, 0.0, 1.0);
+}
+fn r3Tap(q: vec4f, ci: f32, bias: f32, o: vec2f) -> f32 {
+  if (q.z < 0.0 || q.z > 1.0) { return 1.0; }
+  let uv = shadowUv(q, ci) + o;
+  let tile = tileOf(ci);
+  if (uv.x < tile.x || uv.y < tile.y || uv.x > tile.z || uv.y > tile.w) { return 1.0; }
+  let dims = vec2f(textureDimensions(smap));
+  let stored = textureLoad(smap, vec2i(clamp(uv, vec2f(0.0), vec2f(0.999)) * dims), 0);
+  let zRef = q.z - bias;
+  return select(0.0, 1.0, stored >= zRef);
+}
+// Both cascades, same sampler as the blend. Alpha is 1 only for a snow vertex
+// inside the 16–32 m band and inside the near map, which is where the two
+// factors are mixed. extra.y selects the round-3 kernel (wide near, one far tap).
+@fragment fn fsCascadePair(v: PR) -> @location(0) vec4f {
+  let nn = normalize(v.n);
+  var s0: f32;
+  var s1: f32;
+  var e0: f32;
+  if (u.extra.y > 0.5) {
+    // Round 3: a point load, a near kernel that grows to about eleven texels,
+    // and a single far tap. The two biases are not the same world distance.
+    let ws = v.w + nn * 0.02;
+    let q0 = u.c0 * vec4f(ws, 1.0);
+    let q1 = u.c1 * vec4f(ws, 1.0);
+    e0 = max(abs(q0.x), abs(q0.y));
+    let wBlend = smoothstep(0.40, 0.98, e0);
+    let rad = mix(1.0, 4.4, wBlend) * 2.6;
+    // Round 3 stepped the kernel in texels of a 2048 x 1024 map, not this atlas.
+    let tx = vec2f(rad / 2048.0, rad / 1024.0);
+    s0 = 0.25 * (
+      r3Tap(q0, 0.0, 0.00008, vec2f(-tx.x, -tx.y)) +
+      r3Tap(q0, 0.0, 0.00008, vec2f(tx.x, -tx.y)) +
+      r3Tap(q0, 0.0, 0.00008, vec2f(-tx.x, tx.y)) +
+      r3Tap(q0, 0.0, 0.00008, vec2f(tx.x, tx.y))
+    );
+    s1 = r3Tap(q1, 1.0, 0.00012 + u.extra.x, vec2f(0.0));
+  } else {
+    let p = cascadePair(v.w, nn);
+    s0 = p.x;
+    s1 = p.y;
+    e0 = p.z;
+  }
+  let dist = length(v.w.xz - u.cam.xz);
+  let covered = e0 < 0.995 && dist >= 16.0 && dist <= 32.0;
+  return vec4f(s0, s1, e0, select(0.0, 1.0, covered));
 }
 struct TL {
   @builtin(position) p: vec4f,

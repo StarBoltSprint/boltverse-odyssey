@@ -1,3 +1,22 @@
+# Run 33 — cascaded sun shadows, round 10
+
+Not a KEEP. Not merged. Exposure was not changed. The sun, the 16–32 m band, and the ~20 cm filter stay. The 0.1 mm walk is its own commit so it can be folded on its own.
+
+The picture seam finds two snow pixels up to 16 px apart whose cascade weights are on opposite sides of the blend, then averages the beauty luma. That number mixes albedo, lighting, and texture with the shadow. It is still reported. It is not the bar.
+
+The bar is the mean |near − far| shadow factor, same sampler on both cascades, for every snow vertex whose ground distance is inside 16–32 m and which still sits in the near map. The floor stays 0.03.
+
+| time | factor mean | factor max | fraction over 0.1 | n | picture seam |
+| --- | --- | --- | --- | --- | --- |
+| 5.10 | 0.012 | 0.548 | 0.047 | 5051 | 0.035 |
+| 5.567 | 0.009 | 0.484 | 0.035 | 4681 | 0.053 |
+| 7.9 | 0.007 | 0.440 | 0.024 | 3189 | no pair |
+| 11.70 | 0.006 | 0.450 | 0.027 | 1850 | 0.057 |
+| 24 | 0.010 | 0.390 | 0.039 | 1400 | 0.017 |
+| 30 | 0.010 | 0.390 | 0.039 | 1347 | 0.051 |
+
+Every time is under 0.03. No bias change and no wider band. The round 3 kernel (point load, near kernel stepped on a 2048×1024 grid, one far tap, unequal bias) is over 0.03 on all six: 0.039, 0.037, 0.030, 0.040, 0.039, 0.033. A far bias raised by 0.01 in depth is 0.044 at 5.567 s and 0.062 at 11.70 s. Vertex IoU, snapped shimmer, and coverage are unchanged from round 9. The stills are the round 9 capture.
+
 # Run 33 — cascaded sun shadows, round 9
 
 Not a KEEP. Not merged. Exposure was not changed. The 34° sun, the 16–32 m band, and the ~20 cm filter stay.

@@ -20,6 +20,12 @@
       "blueDelta": 0.0903,
       "seam": 0.0351,
       "seamN": 997,
+      "cascadeSeam": {
+        "n": 5051,
+        "mean": 0.0118,
+        "max": 0.5476,
+        "frac": 0.0469
+      },
       "greyBright": 0.0716,
       "iceBlue": 0.1128,
       "clip": 0,
@@ -40,6 +46,12 @@
       "blueDelta": 0.0838,
       "seam": 0.053,
       "seamN": 874,
+      "cascadeSeam": {
+        "n": 4681,
+        "mean": 0.0089,
+        "max": 0.4839,
+        "frac": 0.0346
+      },
       "greyBright": 0.0864,
       "iceBlue": 0.1109,
       "clip": 0,
@@ -60,6 +72,12 @@
       "blueDelta": 0.0854,
       "seam": 1,
       "seamN": 0,
+      "cascadeSeam": {
+        "n": 3189,
+        "mean": 0.0066,
+        "max": 0.4403,
+        "frac": 0.0235
+      },
       "greyBright": 0.0683,
       "iceBlue": 0.1087,
       "clip": 0,
@@ -80,6 +98,12 @@
       "blueDelta": 0.0895,
       "seam": 0.0573,
       "seamN": 394,
+      "cascadeSeam": {
+        "n": 1850,
+        "mean": 0.0062,
+        "max": 0.4497,
+        "frac": 0.027
+      },
       "greyBright": 0.074,
       "iceBlue": 0.1049,
       "clip": 0,
@@ -100,6 +124,12 @@
       "blueDelta": 0.087,
       "seam": 0.0173,
       "seamN": 44,
+      "cascadeSeam": {
+        "n": 1400,
+        "mean": 0.0096,
+        "max": 0.3903,
+        "frac": 0.0393
+      },
       "greyBright": 0.0996,
       "iceBlue": 0.1029,
       "clip": 0,
@@ -120,6 +150,12 @@
       "blueDelta": 0.0932,
       "seam": 0.0507,
       "seamN": 340,
+      "cascadeSeam": {
+        "n": 1347,
+        "mean": 0.0097,
+        "max": 0.3903,
+        "frac": 0.0393
+      },
       "greyBright": 0.0699,
       "iceBlue": 0.107,
       "clip": 0,

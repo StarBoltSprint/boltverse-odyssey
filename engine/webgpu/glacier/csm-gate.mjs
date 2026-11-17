@@ -174,6 +174,8 @@ if (!root) {
 const world = buildWorld();
 const factorPath = path.join(root, 'vertex-factors.json');
 const vertFactors = fs.existsSync(factorPath) ? JSON.parse(fs.readFileSync(factorPath, 'utf8')) : null;
+const seamPath = path.join(root, 'cascade-seam.json');
+const seamFactors = fs.existsSync(seamPath) ? JSON.parse(fs.readFileSync(seamPath, 'utf8')) : null;
 const tags = JSON.parse(fs.readFileSync(path.join(root, 'tags.json'), 'utf8'));
 let fail = 0;
 const bad = (m) => { console.error('FAIL', m); fail++; };
@@ -274,8 +276,12 @@ for (const tag of tags) {
     }
   }
   const seam = seamN ? seamSum / seamN : 1;
-  if (seamN < 8) bad(`seam samples ${tag} ${seamN}`);
-  else if (seam > limits.cascadeSeamJumpMax) bad(`seam ${tag} ${seam.toFixed(3)}`);
+  const factorSeam = seamFactors && seamFactors[tag];
+  if (!factorSeam) {
+    if (seamN < 8) bad(`seam samples ${tag} ${seamN}`);
+    else if (seam > limits.cascadeSeamJumpMax) bad(`seam ${tag} ${seam.toFixed(3)}`);
+  } else if (!(factorSeam.n >= 8)) bad(`cascade samples ${tag} ${factorSeam.n}`);
+  else if (!(factorSeam.mean <= limits.cascadeSeamJumpMax)) bad(`cascade seam ${tag} ${factorSeam.mean.toFixed(3)}`);
   const greyBright = bright ? grey / bright : null;
   const blue = iceN ? iceBlue / iceN : null;
   if (greyBright == null || !(greyBright < limits.greyBrightMax)) bad(`grey_bright ${tag} ${greyBright}`);
@@ -284,12 +290,14 @@ for (const tag of tags) {
   rows.push({
     tag, iou: +iou.toFixed(4), iouSpire: +iouSpire.toFixed(4), gpu: gN, cpu: cN, cpuSpire: cS, inter, union, casterTris: cpu.used, spireTris: cpu.spireUsed,
     blueDelta: +blueDelta.toFixed(4), seam: +seam.toFixed(4), seamN,
+    cascadeSeam: factorSeam ? { n: factorSeam.n, mean: +factorSeam.mean.toFixed(4), max: +factorSeam.max.toFixed(4), frac: +factorSeam.frac.toFixed(4) } : null,
     greyBright: greyBright == null ? null : +greyBright.toFixed(4),
     iceBlue: blue == null ? null : +blue.toFixed(4),
     clip: +(clip / (w * h)).toFixed(5),
     draws: info.draws, shadowDraws: info.shadowDraws,
   });
-  console.log(tag, 'iou', iou.toFixed(3), 'spire', iouSpire.toFixed(3), 'gpu', gN, 'cpu', cN, 'cpuSpire', cS, 'seam', seam.toFixed(3));
+  const factorText = factorSeam ? ` cascade ${factorSeam.mean.toFixed(3)} max ${factorSeam.max.toFixed(3)} frac ${factorSeam.frac.toFixed(3)} n ${factorSeam.n}` : '';
+  console.log(tag, 'iou', iou.toFixed(3), 'spire', iouSpire.toFixed(3), 'gpu', gN, 'cpu', cN, 'cpuSpire', cS, 'pixelSeam', seam.toFixed(3), 'pairs', seamN + factorText);
 }
 if (fs.existsSync(path.join(root, 'shimmer.json'))) {
   const shim = JSON.parse(fs.readFileSync(path.join(root, 'shimmer.json'), 'utf8'));

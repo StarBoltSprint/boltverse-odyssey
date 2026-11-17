@@ -307,7 +307,7 @@ struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
   prints: array<vec4f, 12>,
   c0: mat4x4f, c1: mat4x4f, c2: mat4x4f, c3: mat4x4f,
-  csm: vec4f, soft: vec4f,
+  csm: vec4f, soft: vec4f, extra: vec4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -1091,6 +1091,23 @@ async function main() {
     fragment: { module: mod, entryPoint: 'fsShadeProbe', targets: [{ format: 'rgba8unorm' }] },
     primitive: { topology: 'triangle-list' },
   });
+  const pSeam = dev.createRenderPipeline({
+    layout,
+    vertex: {
+      module: mod, entryPoint: 'vsShadeProbe',
+      buffers: [{ arrayStride: 32, stepMode: 'instance', attributes: [
+        { shaderLocation: 0, offset: 0, format: 'float32x4' },
+        { shaderLocation: 1, offset: 16, format: 'float32x4' },
+      ] }],
+    },
+    fragment: { module: mod, entryPoint: 'fsCascadePair', targets: [{ format: 'rgba16float' }] },
+    primitive: { topology: 'triangle-list' },
+  });
+  const seamTex = dev.createTexture({
+    size: [512, 256], format: 'rgba16float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
+  const seamRb = dev.createBuffer({ size: 4096 * 256, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
   const pBoltSh = dev.createRenderPipeline({
     layout: shBoltLayout,
     vertex: { module: mod, entryPoint: 'vsBoltSh' },
@@ -1245,6 +1262,9 @@ async function main() {
     const penQ = Number.isFinite(penLive) ? penLive : Number(qs.get('pen'));
     U[182] = Number.isFinite(penQ) && penQ >= 0 ? penQ : 0.08;
     U[183] = qs.get('split') === '1' ? 4 : (qs.get('depthprobe') === '1' ? 3 : ((window.__glacierPenlock === 1 || qs.get('penlock') === '1') ? 2 : 0));
+    const farBias = Number(window.__glacierFarBias);
+    U[184] = Number.isFinite(farBias) ? farBias : 0;
+    U[185] = window.__glacierSeamR3 === 1 ? 1 : 0;
   }
 
   function beginPass(enc, clear) {
@@ -2173,6 +2193,40 @@ async function main() {
     let bin = '';
     for (let i = 0; i < values.length; i += 4000) bin += String.fromCharCode(...values.subarray(i, i + 4000));
     return { n: probeCount, b64: btoa(bin) };
+  };
+  window.__glacierCascadeSeam = async (eye, tgt) => {
+    gatePose = { eye, tgt };
+    renderFixed(sim);
+    const enc = dev.createCommandEncoder();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: seamTex.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] }],
+    });
+    pass.setPipeline(pSeam);
+    pass.setBindGroup(0, drawBg);
+    pass.setVertexBuffer(0, probeBuf);
+    pass.draw(3, probeCount);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: seamTex }, { buffer: seamRb, bytesPerRow: 4096 }, [512, 256]);
+    dev.queue.submit([enc.finish()]);
+    await seamRb.mapAsync(GPUMapMode.READ);
+    const raw = new Uint16Array(seamRb.getMappedRange());
+    let n = 0, sum = 0, max = 0, over = 0, edgeN = 0, edgeSum = 0;
+    for (let i = 0; i < probeCount; i++) {
+      const o = i * 4;
+      if (half(raw[o + 3]) < 0.5) continue;
+      const d = Math.abs(half(raw[o]) - half(raw[o + 1]));
+      n++;
+      sum += d;
+      if (d > max) max = d;
+      if (d > 0.1) over++;
+      if (d > 0.02) { edgeN++; edgeSum += d; }
+    }
+    seamRb.unmap();
+    gatePose = null;
+    return {
+      n, mean: n ? sum / n : 1, max, frac: n ? over / n : 1,
+      edgeN, edgeMean: edgeN ? edgeSum / edgeN : 0,
+    };
   };
   window.__glacierPose = async (eye, tgt, mode) => {
     gatePose = { eye, tgt };
