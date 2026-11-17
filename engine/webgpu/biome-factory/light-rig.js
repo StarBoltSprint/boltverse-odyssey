@@ -28,6 +28,17 @@ export function shadeAt(light, ndl, ny = 0) {
   return { rgb, luma: luma(rgb) };
 }
 
+// sh multiplies only the direct sun. Ambient stays, so a full shadow stays blue.
+export function shadeAtSh(light, ndl, ny = 0, sh = 1) {
+  const n = clamp01(ndl);
+  const up = clamp01(ny);
+  const face = 1 + (light.flatScale - 1) * up * up;
+  const sun = sunOf(light);
+  const s = Math.min(1, Math.max(0, sh));
+  const rgb = light.ambient.rgb.map((a, i) => a + sun.rgb[i] * sun.intensity * n * face * s);
+  return { rgb, luma: luma(rgb) };
+}
+
 function v3(a) {
   return `vec3f(${a[0]}, ${a[1]}, ${a[2]})`;
 }
@@ -42,6 +53,12 @@ fn dawnIrr(n: vec3f) -> vec3f {
   let up = clamp(n.y, 0.0, 1.0);
   let face = mix(1.0, ${light.flatScale}, up * up);
   return ${v3(light.ambient.rgb)} + ${v3(sun.rgb)} * (${sun.intensity} * ndl * face);
+}
+fn dawnIrrSh(n: vec3f, sh: f32) -> vec3f {
+  let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
+  let up = clamp(n.y, 0.0, 1.0);
+  let face = mix(1.0, ${light.flatScale}, up * up);
+  return ${v3(light.ambient.rgb)} + ${v3(sun.rgb)} * (${sun.intensity} * ndl * face * sh);
 }
 // Linear scene colour into the rgba16float target. The grade pass owns exposure,
 // the tone map, and the sRGB OETF. Nothing here clamps highlights to 1.
@@ -227,6 +244,9 @@ fn tonemap(color: vec3f) -> vec3f {
 }
 @fragment fn fsGrade(@builtin(position) p: vec4f) -> @location(0) vec4f {
   let c = max(textureLoad(hdrTex, vec2i(p.xy), 0).rgb, vec3f(0.0));
+  if (u.misc.y > 3.5 && u.misc.y < 4.5) {
+    return vec4f(clamp(c, vec3f(0.0), vec3f(1.0)), 1.0);
+  }
   let mode = u.misc.z;
   let iso = u.sun.w;
   if (mode > 0.5 && mode < 1.5) {

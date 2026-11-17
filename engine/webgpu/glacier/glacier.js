@@ -8,11 +8,16 @@ import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
 import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
+import { buildCascades, shadowFnsWgsl, SHADOW_DRAWS, tierConfig } from './shadows.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
 const DEMO = qs.get('demo') === '1' || CAP;
 const SHOT = qs.get('shot');
+const CSM_OFF = qs.get('csmoff') === '1';
+const LMASK = qs.get('lmask') || '';
+const CSM_TIER = qs.get('csm') === 'high' ? 'high' : 'phone';
+const CSM_CFG = tierConfig(CSM_TIER);
 const hud = document.getElementById('hud');
 if (CAP && hud) hud.style.display = 'none';
 
@@ -25,6 +30,7 @@ canvas.height = H;
 let gatePose = null;
 let gateMode = 0;
 let gateBreak = 0;
+let maskForce = 0;
 let skySwim = 0;
 let skyYaw = 0;
 let simClock = 0;
@@ -300,6 +306,8 @@ const WGSL = /* wgsl */`
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
   prints: array<vec4f, 12>,
+  c0: mat4x4f, c1: mat4x4f, c2: mat4x4f, c3: mat4x4f,
+  csm: vec4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -310,6 +318,8 @@ struct U {
 @group(0) @binding(6) var fallArr: texture_2d_array<f32>;
 @group(0) @binding(7) var archArr: texture_2d_array<f32>;
 @group(0) @binding(8) var seracArr: texture_2d_array<f32>;
+@group(0) @binding(9) var smap: texture_depth_2d;
+@group(0) @binding(10) var scmp: sampler_comparison;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
@@ -324,6 +334,7 @@ fn toLin(c: vec3f) -> vec3f { return vec3f(lin1(c.r), lin1(c.g), lin1(c.b)); }
 ${skyWgsl(LIGHT.sky)}
 ${albedoWgsl()}
 ${IDLE.wgsl}
+${shadowFnsWgsl()}
 
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
   var o: VO;
@@ -404,7 +415,9 @@ fn darken15(c: vec3f) -> vec3f {
     nLit = normalize(n + vec3f(gAlb.r, 0.0, gAlb.g) * 0.45);
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
-  var col = litIce(alb, nLit, view);
+  let sh = shadowAt(v.w, n);
+  if (u.csm.y > 0.5) { return vec4f(sh, cascadeMix(v.w), 0.0, 1.0); }
+  var col = litIce(alb, nLit, view, sh);
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
@@ -841,13 +854,32 @@ async function main() {
   const chunkI = mkInst(world.instances.chunk);
   const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
   const planetVerts = world.planet.length / 8;
-  const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const ub = dev.createBuffer({ size: 768, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
   window.__glacierAniso = aniso;
   const samp = dev.createSampler({
     magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
     addressModeU: 'repeat', addressModeV: 'repeat',
   });
+  const scmp = dev.createSampler({ compare: 'greater-equal', magFilter: 'nearest', minFilter: 'nearest' });
+  const smTex = dev.createTexture({
+    size: CSM_CFG.atlas,
+    format: 'depth32float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+  });
+  const nC = CSM_CFG.count;
+  const expandInst = (data) => {
+    const stride = 8;
+    const count = data.length / stride;
+    const out = new Float32Array(count * nC * stride);
+    for (let i = 0; i < count; i++) {
+      for (let c = 0; c < nC; c++) out.set(data.subarray(i * stride, i * stride + stride), (i * nC + c) * stride);
+    }
+    return out;
+  };
+  const shIcicle = mk(expandInst(world.instances.icicle.data), GPUBufferUsage.VERTEX);
+  const shChunk = mk(expandInst(world.instances.chunk.data), GPUBufferUsage.VERTEX);
+  const shDrift = mk(expandInst(world.instances.drift.data), GPUBufferUsage.VERTEX);
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
@@ -858,6 +890,8 @@ async function main() {
     { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'depth' } },
+    { binding: 10, visibility: GPUShaderStage.FRAGMENT, sampler: { type: 'comparison' } },
   ] });
   const snowEntries = (snow) => [
     { binding: 0, resource: { buffer: ub } },
@@ -869,6 +903,8 @@ async function main() {
     { binding: 6, resource: fallTex.createView({ dimension: '2d-array' }) },
     { binding: 7, resource: archTex.createView({ dimension: '2d-array' }) },
     { binding: 8, resource: seracTex.createView({ dimension: '2d-array' }) },
+    { binding: 9, resource: smTex.createView() },
+    { binding: 10, resource: scmp },
   ];
   const bg = dev.createBindGroup({ layout: bgl, entries: snowEntries(snowTex) });
   const bgAstc = snowAstc ? dev.createBindGroup({ layout: bgl, entries: snowEntries(snowAstc) }) : null;
@@ -950,6 +986,50 @@ async function main() {
     multisample: { count: SAMPLES },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less' },
   });
+  const shDepth = {
+    format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less',
+    depthBias: 0, depthBiasSlopeScale: 0, depthBiasClamp: 0,
+  };
+  const shBgl = dev.createBindGroupLayout({ entries: [
+    { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
+  ] });
+  const shBoltBgl = dev.createBindGroupLayout({ entries: [
+    { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
+    { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+    { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+  ] });
+  const shBg = dev.createBindGroup({ layout: shBgl, entries: [{ binding: 0, resource: { buffer: ub } }] });
+  const shBoltBg = dev.createBindGroup({
+    layout: shBoltBgl,
+    entries: [
+      { binding: 0, resource: { buffer: ub } },
+      { binding: 1, resource: samp },
+      { binding: 2, resource: atlas.createView() },
+    ],
+  });
+  const shLayout = dev.createPipelineLayout({ bindGroupLayouts: [shBgl] });
+  const shBoltLayout = dev.createPipelineLayout({ bindGroupLayouts: [shBoltBgl] });
+  const pWorldSh = dev.createRenderPipeline({
+    layout: shLayout,
+    vertex: { module: mod, entryPoint: 'vsWorldSh', buffers: [vbuf] },
+    fragment: { module: mod, entryPoint: 'fsShadowClip', targets: [] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
+  const pInstSh = dev.createRenderPipeline({
+    layout: shLayout,
+    vertex: { module: mod, entryPoint: 'vsInstSh', buffers: [vbuf, instBuf] },
+    fragment: { module: mod, entryPoint: 'fsShadowClip', targets: [] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
+  const pBoltSh = dev.createRenderPipeline({
+    layout: shBoltLayout,
+    vertex: { module: mod, entryPoint: 'vsBoltSh' },
+    fragment: { module: mod, entryPoint: 'fsBoltSh', targets: [] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
   const flakeGpu = new Float32Array(FLAKE_N * 8);
   const flakeBuf = dev.createBuffer({
     size: flakeGpu.byteLength,
@@ -989,8 +1069,10 @@ async function main() {
   const rb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
   const hdrBpr = Math.ceil(W * 8 / 256) * 256;
   const hdrRb = dev.createBuffer({ size: hdrBpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
-  const U = new Float32Array(128);
+  const U = new Float32Array(192);
   let lastEye = [0, 0, 0];
+  let lastTgt = [0, 0, 0];
+  let lastCascades = null;
   const worldVerts = world.verts.length / 8;
 
   let snowDiag = 0;
@@ -1012,6 +1094,7 @@ async function main() {
     U.set(vp, 0);
     U.set(invertMat4(vp), 16);
     lastEye = [eye[0], eye[1], eye[2]];
+    lastTgt = [tgt[0], tgt[1], tgt[2]];
     U.set([eye[0], eye[1], eye[2], t], 32);
     U.set([bp[0], bp[1], bp[2], live.psi], 36);
     const ff = (live.phase % 1) * 32;
@@ -1026,7 +1109,8 @@ async function main() {
     U.set([0.70, 0.78, 0.88, 0], 44);
     U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
-    U[53] = 0;
+    const maskOn = LMASK === 'shadow' || maskForce > 0;
+    U[53] = maskOn ? 4 : 0;
     U[54] = gateMode;
     U[55] = gateBreak;
     U[58] = skySwim;
@@ -1039,6 +1123,15 @@ async function main() {
       U[66 + i * 4] = p.z;
       U[67 + i * 4] = p.yaw;
     }
+    const casc = buildCascades({
+      eye: lastEye, tgt: lastTgt, fovY: FOV_Y, aspect: W / H, sun: sunDir, tier: CSM_TIER,
+    });
+    lastCascades = casc;
+    for (let i = 0; i < 4; i++) U.set(casc.mats[Math.min(i, casc.mats.length - 1)], 112 + i * 16);
+    U[176] = CSM_OFF ? 1 : 0;
+    U[177] = maskOn ? 1 : 0;
+    U[178] = casc.count;
+    U[179] = casc.tile;
   }
 
   function beginPass(enc, clear) {
@@ -1082,6 +1175,32 @@ async function main() {
       dev.queue.writeBuffer(flakeBuf, 0, flakeGpu);
     }
     const enc = dev.createCommandEncoder();
+    const sp = enc.beginRenderPass({
+      colorAttachments: [],
+      depthStencilAttachment: {
+        view: smTex.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'store',
+      },
+    });
+    if (!CSM_OFF) {
+      sp.setBindGroup(0, shBg);
+      sp.setPipeline(pWorldSh);
+      sp.setVertexBuffer(0, vb);
+      sp.draw(worldVerts, nC);
+      sp.setPipeline(pInstSh);
+      sp.setVertexBuffer(0, icicleI.proto);
+      sp.setVertexBuffer(1, shIcicle);
+      sp.draw(icicleI.verts, icicleI.count * nC);
+      sp.setVertexBuffer(0, chunkI.proto);
+      sp.setVertexBuffer(1, shChunk);
+      sp.draw(chunkI.verts, chunkI.count * nC);
+      sp.setVertexBuffer(0, driftI.proto);
+      sp.setVertexBuffer(1, shDrift);
+      sp.draw(driftI.verts, driftI.count * nC);
+      sp.setPipeline(pBoltSh);
+      sp.setBindGroup(0, shBoltBg);
+      sp.draw(6, nC);
+    }
+    sp.end();
     const pass = beginPass(enc, [0, 0, 0, 1]);
     pass.setBindGroup(0, drawBg);
     pass.setPipeline(pSky); pass.draw(3);
@@ -1128,6 +1247,12 @@ async function main() {
     driftTris: world.budget.driftTris,
     draws: DRAWS.length,
     drawNames: DRAWS,
+    shadowDraws: CSM_OFF ? 0 : SHADOW_DRAWS.length,
+    shadowDrawNames: SHADOW_DRAWS,
+    shadowCascades: nC,
+    shadowAtlas: CSM_CFG.atlas,
+    shadowTier: CSM_TIER,
+    shadowRasterTris: (world.budget.worldTris + world.budget.icicleTris + world.budget.chunkTris + world.budget.driftTris + 2) * (CSM_OFF ? 0 : nC),
     extentZ: world.extentZ,
     columns: world.columns,
     bolt: 'bolt439_atlas',
@@ -1696,6 +1821,50 @@ async function main() {
       tris: world.budget.totalTris,
       draws: DRAWS.length,
     };
+  };
+  function poseInfo(gpuErr) {
+    return {
+      x: live.x, z: live.z, psi: live.psi, y: pawGround(),
+      eye: lastEye, tgt: lastTgt, W, H,
+      tris: world.budget.totalTris, draws: DRAWS.length,
+      shadowDraws: CSM_OFF ? 0 : SHADOW_DRAWS.length,
+      gpuErr,
+      csm: lastCascades && { tier: lastCascades.tier, splits: lastCascades.splits, radii: lastCascades.radii, count: lastCascades.count },
+    };
+  }
+  window.__glacierStill = async (t, mode) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const prevMask = maskForce;
+    const prevMode = gateMode;
+    maskForce = mode === 'shadow' ? 1 : 0;
+    gateMode = mode === 'mat' ? 1 : 0;
+    const frame = await readFrame();
+    maskForce = prevMask;
+    gateMode = prevMode;
+    return { png: await blobOf(frame.src, 'image/png'), info: poseInfo(frame.gpuErr) };
+  };
+  window.__glacierPose = async (eye, tgt, mode) => {
+    gatePose = { eye, tgt };
+    const prevMask = maskForce;
+    const prevMode = gateMode;
+    maskForce = mode === 'shadow' ? 1 : 0;
+    gateMode = mode === 'mat' ? 1 : 0;
+    const frame = await readFrame();
+    maskForce = prevMask;
+    gateMode = prevMode;
+    gatePose = null;
+    return { png: await blobOf(frame.src, 'image/png'), info: poseInfo(frame.gpuErr) };
+  };
+  window.__glacierPerf = async (n = 4) => {
+    await dev.queue.onSubmittedWorkDone();
+    const a = performance.now();
+    for (let i = 0; i < n; i++) {
+      renderFixed(simClock);
+      await dev.queue.onSubmittedWorkDone();
+    }
+    const ms = (performance.now() - a) / n;
+    return { ms, fps: 1000 / ms, n, w: W, h: H, draws: DRAWS.length, shadowDraws: CSM_OFF ? 0 : SHADOW_DRAWS.length, tris: world.budget.totalTris };
   };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;
