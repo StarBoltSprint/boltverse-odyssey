@@ -1,0 +1,39 @@
+{
+  "biome": "glacier-abyss",
+  "candidate": "glacier-abyss-dawn",
+  "release": false,
+  "visualKeep": false,
+  "W": 720,
+  "H": 1280,
+  "msaa": 4,
+  "hdr": "rgba16float",
+  "tonemap": "agx",
+  "exposureEv": 0.32,
+  "presentPass": 1,
+  "tris": 195818,
+  "worldTris": 186484,
+  "icicleTris": 970,
+  "driftTris": 896,
+  "draws": 9,
+  "drawNames": [
+    "sky",
+    "planet",
+    "world",
+    "icicle",
+    "chunk",
+    "drift",
+    "contact",
+    "flake",
+    "bolt"
+  ],
+  "extentZ": [
+    -4500,
+    140
+  ],
+  "columns": 1612,
+  "bolt": "bolt439_atlas",
+  "cardH": 1.15,
+  "cardW": 0.39509202453987724,
+  "fog": 0,
+  "planetRadius": 756
+}

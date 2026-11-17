@@ -22,6 +22,9 @@ export const ICE = {
   planetShade: [0.52, 0.58, 0.70],
   sheen: 0.045,
   specPower: 36,
+  // Linear luma cap on the ice specular lobe, applied before the tone map.
+  // The lobe stays the albedo colour. Metal stays 0. No white add.
+  specCap: 0.04,
 };
 
 function v3(a) { return `vec3f(${a[0]}, ${a[1]}, ${a[2]})`; }
@@ -267,7 +270,11 @@ fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let graze = smoothstep(0.50, 0.08, ndv);
   let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${C.specPower}.0);
-  return alb * dawnIrr(n) + alb * spec * graze * ${C.sheen};
+  let diffuse = alb * dawnIrr(n);
+  var specCol = alb * spec * graze * ${C.sheen};
+  let specY = dot(specCol, vec3f(0.2126, 0.7152, 0.0722));
+  specCol = specCol * min(1.0, ${C.specCap} / max(specY, 1e-5));
+  return diffuse + specCol;
 }
 `;
 }
@@ -291,5 +298,8 @@ export function litIce(alb, n, view, light) {
   const graze = smoothstep(0.50, 0.08, ndv);
   const half = norm3(add(sun, vv));
   const spec = Math.max(0, dot(nn, half)) ** ICE.specPower;
-  return alb.map((a, i) => a * irr[i] + a * spec * graze * ICE.sheen);
+  const specCol = alb.map((a) => a * spec * graze * ICE.sheen);
+  const specY = 0.2126 * specCol[0] + 0.7152 * specCol[1] + 0.0722 * specCol[2];
+  const scale = Math.min(1, ICE.specCap / Math.max(specY, 1e-5));
+  return alb.map((a, i) => a * irr[i] + specCol[i] * scale);
 }

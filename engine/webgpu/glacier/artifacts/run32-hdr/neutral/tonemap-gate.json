@@ -1,0 +1,319 @@
+{
+  "limits": {
+    "lumaDeltaMax": 0.05,
+    "clipFracMax": 0.005,
+    "crushFracMax": 0.005,
+    "meanYStdMax": 0.015,
+    "greyBrightMax": 0.15,
+    "de76Max": 10,
+    "run31Keyscore": 85.84,
+    "look": {
+      "contrastDeltaMin": 0,
+      "satMeanDeltaMin": -0.005,
+      "peachSkySatMin": 0.15,
+      "boltDeltaMax": 0.02
+    }
+  },
+  "snowKey": {
+    "p1": 0.4178,
+    "p50": 0.7082,
+    "p99": 0.8712,
+    "lab": [
+      73.5548,
+      -0.9761,
+      -3.6891
+    ]
+  },
+  "iceKeyLab": [
+    69.7146,
+    -4.4138,
+    -10.3321
+  ],
+  "keyscore": 88.4977,
+  "rows": [
+    {
+      "tag": "117",
+      "frame": {
+        "p1": 0.1193,
+        "p50": 0.6508,
+        "p99": 0.84
+      },
+      "keyFrame": {
+        "p1": 0.1869,
+        "p50": 0.6056,
+        "p99": 0.7763
+      },
+      "delta": {
+        "p1": 0.0676,
+        "p50": 0.0451,
+        "p99": 0.0637
+      },
+      "snow": {
+        "p1": 0.3935,
+        "p50": 0.6711,
+        "p99": 0.7596,
+        "n": 502446
+      },
+      "clip": 0,
+      "crush": 0,
+      "greyBright": 0.0287,
+      "blue": 0.2047,
+      "dE76snow": 6.7753,
+      "dE76ice": 18.1423,
+      "keyscore": 87.5412,
+      "look": {
+        "contrast": 0.7207,
+        "contrastBefore": 0.5893,
+        "dContrast": 0.1313,
+        "satMean": 0.1958,
+        "satMeanBefore": 0.1615,
+        "dSat": 0.0343,
+        "torsoY": 0.4275,
+        "torsoYBefore": 0.4273,
+        "dTorsoY": 0.0002,
+        "torsoSat": 0.2512,
+        "torsoSatBefore": 0.1889,
+        "dTorsoSat": 0.0623,
+        "peachSat": null
+      }
+    },
+    {
+      "tag": "24",
+      "frame": {
+        "p1": 0.1142,
+        "p50": 0.7274,
+        "p99": 0.8722
+      },
+      "keyFrame": {
+        "p1": 0.1791,
+        "p50": 0.6671,
+        "p99": 0.8035
+      },
+      "delta": {
+        "p1": 0.0649,
+        "p50": 0.0603,
+        "p99": 0.0686
+      },
+      "snow": {
+        "p1": 0.3882,
+        "p50": 0.7454,
+        "p99": 0.8722,
+        "n": 562138
+      },
+      "clip": 0,
+      "crush": 0,
+      "greyBright": 0.0521,
+      "blue": 0.1882,
+      "dE76snow": 6.8677,
+      "dE76ice": 16.2295,
+      "keyscore": 88.4514,
+      "look": {
+        "contrast": 0.7579,
+        "contrastBefore": 0.6244,
+        "dContrast": 0.1335,
+        "satMean": 0.1766,
+        "satMeanBefore": 0.1473,
+        "dSat": 0.0293,
+        "torsoY": 0.4577,
+        "torsoYBefore": 0.4474,
+        "dTorsoY": 0.0103,
+        "torsoSat": 0.2353,
+        "torsoSatBefore": 0.1785,
+        "dTorsoSat": 0.0568,
+        "peachSat": null
+      }
+    },
+    {
+      "tag": "30",
+      "frame": {
+        "p1": 0.1171,
+        "p50": 0.6927,
+        "p99": 0.8679
+      },
+      "keyFrame": {
+        "p1": 0.183,
+        "p50": 0.6392,
+        "p99": 0.8066
+      },
+      "delta": {
+        "p1": 0.066,
+        "p50": 0.0535,
+        "p99": 0.0612
+      },
+      "snow": {
+        "p1": 0.3921,
+        "p50": 0.7104,
+        "p99": 0.8619,
+        "n": 518690
+      },
+      "clip": 0,
+      "crush": 0,
+      "greyBright": 0.0955,
+      "blue": 0.1767,
+      "dE76snow": 5.906,
+      "dE76ice": 14.9393,
+      "keyscore": 89.5773,
+      "look": {
+        "contrast": 0.7508,
+        "contrastBefore": 0.6236,
+        "dContrast": 0.1272,
+        "satMean": 0.1803,
+        "satMeanBefore": 0.1508,
+        "dSat": 0.0296,
+        "torsoY": 0.5449,
+        "torsoYBefore": 0.513,
+        "dTorsoY": 0.0318,
+        "torsoSat": 0.1872,
+        "torsoSatBefore": 0.157,
+        "dTorsoSat": 0.0302,
+        "peachSat": 0.1788
+      }
+    },
+    {
+      "tag": "51",
+      "frame": {
+        "p1": 0.119,
+        "p50": 0.6779,
+        "p99": 0.8436
+      },
+      "keyFrame": {
+        "p1": 0.1869,
+        "p50": 0.6252,
+        "p99": 0.7851
+      },
+      "delta": {
+        "p1": 0.0679,
+        "p50": 0.0527,
+        "p99": 0.0585
+      },
+      "snow": {
+        "p1": 0.3924,
+        "p50": 0.6902,
+        "p99": 0.8036,
+        "n": 508574
+      },
+      "clip": 0,
+      "crush": 0,
+      "greyBright": 0.0505,
+      "blue": 0.1975,
+      "dE76snow": 5.869,
+      "dE76ice": 16.8527,
+      "keyscore": 88.6391,
+      "look": {
+        "contrast": 0.7246,
+        "contrastBefore": 0.5981,
+        "dContrast": 0.1264,
+        "satMean": 0.1877,
+        "satMeanBefore": 0.1557,
+        "dSat": 0.032,
+        "torsoY": 0.533,
+        "torsoYBefore": 0.5095,
+        "dTorsoY": 0.0234,
+        "torsoSat": 0.1845,
+        "torsoSatBefore": 0.146,
+        "dTorsoSat": 0.0385,
+        "peachSat": null
+      }
+    },
+    {
+      "tag": "5567",
+      "frame": {
+        "p1": 0.1193,
+        "p50": 0.6868,
+        "p99": 0.8442
+      },
+      "keyFrame": {
+        "p1": 0.1867,
+        "p50": 0.6319,
+        "p99": 0.7853
+      },
+      "delta": {
+        "p1": 0.0674,
+        "p50": 0.0549,
+        "p99": 0.0589
+      },
+      "snow": {
+        "p1": 0.3924,
+        "p50": 0.6986,
+        "p99": 0.8128,
+        "n": 504438
+      },
+      "clip": 0,
+      "crush": 0,
+      "greyBright": 0.0542,
+      "blue": 0.1963,
+      "dE76snow": 5.7072,
+      "dE76ice": 16.9698,
+      "keyscore": 88.6615,
+      "look": {
+        "contrast": 0.7249,
+        "contrastBefore": 0.5986,
+        "dContrast": 0.1263,
+        "satMean": 0.1885,
+        "satMeanBefore": 0.1555,
+        "dSat": 0.0329,
+        "torsoY": 0.4717,
+        "torsoYBefore": 0.4598,
+        "dTorsoY": 0.012,
+        "torsoSat": 0.2198,
+        "torsoSatBefore": 0.1706,
+        "dTorsoSat": 0.0492,
+        "peachSat": null
+      }
+    },
+    {
+      "tag": "79",
+      "frame": {
+        "p1": 0.1193,
+        "p50": 0.7333,
+        "p99": 0.8559
+      },
+      "keyFrame": {
+        "p1": 0.1869,
+        "p50": 0.6729,
+        "p99": 0.801
+      },
+      "delta": {
+        "p1": 0.0676,
+        "p50": 0.0604,
+        "p99": 0.0549
+      },
+      "snow": {
+        "p1": 0.3921,
+        "p50": 0.7481,
+        "p99": 0.8403,
+        "n": 537090
+      },
+      "clip": 0,
+      "crush": 0,
+      "greyBright": 0.0494,
+      "blue": 0.1933,
+      "dE76snow": 7.1591,
+      "dE76ice": 16.6099,
+      "keyscore": 88.1155,
+      "look": {
+        "contrast": 0.7366,
+        "contrastBefore": 0.614,
+        "dContrast": 0.1225,
+        "satMean": 0.1742,
+        "satMeanBefore": 0.1436,
+        "dSat": 0.0306,
+        "torsoY": 0.5174,
+        "torsoYBefore": 0.4948,
+        "dTorsoY": 0.0226,
+        "torsoSat": 0.192,
+        "torsoSatBefore": 0.1506,
+        "dTorsoSat": 0.0415,
+        "peachSat": null
+      }
+    },
+    {
+      "tris": 195818,
+      "draws": 9,
+      "presentPass": 1,
+      "tonemap": "neutral",
+      "exposureEv": 0.36
+    }
+  ],
+  "verdict": "FAIL"
+}

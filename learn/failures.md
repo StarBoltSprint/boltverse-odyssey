@@ -1316,3 +1316,47 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Branch `terrace/fix-door-ghost` (off dd80963f): ground = plain snow `Color(0.78, 0.84, 0.9)` like the offline render; rebuilt materials keep `side` from the GLB material. Page-only, 3 lines, to merge into Engine Core's `engine/bench-load-1013` (b1e99d2e; textual conflict on the adjacent `parseAsync` line only). |
 | Guard | `python3 -m tools.gate.playgate <served_url> <out>` renders the SERVED page headless at 412x915 CSS x1.5 (door-3m, threshold-3m/8m-30d, wall-end-left/right), runs per-region no-grey, and inventories the live scene: FAIL on any undeclared node, a ground that maps an object plate, an object material whose GLB is doubleSided but runtime side != DoubleSide, unexpected transparency, page errors, and camera vs spine.json beyond tolerance. Self-test `python3 -m tools.gate.selftest_playgate`: current build FAILs both (a) and (b); fixed build PASSes the scene checks. Known gap: `nogrey` skips luma <= 20, so a dark flat band is not flagged; the scene check is what catches (a). |
 | Sources | `tools/gate/playgate.py`, `tools/gate/playgate.mjs`, `tools/gate/playgate.views.json`, `tools/gate/selftest_playgate.py`. |
+
+### 2026-11-14 — AgX at the snow-key exposure misses t=30 p99 and bright-ice grey
+
+| | |
+| --- | --- |
+| Take | Glacier D1 HDR. Not a KEEP. |
+| Defect | At t=30 s the frame p99 is 0.0501 from the gamma-2.2 key (limit 0.05) and bright-ice grey_bright is 0.189 (limit 0.15). |
+| Root cause | AgX's shoulder pulls the top 1% down by about one code value versus gamma 2.2. Bright ice is the warm dawn sun times blue albedo, so sunlit faces sit near grey; the spec cap does not touch faces that point at the camera. ACES and Khronos PBR Neutral matched the snow median and were less grey, and both moved frame p1 by more than 0.05. |
+| Fix | Not applied. The limits were not moved. AgX at exposureEv 0.32 remains the pick because it was the only operator inside the other limits. |
+| Guard | `node engine/webgpu/glacier/tonemap-gate.mjs` against `tonemap-limits.json`. Floor keyscore 85.84. |
+| Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/dawn-light.json`, `engine/webgpu/glacier/artifacts/run32-hdr/tonemap-gate.json`. |
+
+### 2026-11-17 — AgX shoulder and bright-ice chroma closed the 30 s miss
+
+| | |
+| --- | --- |
+| Take | Glacier D1 HDR, same branch as the 2026-11-14 entry. Not a KEEP. |
+| Defect | The 30 s frame p99 sat 0.0501 under the gamma key, and bright-ice grey_bright was 0.189. |
+| Root cause | The AgX shoulder compressed the top 1%. Pale sunlit ice stayed under a channel spread of 0.04. |
+| Fix | Shoulder blends toward the exposed colour only above display-linear luma 0.46 (gain 0.7). After the sRGB OETF, bright ice with spread under 0.05 is lifted to 0.05, gain capped at 2.2. EV stays 0.32. |
+| Guard | `node engine/webgpu/glacier/tonemap-gate.mjs`. 30 s p99 delta 0.0061. 30 s grey_bright 0.1405. Ice dE76 6.48–8.24. 11.70 s p50 delta stayed 0.0479. |
+| Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/artifacts/run32-hdr/tonemap-gate.json`. |
+
+### 2026-11-17 — Neutral and AgX punchy both miss the look gate
+
+| | |
+| --- | --- |
+| Take | Glacier HDR round 3. Not adopted. |
+| Defect | One key-calibrated exposure of Khronos PBR Neutral and one of AgX punchy each fail the locked look gate plus the luma or ice dE76 gates. |
+| Root cause | Neutral at the snow-key exposure (EV 0.36) lifts the whole frame and the torso, and ice dE76 goes to 15–18. Punchy (log power 1.35, sat 1.4) at EV 1.7 restores contrast but the p50 and the torso rise, and the t30 peach sky is 0.142. |
+| Fix | None. Limits were not moved. The shipped grade stays AgX at EV 0.32. |
+| Guard | `node engine/webgpu/glacier/tonemap-gate.mjs` with the look block in `tonemap-limits.json`. |
+| Sources | `engine/webgpu/glacier/artifacts/run32-hdr/neutral/tonemap-gate.json`, `engine/webgpu/glacier/artifacts/run32-hdr/punchy/tonemap-gate.json`. |
+
+### 2026-11-17 — display-matched grade matches gamma and still misses the snow key
+
+| | |
+| --- | --- |
+| Take | Glacier HDR round 4. Display-matched curve shipped. Not a KEEP. |
+| Defect | `display/tonemap-gate.json` FAIL. Snow p50 vs the texture key (0.7082) misses on t117 (0.621), t51 (0.635), t5567 (0.643), and t30 (0.655). Contrast delta is −0.0005 at t24 and −0.0002 at t5567. |
+| Root cause | The scene is already the gamma-2.2 picture. Snow p50 of the display stills equals the gamma before stills (delta 0.0000 on all six). Four of those medians sit more than 0.05 under the texture key. A shoulder that starts at scene 0.805 cannot lift a median at 0.62. The contrast hairs are under one code. |
+| Fix | None on the thresholds. Knee stays 0.805437471876985, white point 4, exposureEv 0. Do not lift midtones to chase the snow key; that is the round-3 miss. |
+| Guard | `node engine/webgpu/glacier/tonemap-gate.mjs` against `tonemap-limits.json`, including the look block. The snow row compares to the texture key, not to the gamma still. |
+| Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/dawn-light.json`, `engine/webgpu/glacier/artifacts/run32-hdr/display/tonemap-gate.json`. |
