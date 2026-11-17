@@ -105,7 +105,8 @@ if (!only && new Set(shots.map((s) => s.id)).size < 4) {
 const port = 8765;
 const server = await serve(webgpu, port);
 const shade = (ndl, ny) => shadeAt(LIGHT, ndl, ny);
-const presentLin = (lin) => gradeLinear(lin, LIGHT).map((v) => Math.round(Math.min(1, Math.max(0, v)) * 255));
+const ICE_MAT = new Set([1, 2, 3, 6, 7]);
+const presentLin = (lin, mat) => gradeLinear(lin, LIGHT, ICE_MAT.has(mat)).map((v) => Math.round(Math.min(1, Math.max(0, v)) * 255));
 let fail = 0;
 try {
   const url = `http://127.0.0.1:${port}/glacier/glacier.html?cap=1&w=720&h=1280&candidate=${CANDIDATE}`;

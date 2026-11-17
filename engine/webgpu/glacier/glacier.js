@@ -428,7 +428,11 @@ fn darken15(c: vec3f) -> vec3f {
     col = col + vec3f(0.9, 0.36, 0.22) * rim * clamp(1.15 - head, 0.0, 1.0) * (1.0 - aerial * 0.25);
   }
   if (u.misc.w > 0.5 && abs(m - (u.misc.w - 1.0)) < 0.25) { col = darken15(col); }
-  return present(col);
+  var out = present(col);
+  // Alpha 0.5 marks ice for the post-AgX chroma restore. Snow and Bolt stay at 1.
+  let ice = (m > 0.5 && m < 3.5) || (m > 5.5 && m < 7.5);
+  if (ice) { out.a = 0.5; }
+  return out;
 }
 @fragment fn fsPlanet(v: VO) -> @location(0) vec4f {
   let n = normalize(v.n);

@@ -1327,3 +1327,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Not applied. The limits were not moved. AgX at exposureEv 0.32 remains the pick because it was the only operator inside the other limits. |
 | Guard | `node engine/webgpu/glacier/tonemap-gate.mjs` against `tonemap-limits.json`. Floor keyscore 85.84. |
 | Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/dawn-light.json`, `engine/webgpu/glacier/artifacts/run32-hdr/tonemap-gate.json`. |
+
+### 2026-11-17 — AgX shoulder and bright-ice chroma closed the 30 s miss
+
+| | |
+| --- | --- |
+| Take | Glacier D1 HDR, same branch as the 2026-11-14 entry. Not a KEEP. |
+| Defect | The 30 s frame p99 sat 0.0501 under the gamma key, and bright-ice grey_bright was 0.189. |
+| Root cause | The AgX shoulder compressed the top 1%. Pale sunlit ice stayed under a channel spread of 0.04. |
+| Fix | Shoulder blends toward the exposed colour only above display-linear luma 0.46 (gain 0.7). After the sRGB OETF, bright ice with spread under 0.05 is lifted to 0.05, gain capped at 2.2. EV stays 0.32. |
+| Guard | `node engine/webgpu/glacier/tonemap-gate.mjs`. 30 s p99 delta 0.0061. 30 s grey_bright 0.1405. Ice dE76 6.48–8.24. 11.70 s p50 delta stayed 0.0479. |
+| Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/artifacts/run32-hdr/tonemap-gate.json`. |

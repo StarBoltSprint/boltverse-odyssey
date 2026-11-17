@@ -30,7 +30,7 @@ export function scoreWindow(shot, expectMat, shadeAt, presentLin) {
     if ((ny > 0.7 ? ndl < 0.1 : ndl < 0.4)) continue;
     const alb = shot.albedo[i];
     colour.push([shot.colour[i][0], shot.colour[i][1], shot.colour[i][2]]);
-    pred.push(predictRgb([alb[0], alb[1], alb[2]], ndl, ny, shadeAt, presentLin));
+    pred.push(predictRgb([alb[0], alb[1], alb[2]], ndl, ny, shadeAt, (lin) => presentLin(lin, mat)));
   }
   if (colour.length < 8) return { ok: false, pixels: colour.length, verdict: 'UNCERTAIN', dE76: null, threshold: DE76_MAX };
   const lab = medianLab(colour).map(round2);

@@ -149,9 +149,51 @@ export function exposureOf(light) {
   return 2 ** (light.exposureEv || 0);
 }
 
-export function gradeLinear(rgb, light) {
+// Upper shoulder only. The knee sits above the frame median, so p50 does not rise.
+const SHOULDER_KNEE = 0.46;
+const SHOULDER_END = 0.62;
+const SHOULDER_GAIN = 0.7;
+// Bright ice only, the same mask as grey_bright (display luma > 0.45).
+// Pixels already past the grey line are left alone. Gain is capped.
+const ICE_LUMA = 0.45;
+const ICE_SPREAD = 0.05;
+const ICE_GAIN_MAX = 2.2;
+
+function luma3(c) {
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+
+function smooth01(e0, e1, x) {
+  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+  return t * t * (3 - 2 * t);
+}
+
+export function softenShoulder(exposed, graded) {
+  const y = luma3(graded);
+  const t = smooth01(SHOULDER_KNEE, SHOULDER_END, y);
+  if (t <= 0) return graded;
+  const src = exposed.map((v) => Math.min(1, Math.max(0, v)));
+  return graded.map((v, i) => Math.min(1, Math.max(0, v + (src[i] - v) * t * SHOULDER_GAIN)));
+}
+
+export function iceChroma(display) {
+  const y = luma3(display);
+  if (y <= ICE_LUMA) return display;
+  const spread = Math.max(...display) - Math.min(...display);
+  if (!(spread < ICE_SPREAD) || spread <= 1e-5) return display;
+  const g = Math.min(ICE_GAIN_MAX, ICE_SPREAD / spread);
+  return display.map((v) => Math.min(1, Math.max(0, y + (v - y) * g)));
+}
+
+export function gradeLinear(rgb, light, ice = false) {
+  const exposure = exposureOf(light);
+  const exposed = rgb.map((v) => Math.max(0, v) * exposure);
   const op = TONEMAPS[light.tonemap] || tonemapNeutral;
-  return op(rgb, exposureOf(light)).map(srgbOetf);
+  let graded = op(rgb, exposure);
+  if ((light.tonemap || 'neutral') === 'agx') graded = softenShoulder(exposed, graded);
+  let display = graded.map(srgbOetf);
+  if (ice) display = iceChroma(display);
+  return display;
 }
 
 function mat3(cols) {
@@ -220,6 +262,22 @@ fn tonemap(color: vec3f) -> vec3f {
   if (${which} == 1) { return tonemapAces(color); }
   return tonemapNeutral(color);
 }
+fn luma3(c: vec3f) -> f32 { return dot(c, vec3f(0.2126, 0.7152, 0.0722)); }
+fn softenShoulder(exposed: vec3f, graded: vec3f) -> vec3f {
+  let y = luma3(graded);
+  let t = smoothstep(${SHOULDER_KNEE}, ${SHOULDER_END}, y);
+  if (t <= 0.0) { return graded; }
+  let src = clamp(exposed, vec3f(0.0), vec3f(1.0));
+  return clamp(graded + (src - graded) * t * ${SHOULDER_GAIN}, vec3f(0.0), vec3f(1.0));
+}
+fn iceChroma(c: vec3f) -> vec3f {
+  let y = luma3(c);
+  if (y <= ${ICE_LUMA}) { return c; }
+  let spread = max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b));
+  if (spread >= ${ICE_SPREAD} || spread <= 1e-5) { return c; }
+  let g = min(${ICE_GAIN_MAX}, ${ICE_SPREAD} / spread);
+  return clamp(vec3f(y) + (c - vec3f(y)) * g, vec3f(0.0), vec3f(1.0));
+}
 
 @vertex fn vsGrade(@builtin(vertex_index) vi: u32) -> @builtin(position) vec4f {
   var q = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0));
@@ -235,7 +293,12 @@ fn tonemap(color: vec3f) -> vec3f {
   if (mode > 1.5 || (iso > 29.5 && iso < 37.5)) {
     return vec4f(srgbOetf(clamp(c, vec3f(0.0), vec3f(1.0))), 1.0);
   }
-  return vec4f(srgbOetf(tonemap(c * ${exposureOf({ exposureEv: ev })})), 1.0);
+  let exposed = c * ${exposureOf({ exposureEv: ev })};
+  var graded = tonemap(exposed);
+  if (${which} == 0) { graded = softenShoulder(exposed, graded); }
+  var display = srgbOetf(graded);
+  if (abs(textureLoad(hdrTex, vec2i(p.xy), 0).a - 0.5) < 0.02) { display = iceChroma(display); }
+  return vec4f(display, 1.0);
 }
 `;
 }
