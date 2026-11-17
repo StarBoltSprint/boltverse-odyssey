@@ -244,37 +244,192 @@ const PAW_FRAC = [
   0.1396, 0.1012, 0.0721, 0.0506, 0.0383, 0.0322, 0.0199, 0.0077,
   0.0690, 0.1380, 0.1580, 0.1396, 0.1242, 0.1135, 0.1058, 0.0997,
 ];
-const PRINT_N = 12;
-const prints = Array.from({ length: PRINT_N }, () => ({ x: 0, y: -100, z: 0, yaw: 0 }));
-const pawHit = { prev: 0, armed: false, side: 1, n: 0 };
-function dropPrint(side) {
+// R16 ring. 24 m torus, so a print 10 m behind is still inside the window.
+const TRAIL_RES = 1024;
+const TRAIL_SPAN = 24;
+const TRAIL_HOLD = 10;
+const TRAIL_FADE = 12;
+const trail = new Uint16Array(TRAIL_RES * TRAIL_RES);
+trail.fill(32768);
+const stamps = [];
+const trailPending = [];
+let edgeMark = null;
+const LEG_DEF = [
+  { across: 0.12, along: 0.02, offset: 0.0, rad: 0.065 },
+  { across: -0.12, along: 0.02, offset: 0.5, rad: 0.065 },
+  { across: 0.09, along: 0.30, offset: 0.25, rad: 0.042 },
+  { across: -0.09, along: 0.30, offset: 0.75, rad: 0.042 },
+];
+let poseNow = null;
+function smooth01(e0, e1, x) {
+  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+  return t * t * (3 - 2 * t);
+}
+function pawFracAt(phase) {
+  const f = (((phase % 1) + 1) % 1) * 32;
+  const i = Math.floor(f) % 32;
+  const k = f - Math.floor(f);
+  return PAW_FRAC[i] * (1 - k) + PAW_FRAC[(i + 1) % 32] * k;
+}
+function plantOf(frac) {
+  return smooth01(0.045, 0.13, frac);
+}
+function poseLegs() {
   const yaw = live.psi;
   const fx = -Math.sin(yaw);
   const fz = -Math.cos(yaw);
   const rx = fz;
   const rz = -fx;
-  const n = pawHit.n++;
-  const j1 = Math.sin(n * 12.9898) * 43758.5453;
-  const j2 = Math.sin(n * 78.233) * 43758.5453;
-  const a = j1 - Math.floor(j1);
-  const b = j2 - Math.floor(j2);
-  const across = side * 0.10 + (a - 0.5) * 0.05;
-  const back = 0.06 + (b - 0.5) * 0.04;
-  const x = live.x + rx * across - fx * back;
-  const z = live.z + rz * across - fz * back;
-  let slot = -1;
-  let best = 10.2;
-  for (let i = 0; i < PRINT_N; i++) {
-    const p = prints[i];
-    if (p.y < -10) { slot = i; break; }
-    const behind = -((p.x - live.x) * fx + (p.z - live.z) * fz);
-    if (behind > best) { best = behind; slot = i; }
+  const legs = LEG_DEF.map((def) => {
+    const frac = pawFracAt(live.phase + def.offset);
+    const plant = plantOf(frac);
+    const x = live.x + rx * def.across + fx * def.along;
+    const z = live.z + rz * def.across + fz * def.along;
+    const g = world.heightAt(x, z);
+    return {
+      across: def.across, x, z,
+      y: g + (1 - plant) * 0.11 + 0.01,
+      plant, frac,
+      hx: live.x + rx * def.across * 0.35 + fx * def.along * 0.45,
+      hz: live.z + rz * def.across * 0.35 + fz * def.along * 0.45,
+      hy: g + 0.36,
+      rad: def.rad,
+    };
+  });
+  const bx = live.x + fx * 0.16;
+  const bz = live.z + fz * 0.16;
+  const body = { x: bx, y: world.heightAt(bx, bz) + 0.24, z: bz, rx: 0.10, ry: 0.18, rz: 0.15 };
+  poseNow = { legs, body };
+  return poseNow;
+}
+function trailTexel(x, z) {
+  let u = (x / TRAIL_SPAN) % 1;
+  let v = (z / TRAIL_SPAN) % 1;
+  if (u < 0) u += 1;
+  if (v < 0) v += 1;
+  return [u * TRAIL_RES, v * TRAIL_RES];
+}
+function trailHeightAt(x, z) {
+  const [cx, cy] = trailTexel(x, z);
+  const ix = Math.floor(cx) % TRAIL_RES;
+  const iy = Math.floor(cy) % TRAIL_RES;
+  return (trail[iy * TRAIL_RES + ix] / 65535 - 0.5) * 2;
+}
+function trailProfile(r) {
+  if (r >= 1) return 0;
+  const bowl = r < 0.62 ? 1 - (r / 0.62) ** 2 : 0;
+  const rimT = Math.min(1, Math.max(0, (r - 0.38) / 0.62));
+  const rim = Math.sin(Math.PI * rimT) ** 2;
+  return -bowl * 0.72 + rim * 0.48 * (1 - bowl);
+}
+function encodeH(h) {
+  return Math.max(0, Math.min(65535, Math.round((h * 0.5 + 0.5) * 65535)));
+}
+function rectsFromWorld(x0, z0, x1, z1) {
+  const split = (a, b) => {
+    const lo = Math.floor(Math.min(a, b) * TRAIL_RES);
+    const hi = Math.ceil(Math.max(a, b) * TRAIL_RES);
+    const idx = [];
+    for (let i = lo; i <= hi; i++) idx.push(((i % TRAIL_RES) + TRAIL_RES) % TRAIL_RES);
+    const parts = [];
+    let s = 0;
+    for (let i = 1; i <= idx.length; i++) {
+      const jump = i < idx.length && idx[i] !== (idx[i - 1] + 1) % TRAIL_RES;
+      if (i === idx.length || jump) {
+        const a0 = idx[s];
+        const a1 = idx[i - 1];
+        if (a1 >= a0) parts.push([a0, a1 + 1]);
+        else { parts.push([a0, TRAIL_RES]); parts.push([0, a1 + 1]); }
+        s = i;
+      }
+    }
+    return parts;
+  };
+  const out = [];
+  for (const xs of split(x0 / TRAIL_SPAN, x1 / TRAIL_SPAN)) {
+    for (const ys of split(z0 / TRAIL_SPAN, z1 / TRAIL_SPAN)) {
+      const w = xs[1] - xs[0];
+      const h = ys[1] - ys[0];
+      if (w > 0 && h > 0) out.push({ x: xs[0], y: ys[0], w, h });
+    }
   }
-  if (slot < 0) return;
-  prints[slot].x = x;
-  prints[slot].z = z;
-  prints[slot].y = world.heightAt(x, z) + 0.06;
-  prints[slot].yaw = yaw;
+  return out;
+}
+function paintTrail(x0, z0, x1, z1, writer) {
+  const step = TRAIL_SPAN / TRAIL_RES;
+  const xa = Math.min(x0, x1);
+  const xb = Math.max(x0, x1);
+  const za = Math.min(z0, z1);
+  const zb = Math.max(z0, z1);
+  for (let z = za; z <= zb; z += step) {
+    for (let x = xa; x <= xb; x += step) writer(x, z);
+  }
+  trailPending.push(...rectsFromWorld(xa, za, xb, zb));
+}
+function clearWorldRect(x0, z0, x1, z1) {
+  paintTrail(x0, z0, x1, z1, (x, z) => {
+    const [cx, cy] = trailTexel(x, z);
+    trail[(Math.floor(cy) % TRAIL_RES) * TRAIL_RES + (Math.floor(cx) % TRAIL_RES)] = 32768;
+  });
+}
+function clearAdvanced() {
+  if (!edgeMark) { edgeMark = { x: live.x, z: live.z }; return; }
+  const reach = 12.05;
+  const pad = 0.1;
+  const dx = live.x - edgeMark.x;
+  const dz = live.z - edgeMark.z;
+  if (Math.abs(dx) > 1e-4) {
+    const a = dx > 0 ? edgeMark.x + reach : live.x - reach - pad;
+    const b = dx > 0 ? live.x + reach + pad : edgeMark.x - reach;
+    clearWorldRect(Math.min(a, b), live.z - reach, Math.max(a, b), live.z + reach);
+  }
+  if (Math.abs(dz) > 1e-4) {
+    const a = dz > 0 ? edgeMark.z + reach : live.z - reach - pad;
+    const b = dz > 0 ? live.z + reach + pad : edgeMark.z - reach;
+    clearWorldRect(live.x - reach, Math.min(a, b), live.x + reach, Math.max(a, b));
+  }
+  edgeMark = { x: live.x, z: live.z };
+}
+function stampAt(wx, wz, yaw) {
+  const radX = 0.055;
+  const radZ = 0.09;
+  const fx = -Math.sin(yaw);
+  const fz = -Math.cos(yaw);
+  const rx = fz;
+  const rz = -fx;
+  const reach = 0.16;
+  paintTrail(wx - reach, wz - reach, wx + reach, wz + reach, (x, z) => {
+    const ox = x - wx;
+    const oz = z - wz;
+    const along = ox * fx + oz * fz;
+    const across = ox * rx + oz * rz;
+    const r = Math.hypot(across / radX, along / radZ);
+    if (r > 1) return;
+    const h = trailProfile(r);
+    const [cx, cy] = trailTexel(x, z);
+    const idx = (Math.floor(cy) % TRAIL_RES) * TRAIL_RES + (Math.floor(cx) % TRAIL_RES);
+    const prev = (trail[idx] / 65535 - 0.5) * 2;
+    trail[idx] = encodeH(Math.abs(h) >= Math.abs(prev) ? h : prev);
+  });
+  stamps.push({ x: wx, z: wz, yaw, t: simClock, peak: 0.72 });
+  if (stamps.length > 64) stamps.shift();
+}
+const pawHit = { prev: 0, armed: false, side: 1, n: 0 };
+function dropPrint(side) {
+  const pose = poseLegs();
+  let best = null;
+  for (const leg of pose.legs) {
+    if (Math.sign(leg.across) !== side) continue;
+    if (!best || leg.plant > best.plant) best = leg;
+  }
+  if (!best) return;
+  const yaw = live.psi;
+  const fx = -Math.sin(yaw);
+  const fz = -Math.cos(yaw);
+  const n = pawHit.n++;
+  const j = Math.sin(n * 12.9898) * 43758.5453;
+  const a = j - Math.floor(j);
+  stampAt(best.x - fx * (0.02 + (a - 0.5) * 0.03), best.z - fz * (0.02 + (a - 0.5) * 0.03), yaw);
 }
 function notePaw() {
   const frac = PAW_FRAC[Math.floor((live.phase % 1) * 32) % 32];
@@ -292,6 +447,7 @@ function stepLive(dt) {
   IDLE.stepMotion(live, dt, input.run);
   integrate(live, dt, input);
   notePaw();
+  clearAdvanced();
   stepFlakes(dt);
   return live;
 }
@@ -299,7 +455,11 @@ function stepLive(dt) {
 const WGSL = /* wgsl */`
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
-  prints: array<vec4f, 12>,
+  legs: array<vec4f, 4>,
+  hips: array<vec4f, 4>,
+  body: vec4f,
+  bodyR: vec4f,
+  trail: vec4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -310,10 +470,11 @@ struct U {
 @group(0) @binding(6) var fallArr: texture_2d_array<f32>;
 @group(0) @binding(7) var archArr: texture_2d_array<f32>;
 @group(0) @binding(8) var seracArr: texture_2d_array<f32>;
+@group(0) @binding(9) var dtex: texture_2d<f32>;
+@group(0) @binding(10) var trailTex: texture_2d<f32>;
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
-struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
 
 ${lightWgsl(LIGHT)}
 ${skyWgsl(LIGHT.sky)}
@@ -378,7 +539,7 @@ fn darken15(c: vec3f) -> vec3f {
   var n = normalize(v.lit);
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
-  let alb = albedoOf(m, v.w, nUv, gx, gy);
+  var alb = albedoOf(m, v.w, nUv, gx, gy);
   let iso = u.sun.w;
   if (iso > 29.5 && iso < 35.5) { return present(alb); }
   if (iso > 36.5 && iso < 37.5) { return present(vec3f(0.62)); }
@@ -399,6 +560,24 @@ fn darken15(c: vec3f) -> vec3f {
     nLit = normalize(n + vec3f(gAlb.r, 0.0, gAlb.g) * 0.45);
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
+  let th = trailRaw(v.w);
+  let hx = trailRaw(v.w + vec3f(0.05, 0.0, 0.0));
+  let hz = trailRaw(v.w + vec3f(0.0, 0.0, 0.05));
+  let keep = trailKeep(v.w);
+  let keepX = trailKeep(v.w + vec3f(0.05, 0.0, 0.0));
+  let keepZ = trailKeep(v.w + vec3f(0.0, 0.0, 0.05));
+  let h = th * keep;
+  let hdx = hx * keepX - h;
+  let hdz = hz * keepZ - h;
+  let snowLive = m < 0.5 && !(iso > 29.5 && iso < 40.5) && u.misc.y < 0.5;
+  if (snowLive) {
+    let bowl = clamp(-h * 1.45, 0.0, 1.0);
+    let rimH = clamp(h * 2.1, 0.0, 1.0);
+    alb = alb * (1.0 - bowl * 0.52);
+    alb = alb + vec3f(0.70, 0.76, 0.84) * rimH * 0.34;
+    nLit = normalize(nLit + vec3f(-hdx, 0.0, -hdz) * 14.0);
+    alb = alb * capsuleShade(v.w);
+  }
   var col = litIce(alb, nLit, view);
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
@@ -453,6 +632,71 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let g = vec2f(f32(f % 8u), f32(f / 8u));
   return textureSampleLevel(atex, samp, (g + clamp(uv, vec2f(0.003), vec2f(0.997))) / vec2f(8.0, 4.0), 0.0);
 }
+fn distCell(f: u32, uv: vec2f) -> f32 {
+  let g = vec2f(f32(f % 8u), f32(f / 8u));
+  let uvA = (g + clamp(uv, vec2f(0.004), vec2f(0.996))) / vec2f(8.0, 4.0);
+  return textureSampleLevel(dtex, samp, uvA, 0.0).r;
+}
+fn cardNormal(f: u32, uv: vec2f, right: vec3f, up: vec3f, face: vec3f) -> vec3f {
+  let s = vec2f(4.0 / 224.0, 4.0 / 652.0);
+  let dx = distCell(f, uv + vec2f(s.x, 0.0)) - distCell(f, uv - vec2f(s.x, 0.0));
+  let dy = distCell(f, uv + vec2f(0.0, s.y)) - distCell(f, uv - vec2f(0.0, s.y));
+  let n = normalize(vec3f(-dx * 7.0, dy * 7.0, 0.035));
+  return normalize(right * n.x + up * n.y + face * n.z);
+}
+fn boltIrr(n: vec3f) -> vec3f {
+  let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
+  let warm = vec3f(${LIGHT.sun.rgb[0]}, ${LIGHT.sun.rgb[1]}, ${LIGHT.sun.rgb[2]}) * ${LIGHT.sun.intensity};
+  let cool = vec3f(0.42, 0.52, 0.68);
+  let zen = vec3f(${LIGHT.sky.zenith[0]}, ${LIGHT.sky.zenith[1]}, ${LIGHT.sky.zenith[2]});
+  let hor = vec3f(${LIGHT.sky.horizon[0]}, ${LIGHT.sky.horizon[1]}, ${LIGHT.sky.horizon[2]});
+  let w = smoothstep(0.05, 0.40, n.y);
+  let c = smoothstep(0.0, 0.16, -n.y);
+  let grade = vec3f(1.18, 1.02, 0.72) * w + vec3f(0.38, 0.66, 1.70) * c + vec3f(1.0) * (1.0 - w - c);
+  let sky = mix(hor, zen, clamp(n.y, 0.0, 1.0));
+  return grade + warm * ndl * 0.08 + sky * 0.04 + cool * clamp(-n.y, 0.0, 1.0) * 0.06;
+}
+fn trailRaw(p: vec3f) -> f32 {
+  let uv = fract(p.xz / u.trail.x);
+  let t = textureSampleLevel(trailTex, samp, uv, 0.0);
+  let bits = select(t.r, (t.r * 255.0 * 256.0 + t.g * 255.0) / 65535.0, u.trail.w > 0.5);
+  return (bits - 0.5) * 2.0;
+}
+fn trailKeep(p: vec3f) -> f32 {
+  let yaw = u.bolt.w;
+  let fx = -sin(yaw);
+  let fz = -cos(yaw);
+  let rel = p.xz - u.bolt.xz;
+  let behind = -(rel.x * fx + rel.y * fz);
+  let dist = length(rel);
+  if (dist > u.trail.z) { return 0.0; }
+  return (1.0 - smoothstep(u.trail.y, u.trail.z, behind)) * smoothstep(-0.15, 0.18, behind);
+}
+fn legOcc(p: vec3f, foot: vec4f, hip: vec4f) -> f32 {
+  let ab = foot.xyz - hip.xyz;
+  let t = clamp(dot(p - hip.xyz, ab) / max(dot(ab, ab), 1e-4), 0.0, 1.0);
+  let q = hip.xyz + ab * t;
+  let dist = length(p.xz - q.xz);
+  let lift = max(q.y - p.y, 0.0);
+  let grounded = 1.0 - smoothstep(0.02, 0.11, lift);
+  let disk = 1.0 - smoothstep(hip.w * 0.28, hip.w, dist);
+  return disk * grounded * foot.w;
+}
+fn capsuleShade(p: vec3f) -> f32 {
+  let yaw = u.bolt.w;
+  let fx = -sin(yaw);
+  let fz = -cos(yaw);
+  let rx = fz;
+  let rz = -fx;
+  let d = p - u.body.xyz;
+  let lat = d.x * rx + d.z * rz;
+  let along = d.x * fx + d.z * fz;
+  let q = vec2f(lat / u.bodyR.x, along / u.bodyR.z);
+  let bodyOcc = smoothstep(1.2, 0.45, length(q)) * smoothstep(0.40, 0.08, u.body.y - p.y);
+  let paw = max(max(legOcc(p, u.legs[0], u.hips[0]), legOcc(p, u.legs[1], u.hips[1])), max(legOcc(p, u.legs[2], u.hips[2]), legOcc(p, u.legs[3], u.hips[3])));
+  let occ = max(paw, bodyOcc * 0.72);
+  return 1.0 - occ * 0.62;
+}
 @fragment fn fsBolt(v: BO) -> @location(0) vec4f {
   let ff = u.bp.w; let a = u32(floor(ff)) % 32u; let bb = (a + 1u) % 32u; let k = fract(ff);
   let gph = ff / 32.0 * 6.2831853; let lw = smoothstep(0.60, 0.88, v.uv.y); let sw = smoothstep(0.40, 0.60, v.uv.x);
@@ -461,86 +705,30 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
   let s = mix(cell(a, uvs), cell(bb, uvs), k);
   if (s.a < 0.03) { discard; }
-  var c = s.rgb;
-  c = mix(c, vec3f(dot(c, vec3f(0.3, 0.59, 0.11))), 0.12) * 1.08;
-  let toE = normalize(vec2f(u.cam.x - u.bolt.x, u.cam.z - u.bolt.z));
-  let right = vec2f(-toE.y, toE.x);
-  let sun = normalize(u.sun.xyz);
-  let sunRight = dot(normalize(sun.xz), right);
-  let across = select(v.uv.x, 1.0 - v.uv.x, sunRight < 0.0);
-  let warm = smoothstep(0.12, 0.88, across);
-  c = mix(c * vec3f(0.84, 0.88, 0.98), c * vec3f(1.05, 0.97, 0.90), warm);
-  let belly = smoothstep(0.62, 0.06, v.uv.y);
-  c = mix(c, c * vec3f(0.74, 0.82, 0.94), belly * 0.62);
-  let top = smoothstep(0.42, 0.94, v.uv.y);
-  let fringe = 1.0 - smoothstep(0.18, 0.55, s.a);
-  c = c + vec3f(0.62, 0.30, 0.44) * (top * 0.14 + fringe * 0.20);
+  let alb = s.rgb;
   let edge = smoothstep(0.03, 0.22, s.a);
-  return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), edge);
-}
-@vertex fn vsContact(@builtin(vertex_index) vi: u32) -> CO {
-  var q = array<vec2f, 6>(vec2f(-1, -1), vec2f(1, -1), vec2f(1, 1), vec2f(-1, -1), vec2f(1, 1), vec2f(-1, 1));
-  let corner = vi % 6u;
-  let which = vi / 6u;
-  let c = q[corner];
-  let b = u.bolt;
-  let psi = b.w;
-  let fwd = vec2f(-sin(psi), -cos(psi));
-  let right = vec2f(fwd.y, -fwd.x);
-  let sun = normalize(u.sun.xyz);
-  let shadeOff = -sun.xz * (0.38 / max(sun.y, 0.18));
-  let shadeL = max(length(shadeOff), 1e-4);
-  let shadeD = shadeOff / shadeL;
-  let shadeR = vec2f(shadeD.y, -shadeD.x);
-  var w: vec3f;
-  var kind = 0.0;
-  if (which == 0u) {
-    // Body occlusion, on the snow under the chest.
-    w = vec3f(b.x + right.x * c.x * 0.16 + fwd.x * (0.22 + c.y * 0.20), b.y + 0.02, b.z + right.y * c.x * 0.16 + fwd.y * (0.22 + c.y * 0.20));
-  } else if (which == 1u) {
-    // Contact shadow along the dawn sun, not straight down.
-    w = vec3f(b.x + shadeOff.x + shadeR.x * c.x * 0.22 + shadeD.x * c.y * 0.34, b.y + 0.02, b.z + shadeOff.y + shadeR.y * c.x * 0.22 + shadeD.y * c.y * 0.34);
-    kind = 1.0;
-  } else if (which == 2u || which == 3u) {
-    let s = select(-1.0, 1.0, which == 3u);
-    w = vec3f(b.x + right.x * (c.x * 0.07 + s * 0.11) + fwd.x * c.y * 0.045, b.y + 0.02, b.z + right.y * (c.x * 0.07 + s * 0.11) + fwd.y * c.y * 0.045);
-    kind = 2.0;
-  } else {
-    let pr = u.prints[which - 4u];
-    let py = pr.w;
-    let pf = vec2f(-sin(py), -cos(py));
-    let prt = vec2f(pf.y, -pf.x);
-    w = vec3f(pr.x + prt.x * c.x * 0.055 + pf.x * c.y * 0.09, pr.y, pr.z + prt.y * c.x * 0.055 + pf.y * c.y * 0.09);
-    let rel = vec2f(pr.x - b.x, pr.z - b.z);
-    let behind = -dot(rel, fwd);
-    let fade = (1.0 - smoothstep(7.5, 10.0, behind)) * smoothstep(-0.04, 0.22, behind);
-    kind = select(-1.0, 3.0 + fade, pr.y > -10.0);
+  if (u.sun.w > 40.5 && u.sun.w < 41.5) {
+    let flat = present(alb);
+    return vec4f(flat.rgb, edge);
   }
-  var o: CO; o.p = u.vp * vec4f(w, 1.0); o.uv = c; o.k = kind; return o;
-}
-@fragment fn fsContact(v: CO) -> @location(0) vec4f {
-  if (v.k < 0.0) { discard; }
-  let r2 = dot(v.uv, v.uv);
-  if (r2 > 1.0) { discard; }
-  let r = sqrt(r2);
-  let soft = 1.0 - smoothstep(0.15, 1.0, r);
-  if (v.k < 0.5) {
-    return vec4f(0.16, 0.18, 0.26, soft * 0.46);
+  let toE = normalize(vec2f(u.cam.x - u.bolt.x, u.cam.z - u.bolt.z));
+  let right = vec3f(-toE.y, 0.0, toE.x);
+  let up = vec3f(0.0, 1.0, 0.0);
+  let face = vec3f(toE.x, 0.0, toE.y);
+  let n = normalize(mix(cardNormal(a, uvs, right, up, face), cardNormal(bb, uvs, right, up, face), k));
+  if (u.sun.w > 42.5 && u.sun.w < 43.5) {
+    return vec4f(n.y * 0.5 + 0.5, 0.0, 0.0, edge);
   }
-  if (v.k < 1.5) {
-    return vec4f(0.18, 0.20, 0.32, soft * 0.34);
-  }
-  if (v.k < 2.5) {
-    return vec4f(0.14, 0.16, 0.24, soft * 0.40);
-  }
-  // The still prefilter scores the snow. Prints stay out of that pass.
-  if (u.sun.w > 29.5 && u.sun.w < 37.5) { discard; }
-  let bowl = smoothstep(0.62, 0.0, r);
-  let rim = smoothstep(0.28, 0.58, r) * smoothstep(1.0, 0.70, r);
-  let fade = v.k - 3.0;
-  let col = mix(vec3f(0.16, 0.20, 0.28), vec3f(0.78, 0.82, 0.88), rim);
-  let a = (bowl * 0.62 + rim * 0.28) * fade;
-  return vec4f(col, a);
+  let view = normalize(u.cam.xyz - v.w);
+  let irr = boltIrr(n);
+  let basis = boltIrr(face);
+  var col = alb * irr / max(basis, vec3f(0.04)) * 0.94;
+  let ndv = clamp(dot(n, view), 0.0, 1.0);
+  let rim = pow(1.0 - ndv, 2.2);
+  let skyRim = vec3f(${LIGHT.sky.nebulaViolet[0]}, ${LIGHT.sky.nebulaViolet[1]}, ${LIGHT.sky.nebulaViolet[2]});
+  col = col + alb * skyRim * rim * 0.22;
+  let outc = present(col);
+  return vec4f(outc.rgb, edge);
 }
 struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fade: f32, @location(2) layer: f32, @location(3) seed: f32 };
 @vertex fn vsFlake(@builtin(vertex_index) vi: u32, @location(0) a: vec4f, @location(1) b: vec4f) -> FO {
@@ -600,6 +788,52 @@ function establishEye() {
   };
 }
 
+function buildBoltDistance(data, width, height) {
+  const fw = width / 8;
+  const fh = height / 4;
+  const out = new Uint8Array(width * height);
+  const INF = 1e6;
+  const NORM = 42;
+  for (let f = 0; f < 32; f++) {
+    const c = f % 8;
+    const r = (f / 8) | 0;
+    const x0 = c * fw;
+    const y0 = r * fh;
+    const dist = new Float32Array(fw * fh);
+    for (let y = 0; y < fh; y++) {
+      const row = (y0 + y) * width + x0;
+      for (let x = 0; x < fw; x++) dist[y * fw + x] = data[(row + x) * 4 + 3] < 16 ? 0 : INF;
+    }
+    for (let y = 0; y < fh; y++) {
+      for (let x = 0; x < fw; x++) {
+        let d = dist[y * fw + x];
+        if (x > 0) d = Math.min(d, dist[y * fw + x - 1] + 1);
+        if (y > 0) d = Math.min(d, dist[(y - 1) * fw + x] + 1);
+        if (x > 0 && y > 0) d = Math.min(d, dist[(y - 1) * fw + x - 1] + 1.414);
+        if (x + 1 < fw && y > 0) d = Math.min(d, dist[(y - 1) * fw + x + 1] + 1.414);
+        dist[y * fw + x] = d;
+      }
+    }
+    for (let y = fh - 1; y >= 0; y--) {
+      for (let x = fw - 1; x >= 0; x--) {
+        let d = dist[y * fw + x];
+        if (x + 1 < fw) d = Math.min(d, dist[y * fw + x + 1] + 1);
+        if (y + 1 < fh) d = Math.min(d, dist[(y + 1) * fw + x] + 1);
+        if (x + 1 < fw && y + 1 < fh) d = Math.min(d, dist[(y + 1) * fw + x + 1] + 1.414);
+        if (x > 0 && y + 1 < fh) d = Math.min(d, dist[(y + 1) * fw + x - 1] + 1.414);
+        dist[y * fw + x] = d;
+      }
+    }
+    for (let y = 0; y < fh; y++) {
+      for (let x = 0; x < fw; x++) {
+        const d = dist[y * fw + x];
+        out[(y0 + y) * width + (x0 + x)] = Math.round((d >= INF * 0.5 ? 0 : Math.min(1, d / NORM)) * 255);
+      }
+    }
+  }
+  return out;
+}
+
 async function main() {
   if (qs.get('candidate') !== CANDIDATE) {
     if (hud) hud.textContent = 'HOLD — isolated candidate. ?candidate=' + CANDIDATE;
@@ -618,7 +852,10 @@ async function main() {
     window.__glacierReady = false;
     return;
   }
-  const dev = await ad.requestDevice({ requiredFeatures: ['texture-compression-astc'] });
+  const want = ['texture-compression-astc'];
+  const useR16 = ad.features.has('texture-formats-tier1');
+  if (useR16) want.push('texture-formats-tier1');
+  const dev = await ad.requestDevice({ requiredFeatures: want });
   window.__glacierGpu = {
     features: [...dev.features],
     maxTextureDimension2D: ad.limits.maxTextureDimension2D,
@@ -639,6 +876,21 @@ async function main() {
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
   });
   dev.queue.copyExternalImageToTexture({ source: bmp }, { texture: atlas }, [bmp.width, bmp.height]);
+  const atlasCanvas = new OffscreenCanvas(bmp.width, bmp.height);
+  const atlasCtx = atlasCanvas.getContext('2d', { willReadFrequently: true });
+  atlasCtx.drawImage(bmp, 0, 0);
+  const atlasRGBA = atlasCtx.getImageData(0, 0, bmp.width, bmp.height).data;
+  const distBytes = buildBoltDistance(atlasRGBA, bmp.width, bmp.height);
+  const distTex = dev.createTexture({
+    size: [bmp.width, bmp.height], format: 'r8unorm',
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  });
+  dev.queue.writeTexture({ texture: distTex }, distBytes, { bytesPerRow: bmp.width }, [bmp.width, bmp.height]);
+  const trailTex = dev.createTexture({
+    size: [TRAIL_RES, TRAIL_RES], format: useR16 ? 'r16unorm' : 'rg8unorm',
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  });
+  let trailUploaded = false;
   function srgbToLin(u) {
     const x = u / 255;
     return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
@@ -852,6 +1104,8 @@ async function main() {
     { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
+    { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'float' } },
   ] });
   const snowEntries = (snow) => [
     { binding: 0, resource: { buffer: ub } },
@@ -863,6 +1117,8 @@ async function main() {
     { binding: 6, resource: fallTex.createView({ dimension: '2d-array' }) },
     { binding: 7, resource: archTex.createView({ dimension: '2d-array' }) },
     { binding: 8, resource: seracTex.createView({ dimension: '2d-array' }) },
+    { binding: 9, resource: distTex.createView() },
+    { binding: 10, resource: trailTex.createView() },
   ];
   const bg = dev.createBindGroup({ layout: bgl, entries: snowEntries(snowTex) });
   const bgAstc = snowAstc ? dev.createBindGroup({ layout: bgl, entries: snowEntries(snowAstc) }) : null;
@@ -913,15 +1169,6 @@ async function main() {
   const pSky = pipe('vsSky', 'fsSky', false, false, 'always');
   const pBolt = pipe('vsBolt', 'fsBolt', false, true, 'less');
   const pPlanet = pipe('vs', 'fsPlanet', false, true, 'less');
-  const pContact = dev.createRenderPipeline({
-    layout,
-    vertex: { module: mod, entryPoint: 'vsContact', buffers: [] },
-    fragment: { module: mod, entryPoint: 'fsContact', targets: [{ format: fmt, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } }] },
-    primitive: { topology: 'triangle-list', cullMode: 'none' },
-    multisample: { count: SAMPLES },
-    // The decal sits on the snow. A negative bias keeps it from losing the depth test.
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less', depthBias: -8, depthBiasSlopeScale: -4, depthBiasClamp: 0 },
-  });
   const flakeStep = { arrayStride: 32, stepMode: 'instance', attributes: [
     { shaderLocation: 0, offset: 0, format: 'float32x4' },
     { shaderLocation: 1, offset: 16, format: 'float32x4' },
@@ -949,6 +1196,51 @@ async function main() {
   const worldVerts = world.verts.length / 8;
 
   let snowDiag = 0;
+  let skipBolt = false;
+  let skipFx = false;
+  let materialShot = false;
+  function packTrailRect(r) {
+    const rowBytes = (r.w * 2 + 255) & ~255;
+    const bytes = new Uint8Array(rowBytes * r.h);
+    if (useR16) {
+      const view = new Uint16Array(bytes.buffer);
+      const stride = rowBytes / 2;
+      for (let y = 0; y < r.h; y++) {
+        view.set(trail.subarray((r.y + y) * TRAIL_RES + r.x, (r.y + y) * TRAIL_RES + r.x + r.w), y * stride);
+      }
+    } else {
+      for (let y = 0; y < r.h; y++) {
+        const src = (r.y + y) * TRAIL_RES + r.x;
+        const dst = y * rowBytes;
+        for (let x = 0; x < r.w; x++) {
+          const v = trail[src + x];
+          bytes[dst + x * 2] = v >> 8;
+          bytes[dst + x * 2 + 1] = v & 255;
+        }
+      }
+    }
+    return { bytes, rowBytes };
+  }
+  function flushTrail() {
+    if (!trailUploaded) {
+      const packed = packTrailRect({ x: 0, y: 0, w: TRAIL_RES, h: TRAIL_RES });
+      dev.queue.writeTexture({ texture: trailTex }, packed.bytes, { bytesPerRow: packed.rowBytes }, [TRAIL_RES, TRAIL_RES]);
+      trailUploaded = true;
+      trailPending.length = 0;
+      return;
+    }
+    const rects = trailPending.splice(0, trailPending.length);
+    for (const r of rects) {
+      if (r.w < 1 || r.h < 1 || r.x < 0 || r.y < 0 || r.x + r.w > TRAIL_RES || r.y + r.h > TRAIL_RES) continue;
+      const packed = packTrailRect(r);
+      dev.queue.writeTexture(
+        { texture: trailTex, origin: [r.x, r.y] },
+        packed.bytes,
+        { bytesPerRow: packed.rowBytes, rowsPerImage: r.h },
+        [r.w, r.h],
+      );
+    }
+  }
   function fillU(t) {
     const bp = [live.x, pawGround(), live.z];
     let { eye, tgt } = followEye(bp, live.cam, world.heightAt, 0);
@@ -981,19 +1273,36 @@ async function main() {
     U.set([0.70, 0.78, 0.88, 0], 44);
     U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
-    U[53] = 0;
+    U[53] = materialShot ? 1 : 0;
     U[54] = gateMode;
     U[55] = gateBreak;
     U[58] = skySwim;
     U[59] = skyYaw;
     U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 60);
-    for (let i = 0; i < PRINT_N; i++) {
-      const p = prints[i];
-      U[64 + i * 4] = p.x;
-      U[65 + i * 4] = p.y;
-      U[66 + i * 4] = p.z;
-      U[67 + i * 4] = p.yaw;
+    const pose = poseLegs();
+    for (let i = 0; i < 4; i++) {
+      const leg = pose.legs[i];
+      U[64 + i * 4] = leg.x;
+      U[65 + i * 4] = leg.y;
+      U[66 + i * 4] = leg.z;
+      U[67 + i * 4] = leg.plant;
+      U[80 + i * 4] = leg.hx;
+      U[81 + i * 4] = leg.hy;
+      U[82 + i * 4] = leg.hz;
+      U[83 + i * 4] = leg.rad;
     }
+    U[96] = pose.body.x;
+    U[97] = pose.body.y;
+    U[98] = pose.body.z;
+    U[99] = 0;
+    U[100] = pose.body.rx;
+    U[101] = pose.body.ry;
+    U[102] = pose.body.rz;
+    U[103] = 1;
+    U[104] = TRAIL_SPAN;
+    U[105] = TRAIL_HOLD;
+    U[106] = TRAIL_FADE;
+    U[107] = useR16 ? 0 : 1;
   }
 
   function beginPass(enc, clear) {
@@ -1004,6 +1313,7 @@ async function main() {
   }
 
   function renderFixed(t) {
+    flushTrail();
     fillU(t);
     dev.queue.writeBuffer(ub, 0, U);
     if (!gatePose) {
@@ -1034,13 +1344,14 @@ async function main() {
     pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
     pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
     if (!gatePose) {
-      pass.setPipeline(pContact); pass.draw(96);
-      if (!(snowDiag > 29.5 && snowDiag < 37.5)) {
+      if (!skipFx && !(snowDiag > 29.5 && snowDiag < 37.5)) {
         pass.setPipeline(pFlake);
         pass.setVertexBuffer(0, flakeBuf);
         pass.draw(6, FLAKE_N);
       }
-      pass.setPipeline(pBolt); pass.draw(6);
+      if (!skipBolt) {
+        pass.setPipeline(pBolt); pass.draw(6);
+      }
     }
     pass.end();
     enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
@@ -1602,6 +1913,7 @@ async function main() {
   };
   window.__glacierGate = async (shot) => {
     gatePose = { eye: shot.eye, tgt: shot.tgt };
+    materialShot = true;
     gateBreak = shot.breakId || 0;
     gateMode = 0;
     const colour = await readFrame();
@@ -1611,6 +1923,7 @@ async function main() {
     const albedo = await readFrame();
     gateMode = 0;
     gatePose = null;
+    materialShot = false;
     const pix = projectPixel(shot.at);
     if (!pix) return { ok: false, reason: 'behind camera', gpuErr: colour.gpuErr };
     const rad = shot.rad || 12;
@@ -1648,6 +1961,218 @@ async function main() {
       samples.push([colour.src[i], colour.src[i + 1], colour.src[i + 2], x, y, mat]);
     }
     return { ok: true, samples, gpuErr: colour.gpuErr };
+  };
+  function linY(r, g, b) {
+    const L = (u) => { const x = u / 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; };
+    return 0.2126 * L(r) + 0.7152 * L(g) + 0.0722 * L(b);
+  }
+  function srgbToLinByte(c) {
+    const x = c / 255;
+    return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+  }
+  function present22(lin) {
+    const x = Math.min(1, Math.max(0, lin));
+    return Math.round((x ** (1 / 2.2)) * 255);
+  }
+  function atlasAt(frame, uvx, uvy) {
+    const fw = 224;
+    const fh = 652;
+    const col = frame % 8;
+    const row = (frame / 8) | 0;
+    const x = Math.min(fw - 1, Math.max(0, Math.floor(uvx * fw)));
+    const y = Math.min(fh - 1, Math.max(0, Math.floor(uvy * fh)));
+    const i = ((row * fh + y) * bmp.width + (col * fw + x)) * 4;
+    return [atlasRGBA[i], atlasRGBA[i + 1], atlasRGBA[i + 2], atlasRGBA[i + 3]];
+  }
+  function cardWorld(cx, cy) {
+    const b = [U[36], U[37], U[38]];
+    let tx = U[32] - b[0];
+    let tz = U[34] - b[2];
+    const tl = Math.hypot(tx, tz) || 1;
+    tx /= tl; tz /= tl;
+    const rt = [-tz, 0, tx];
+    const h = 1.15;
+    const foot = 6 / 652;
+    const lx0 = cx * (1.15 * 224 / 652);
+    const ly0 = (cy - foot) * h - 0.095 - U[56];
+    const roll = U[40];
+    const cr = Math.cos(roll);
+    const sr = -Math.sin(roll);
+    const rx = lx0 * cr - ly0 * sr;
+    const ry = lx0 * sr + ly0 * cr;
+    return [b[0] + rt[0] * rx - tx * cy * 0.045, b[1] + ry, b[2] + rt[2] * rx - tz * cy * 0.045];
+  }
+  function pixAt(src, x, y) {
+    const ix = Math.max(0, Math.min(W - 1, Math.round(x)));
+    const iy = Math.max(0, Math.min(H - 1, Math.round(y)));
+    const i = iy * bpr + ix * 4;
+    return [src[i], src[i + 1], src[i + 2]];
+  }
+  function uniformAtlas(frame, ux, uy) {
+    let min = 255; let max = 0;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const p = atlasAt(frame, ux + dx / 224, uy + dy / 652);
+      if (p[3] < 220) return false;
+      const y = p[0] * 0.3 + p[1] * 0.59 + p[2] * 0.11;
+      if (y < min) min = y;
+      if (y > max) max = y;
+    }
+    return max - min < 8;
+  }
+  function medianRgb(src, x, y) {
+    const ch = [[], [], []];
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const p = pixAt(src, x + dx, y + dy);
+      ch[0].push(p[0]); ch[1].push(p[1]); ch[2].push(p[2]);
+    }
+    const mid = (a) => a.slice().sort((p, q) => p - q)[a.length >> 1];
+    return [mid(ch[0]), mid(ch[1]), mid(ch[2])];
+  }
+  function medianAtlas(frame, ux, uy) {
+    const ch = [[], [], []];
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const p = atlasAt(frame, ux + dx / 224, uy + dy / 652);
+      if (p[3] < 200) continue;
+      ch[0].push(p[0]); ch[1].push(p[1]); ch[2].push(p[2]);
+    }
+    const mid = (a) => a.slice().sort((p, q) => p - q)[a.length >> 1];
+    return [mid(ch[0]), mid(ch[1]), mid(ch[2])];
+  }
+  function snowPixel(wx, wz) {
+    const g = world.heightAt(wx, wz);
+    const origin = projectPixel([wx, g + 0.01, wz]);
+    if (!origin) return null;
+    let best = null;
+    for (let dy = -12; dy <= 12; dy += 3) {
+      for (let dx = -12; dx <= 12; dx += 3) {
+        const x = origin[0] + dx;
+        const y = origin[1] + dy;
+        if (x < 4 || y < 4 || x >= W - 4 || y >= H - 4) continue;
+        const hit = groundAt(x, y);
+        const d = Math.hypot(hit.p[0] - wx, hit.p[2] - wz);
+        if (!best || d < best.d) best = { x, y, d };
+      }
+    }
+    return best;
+  }
+  window.__glacierD5 = async () => {
+    const saved = { phase: live.phase, v: live.v };
+    const samples = [];
+    const bands = [];
+    skipFx = true;
+    for (const frame of [0, 8, 16, 24]) {
+      live.phase = frame / 32;
+      live.v = 7;
+      snowDiag = 41;
+      const albedo = await readFrame();
+      snowDiag = 0;
+      const lit = await readFrame();
+      fillU(simClock);
+      const pushBand = (name, y0, y1, src) => {
+        const px = [];
+        for (let uy = y0; uy <= y1; uy += 0.04) {
+          for (let ux = 0.38; ux <= 0.62; ux += 0.06) {
+            const plate = atlasAt(frame, ux, uy);
+            if (plate[3] < 180) continue;
+            if (name === 'albedo' && !uniformAtlas(frame, ux, uy)) continue;
+            const p = projectPixel(cardWorld(0.5 - ux, 1 - uy));
+            if (!p) continue;
+            const got = pixAt(src, p[0], p[1]);
+            px.push(got);
+            if (name === 'albedo') {
+              const pred = [0, 1, 2].map((c) => present22(srgbToLinByte(plate[c])));
+              samples.push({ frame, uv: [+ux.toFixed(3), +uy.toFixed(3)], got, pred });
+            }
+          }
+        }
+        return px;
+      };
+      pushBand('albedo', 0.30, 0.75, albedo.src);
+      bands.push({ frame, back: pushBand('back', 0.28, 0.48, lit.src), belly: pushBand('belly', 0.58, 0.78, lit.src) });
+    }
+    const paws = [];
+    skipBolt = true;
+    snowDiag = 0;
+    for (let i = 0; i < 32; i++) {
+      live.phase = (i + 0.5) / 32;
+      const frame = await readFrame();
+      const foot = poseNow.legs[0];
+      const yaw = live.psi;
+      const rx = -Math.cos(yaw);
+      const rz = Math.sin(yaw);
+      const pix = snowPixel(foot.x, foot.z);
+      const ref = snowPixel(foot.x + rx * 0.45, foot.z + rz * 0.45);
+      let ratio = null;
+      if (pix && ref && pix.d < 0.08 && ref.d < 0.08) {
+        const yP = linY(...pixAt(frame.src, pix.x, pix.y));
+        const yR = linY(...pixAt(frame.src, ref.x, ref.y));
+        ratio = yR > 1e-5 ? yP / yR : null;
+      }
+      paws.push({
+        i, frac: +foot.frac.toFixed(4), plant: +foot.plant.toFixed(3),
+        ratio: ratio === null ? null : +ratio.toFixed(3),
+      });
+    }
+    skipBolt = false;
+    skipFx = false;
+    live.phase = saved.phase;
+    live.v = saved.v;
+    const dt = 1 / 60;
+    const stepTo = (t) => {
+      while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    };
+    stepTo(8);
+    const behindOf = (s) => {
+      const fx = -Math.sin(live.psi);
+      const fz = -Math.cos(live.psi);
+      return -((s.x - live.x) * fx + (s.z - live.z) * fz);
+    };
+    let stamp = null;
+    for (let guard = 0; guard < 240 && !stamp; guard++) {
+      stepTo(sim + dt);
+      stamp = stamps.find((s) => { const b = behindOf(s); return b >= 7.5 && b <= 9.2; }) || null;
+    }
+    const seen = [];
+    if (stamp) {
+      skipFx = true;
+      for (let n = 0; n < 3; n++) {
+        const behind = behindOf(stamp);
+        const height = trailHeightAt(stamp.x, stamp.z);
+        const gy = world.heightAt(stamp.x, stamp.z);
+        gatePose = { eye: [stamp.x, gy + 1.35, stamp.z + 0.15], tgt: [stamp.x, gy, stamp.z] };
+        const frame = await readFrame();
+        gatePose = null;
+        const pix = projectPixel([stamp.x, gy + 0.02, stamp.z]);
+        const rx = -Math.cos(stamp.yaw);
+        const rz = Math.sin(stamp.yaw);
+        const nx = stamp.x + rx * 0.28;
+        const nz = stamp.z + rz * 0.28;
+        const side = projectPixel([nx, world.heightAt(nx, nz) + 0.02, nz]);
+        let yC = null; let yS = null;
+        if (pix && side) {
+          yC = linY(...pixAt(frame.src, pix[0], pix[1]));
+          yS = linY(...pixAt(frame.src, side[0], side[1]));
+        }
+        seen.push({
+          behind: +behind.toFixed(3), height: +height.toFixed(3),
+          yCenter: yC === null ? null : +yC.toFixed(4),
+          ySide: yS === null ? null : +yS.toFixed(4),
+          darker: yC !== null && yS > 1e-5 ? yC / yS < 0.92 : false,
+        });
+        stepTo(sim + dt);
+      }
+      skipFx = false;
+      let guard = 0;
+      while (behindOf(stamp) < 10 && guard < 180) { stepTo(sim + dt); guard++; }
+    }
+    const at10 = stamp ? { behind: +behindOf(stamp).toFixed(3), height: +trailHeightAt(stamp.x, stamp.z).toFixed(3) } : null;
+    fillU(simClock);
+    return {
+      cardH: IDLE.cfg.cardH, draws: DRAWS.length, tris: world.budget.totalTris,
+      samples, bands, paws, seen, at10, stamps: stamps.length,
+      boltPx: projectPixel([live.x, pawGround(), live.z]),
+      useR16,
+    };
   };
   window.__glacierReady = true;
   if (hud) hud.textContent = 'glacier candidate — not live';
