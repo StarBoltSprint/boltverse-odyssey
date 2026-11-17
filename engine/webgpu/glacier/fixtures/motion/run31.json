@@ -1,0 +1,78 @@
+{
+  "mode": 30,
+  "pair": 0.03333333333333333,
+  "rows": [
+    {
+      "mode": 30,
+      "t": 5.1,
+      "z": -33.176796953844786,
+      "flicker": 4.994502721942691,
+      "flickerMotion": 3.5752953005310366,
+      "flickerMotionN": 101431,
+      "flickerN": 119400,
+      "draws": 11,
+      "tris": 194498,
+      "gpuErr": null
+    },
+    {
+      "mode": 30,
+      "t": 5.567,
+      "z": -36.42494436887883,
+      "flicker": 5.126536125396345,
+      "flickerMotion": 3.460302346924476,
+      "flickerMotionN": 105066,
+      "flickerN": 121917,
+      "draws": 11,
+      "tris": 194498,
+      "gpuErr": null
+    },
+    {
+      "mode": 30,
+      "t": 7.9,
+      "z": -52.65077243732946,
+      "flicker": 5.1036909571536,
+      "flickerMotion": 2.712723908261304,
+      "flickerMotionN": 93767,
+      "flickerN": 101760,
+      "draws": 11,
+      "tris": 194498,
+      "gpuErr": null
+    },
+    {
+      "mode": 30,
+      "t": 11.7,
+      "z": -79.0761252350604,
+      "flicker": 3.9746899669582367,
+      "flickerMotion": 3.03934109802081,
+      "flickerMotionN": 60102,
+      "flickerN": 71424,
+      "draws": 11,
+      "tris": 194498,
+      "gpuErr": null
+    },
+    {
+      "mode": 30,
+      "t": 24,
+      "z": -164.58813356055398,
+      "flicker": 4.678904047501991,
+      "flickerMotion": 3.7711946346557155,
+      "flickerMotionN": 44688,
+      "flickerN": 50525,
+      "draws": 11,
+      "tris": 194498,
+      "gpuErr": null
+    },
+    {
+      "mode": 30,
+      "t": 30,
+      "z": -206.29282466167948,
+      "flicker": 5.049625335570248,
+      "flickerMotion": 3.4722081833279144,
+      "flickerMotionN": 54353,
+      "flickerN": 90592,
+      "draws": 11,
+      "tris": 194498,
+      "gpuErr": null
+    }
+  ]
+}

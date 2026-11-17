@@ -1,6 +1,7 @@
 // Frozen rift. Noise-displaced sheets, arches, and peaks. No box primitives.
 import { createMesh } from '../engine/bricks/facet-mesh.js';
 import { MAT, GLACIER, planetCenter, PLANET, DRAWS, FLAKES } from './biome.js';
+import { LOD, crestSagitta } from './lod.js';
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
@@ -9,6 +10,14 @@ const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 function hash(x, y) {
   const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
   return s - Math.floor(s);
+}
+
+// Step size only. Math.sin does not match between this runtime and Chrome, so the
+// ground rows and the wall columns drifted by 184 triangles. An integer mix does.
+function stepHash(x, y) {
+  let n = (Math.floor(x * 4096) * 374761393 + Math.floor(y * 4096) * 668265263) | 0;
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
 }
 
 function noise2(x, z) {
@@ -175,7 +184,7 @@ function columns(z0, z1) {
   let guard = 0;
   while (zs[zs.length - 1] > z1 + 1e-3 && guard++ < 8000) {
     const z = zs[zs.length - 1];
-    const wobble = 0.72 + hash(z * 9.2, 4.4) * 0.5;
+    const wobble = 0.72 + stepHash(z * 9.2, 4.4) * 0.5;
     zs.push(Math.max(z1, z - stepZ(z) * wobble));
   }
   return zs;
@@ -561,9 +570,9 @@ function addFarFloor(mesh) {
   }
 }
 
-function addRange(mesh, x0, z0, x1, z1, height, halfW, fine) {
-  const segs = fine ? 28 : 16;
-  const sides = fine ? 11 : 6;
+function addRange(mesh, x0, z0, x1, z1, height, halfW, fine, density) {
+  const segs = density ? density.segs : (fine ? 28 : 16);
+  const sides = density ? density.sides : (fine ? 11 : 6);
   const dx = x1 - x0;
   const dz = z1 - z0;
   const len = Math.hypot(dx, dz) || 1;
@@ -829,7 +838,66 @@ function shadeNormalsFor(verts) {
     if (mat === 0 && !up(sy, sx, sz)) continue;
     out[i * 3] = sx; out[i * 3 + 1] = sy; out[i * 3 + 2] = sz;
   }
+  // Spire normal LOD. Shared vertices on one axis become one normal.
+  // The face normal stays on the geometry, so the texel gate is unchanged.
+  const spire = new Set([1, 2, 6, 7]);
+  const spireAcc = new Map();
+  for (let i = 0; i < nVerts; i++) {
+    const mat = Math.round(verts[i * 8 + 3]);
+    if (!spire.has(mat)) continue;
+    const x = out[i * 3], y = out[i * 3 + 1], z = out[i * 3 + 2];
+    const bin = 16;
+    const k = mat + ':' + axisOf(x, y, z)
+      + ':' + Math.round(verts[i * 8] / bin)
+      + ':' + Math.round(verts[i * 8 + 1] / bin)
+      + ':' + Math.round(verts[i * 8 + 2] / bin);
+    const a = spireAcc.get(k) || [0, 0, 0, 0];
+    a[0] += x; a[1] += y; a[2] += z; a[3] += 1;
+    spireAcc.set(k, a);
+  }
+  let bent = 0;
+  let spireN = 0;
+  for (let i = 0; i < nVerts; i++) {
+    const mat = Math.round(verts[i * 8 + 3]);
+    if (!spire.has(mat)) continue;
+    spireN++;
+    const x = out[i * 3], y = out[i * 3 + 1], z = out[i * 3 + 2];
+    const bin = 16;
+    const a = spireAcc.get(Math.round(verts[i * 8 + 3]) + ':' + axisOf(x, y, z)
+      + ':' + Math.round(verts[i * 8] / bin)
+      + ':' + Math.round(verts[i * 8 + 1] / bin)
+      + ':' + Math.round(verts[i * 8 + 2] / bin));
+    if (!a || a[3] < 2) continue;
+    const l = Math.hypot(a[0], a[1], a[2]) || 1;
+    const sx = a[0] / l, sy = a[1] / l, sz = a[2] / l;
+    const agree = sx * x + sy * y + sz * z;
+    if (agree < 0.15) continue;
+    if (agree < 0.995) bent++;
+    out[i * 3] = sx; out[i * 3 + 1] = sy; out[i * 3 + 2] = sz;
+  }
+  shadeNormalsFor.spireBent = spireN ? bent / spireN : 0;
   return out;
+}
+
+function packShade(nrm, errors) {
+  const n = nrm.length / 3;
+  const out = new Float32Array(n * 4);
+  for (let i = 0; i < n; i++) {
+    out[i * 4] = nrm[i * 3];
+    out[i * 4 + 1] = nrm[i * 3 + 1];
+    out[i * 4 + 2] = nrm[i * 3 + 2];
+    out[i * 4 + 3] = errors && errors[i] ? errors[i] : 0;
+  }
+  return out;
+}
+
+function insetMesh(verts, dist) {
+  stampFaceNormals(verts);
+  for (let i = 0; i < verts.length; i += 8) {
+    verts[i] -= verts[i + 4] * dist;
+    verts[i + 1] -= verts[i + 5] * dist;
+    verts[i + 2] -= verts[i + 6] * dist;
+  }
 }
 
 // One geometric normal on all three corners. Smoothing across a shared
@@ -873,7 +941,7 @@ export function buildWorld() {
     const z = groundZs[groundZs.length - 1];
     const d = Math.max(0, -z);
     const base = d < 55 ? 0.2 : d < 450 ? 0.55 + (d - 55) * 0.0018 : d < 900 ? 8 : d < 2200 ? 32 : 56;
-    const step = base * (0.4 + hash(z * 17.3, 2.8) * 1.35);
+    const step = base * (0.4 + stepHash(z * 17.3, 2.8) * 1.35);
     groundZs.push(Math.max(GLACIER.z1, z - step));
   }
   let prev = null;
@@ -895,7 +963,9 @@ export function buildWorld() {
     }
     prev = row;
   }
+  const trisGround = mesh.count / 3;
   const columnsN = addWall(mesh, -1) + addWall(mesh, 1);
+  const trisWall = mesh.count / 3;
 
   const arches = [-24, -70, -480, -1200, -2200];
   arches.forEach((z, i) => addArch(mesh, z, i));
@@ -906,9 +976,11 @@ export function buildWorld() {
   addHorizonRidge(mesh, -520, 180, 240);
   addHorizonRidge(mesh, -980, 240, 360);
   addHorizonRidge(mesh, -1700, 320, 480);
+  const trisBeforePlateau = mesh.count / 3;
   addPlateau(mesh, -1);
   addPlateau(mesh, 1);
   addFarFloor(mesh);
+  const trisAfterFloor = mesh.count / 3;
 
   const ranges = [
     { side: -1, z: -1050, reach: 420, len: 480, h: 70, w: 120 },
@@ -922,10 +994,25 @@ export function buildWorld() {
     { side: 1, z: -8600, reach: 1800, len: 2600, h: 520, w: 560 },
     { side: 0, z: -9800, reach: 0, len: 4200, h: 340, w: 700 },
   ];
+  const worldErr = [];
+  const lodMesh = createMesh();
+  const lodErr = [];
   for (const r of ranges) {
     const x = pathX(r.z) + r.side * r.reach;
     const fine = r.z > -2800;
-    addRange(mesh, x - r.len * 0.5, r.z + r.len * 0.15, x + r.len * 0.5, r.z - r.len * 0.2, r.h, r.w, fine);
+    const x0 = x - r.len * 0.5;
+    const z0 = r.z + r.len * 0.15;
+    const x1 = x + r.len * 0.5;
+    const z1 = r.z - r.len * 0.2;
+    addRange(mesh, x0, z0, x1, z1, r.h, r.w, fine);
+    // The fine surface stays the terminal LOD (error 0, coverage 1).
+    // A second copy with partial coverage opened holes onto the sky.
+    if (!fine) continue;
+    const sag = crestSagitta(r.h, LOD.coarseSegs);
+    const lodFrom = lodMesh.count;
+    addRange(lodMesh, x0, z0, x1, z1, r.h, r.w, false, { segs: LOD.coarseSegs, sides: LOD.coarseSides });
+    while (lodErr.length < lodFrom) lodErr.push(0);
+    for (let i = lodFrom; i < lodMesh.count; i++) lodErr.push(sag);
   }
 
   const icicles = [];
@@ -1000,7 +1087,11 @@ export function buildWorld() {
   stampFaceNormals(icicleProto);
   stampFaceNormals(driftProto);
   stampFaceNormals(chunkProto);
-  const shadeNormals = shadeNormalsFor(verts);
+  const shadeNormals = packShade(shadeNormalsFor(verts), worldErr);
+  const lodVerts = lodMesh.finish();
+  while (lodErr.length < lodVerts.length / 8) lodErr.push(0);
+  insetMesh(lodVerts, LOD.inset);
+  const lodShade = packShade(shadeNormalsFor(lodVerts), lodErr);
   const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   const worldTris = verts.length / 24;
   const planetTris = planet.length / 24;
@@ -1010,16 +1101,25 @@ export function buildWorld() {
     icicleTris: instTris(icicleProto, icicles),
     driftTris: instTris(driftProto, drifts),
     chunkTris: instTris(chunkProto, chunks),
+    lodTris: lodVerts.length / 24,
     draws: DRAWS.length,
     drawNames: DRAWS,
+    spireBent: shadeNormalsFor.spireBent || 0,
+    trisGround,
+    trisWall,
+    trisBeforePlateau,
+    trisAfterFloor,
+    columns: columnsN,
+    hashProbe: hash(1.25, 4.5),
   };
   budget.particleTris = (FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow + FLAKES.puff) * 2;
   budget.particles = FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow;
   budget.puffs = FLAKES.puff;
-  budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris + budget.particleTris;
+  budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris + budget.lodTris + budget.particleTris;
   return {
     verts,
     shadeNormals,
+    lod: { verts: lodVerts, shade: lodShade },
     planet,
     instances: {
       icicle: { proto: icicleProto, data: new Float32Array(icicles), count: icicles.length / 8 },

@@ -1,0 +1,54 @@
+{
+  "note": "Far-detail is high-pass radius 2 on crop x180-540 y240-520. Flicker is the spire 100-300 m index. Horizon bar is run 31 plus 0.5. None of these configs clears all three gates.",
+  "bars": {
+    "detail": { "5.1": 7.344, "11.7": 5.972, "30": 7.893 },
+    "flickerHalf": { "5.1": 2.631, "11.7": 2.183, "30": 2.781 },
+    "horizon": { "5.1": 5.97, "11.7": 3.64, "30": 3.925 }
+  },
+  "configs": [
+    {
+      "id": "hw-aniso",
+      "what": "Hardware trilinear + anisotropy 16, no mip cap, no TAA. Single frame.",
+      "rows": [
+        { "t": 5.1, "detail": 7.049, "flicker": 6.685, "horizon": 6.217 },
+        { "t": 11.7, "detail": 5.96, "flicker": 5.244, "horizon": 4.14 },
+        { "t": 30, "detail": 7.651, "flicker": 6.703, "horizon": 4.0 }
+      ]
+    },
+    {
+      "id": "hw-aniso-cap75-toksvig",
+      "what": "Same, with a 7.5 mip cap and Toksvig from normal-pixel variance. Single frame.",
+      "rows": [
+        { "t": 5.1, "detail": 7.786, "flicker": 8.252, "horizon": 7.503 },
+        { "t": 11.7, "detail": 6.469, "flicker": 6.703, "horizon": 4.345 },
+        { "t": 30, "detail": 8.968, "flicker": 9.402, "horizon": 5.838 }
+      ]
+    },
+    {
+      "id": "taa-jitter-sharpen",
+      "what": "Hardware LOD, Halton jitter, TAA weight 0.9, YCoCg clamp, sharpen 0.22. Resolved.",
+      "rows": [
+        { "t": 5.1, "detail": 7.917, "flicker": 10.305, "horizon": 5.987 }
+      ]
+    },
+    {
+      "id": "taa-nojitter-nosharp",
+      "what": "Hardware LOD, TAA weight 0.9, YCoCg clamp, no jitter, no sharpen. Resolved.",
+      "rows": [
+        { "t": 5.1, "detail": 6.53, "flicker": 5.204, "horizon": 6.209 }
+      ]
+    },
+    {
+      "id": "taa-halton-sharpen015",
+      "what": "Hardware LOD, Halton jitter, TAA weight 0.9, YCoCg clamp, sharpen 0.15, 3 warmup frames. Resolved frames the player sees. Detail and flicker both miss. Horizon misses only at 24 s.",
+      "rows": [
+        { "t": 5.1, "detail": 6.175, "flicker": 5.638, "horizon": 4.928 },
+        { "t": 5.567, "detail": 5.874, "flicker": 4.854, "horizon": 3.919 },
+        { "t": 7.9, "detail": 5.575, "flicker": 4.405, "horizon": 4.621 },
+        { "t": 11.7, "detail": 4.907, "flicker": 4.183, "horizon": 2.493 },
+        { "t": 24, "detail": 5.404, "flicker": 4.966, "horizon": 5.0 },
+        { "t": 30, "detail": 6.652, "flicker": 6.771, "horizon": 2.209 }
+      ]
+    }
+  ]
+}

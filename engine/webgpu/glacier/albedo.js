@@ -52,6 +52,12 @@ fn variantW(id: vec2f) -> vec4f {
     select(0.05, 0.85, lead == 3)
   );
 }
+// One scale for both axes, so the footprint stays anisotropic.
+fn lodScale(du: vec2f, dv: vec2f, lo: f32, hi: f32) -> f32 {
+  let rho = max(max(length(du), length(dv)), 1e-8) * 1024.0;
+  let lod = log2(max(rho, 1.0));
+  return exp2(clamp(lod, lo, hi) - lod);
+}
 fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f, gain: vec4f) -> vec3f {
   let s0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb * gain.x;
   let s1 = textureSampleGrad(arr, samp, uv, 1, du, dv).rgb * gain.y;
@@ -106,9 +112,38 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let uv0 = m0 * ${repeats};
   let uv1 = m1 * ${repeats};
   let uv2 = m2 * ${repeats};
-  let c0 = blend4(arr, uv0, du0, dv0, variantW(i), gain);
-  let c1 = blend4(arr, uv1, du1, dv1, variantW(id1), gain);
-  let c2 = blend4(arr, uv2, du2, dv2, variantW(id2), gain);
+  // Ice only. Snow bias stays 2 and never takes this branch.
+  // Bias 4 is undone. Hardware trilinear and anisotropy 16 pick the mip.
+  // 7.5 is only a ceiling so the chain cannot go flat. Both axes scale together.
+  let farIce = bias >= 3.5 && length(px) + length(py) > 0.05;
+  if (farIce) {
+    // spin.y above 20 is the run 31 gradient (30) or that gradient with a
+    // mip bias (28 = bias -2). The live path undoes bias 4 and caps at 7.5.
+    if (u.spin.y > 20.0) {
+      let s = exp2(u.spin.y - 30.0);
+      let h0 = blend4(arr, uv0, du0 * s, dv0 * s, variantW(i), gain);
+      let h1 = blend4(arr, uv1, du1 * s, dv1 * s, variantW(id1), gain);
+      let h2 = blend4(arr, uv2, du2 * s, dv2 * s, variantW(id2), gain);
+      return h0 * w.x + h1 * w.y + h2 * w.z;
+    }
+    let cap = select(7.5, u.spin.y, u.spin.y > 0.5 && u.spin.y < 20.0);
+    // planet.w below 20 is a minimum lod. The canyon rim was sampling a
+    // sharper mip than run 31 and the 1 px step grew. Flats stay under the cap.
+    let floorLod = select(0.0, u.planet.w, u.planet.w > 0.5 && u.planet.w < 20.0);
+    let k0 = lodScale(du0 / 4.0, dv0 / 4.0, floorLod, cap);
+    let k1 = lodScale(du1 / 4.0, dv1 / 4.0, floorLod, cap);
+    let k2 = lodScale(du2 / 4.0, dv2 / 4.0, floorLod, cap);
+    let h0 = blend4(arr, uv0, du0 / 4.0 * k0, dv0 / 4.0 * k0, variantW(i), gain);
+    let h1 = blend4(arr, uv1, du1 / 4.0 * k1, dv1 / 4.0 * k1, variantW(id1), gain);
+    let h2 = blend4(arr, uv2, du2 / 4.0 * k2, dv2 / 4.0 * k2, variantW(id2), gain);
+    return h0 * w.x + h1 * w.y + h2 * w.z;
+  }
+  let s0 = lodScale(du0, dv0, 0.0, 12.0);
+  let s1 = lodScale(du1, dv1, 0.0, 12.0);
+  let s2 = lodScale(du2, dv2, 0.0, 12.0);
+  let c0 = blend4(arr, uv0, du0 * s0, dv0 * s0, variantW(i), gain);
+  let c1 = blend4(arr, uv1, du1 * s1, dv1 * s1, variantW(id1), gain);
+  let c2 = blend4(arr, uv2, du2 * s2, dv2 * s2, variantW(id2), gain);
   let hi = c0 * w.x + c1 * w.y + c2 * w.z;
   let lo = cellMean(arr, uv0, i, gain) * w.x + cellMean(arr, uv1, id1, gain) * w.y + cellMean(arr, uv2, id2, gain) * w.z;
   let restore = min(inverseSqrt(max(dot(w, w), 0.45)), 1.2);
@@ -231,7 +266,7 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     if (m < 1.5) {
-      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0, 2.0);
+      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0, 4.0);
       let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
       let lip = smoothstep(0.35, 0.75, nrm.y);
       return mix(fall, snow, lip * 0.85);

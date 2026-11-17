@@ -8,6 +8,8 @@ import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
 import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
+import { LOD } from './lod.js';
+import { glacierResidual } from './motion-flicker.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
@@ -25,6 +27,7 @@ canvas.height = H;
 let gatePose = null;
 let gateMode = 0;
 let gateBreak = 0;
+let hideFlakes = false;
 let skySwim = 0;
 let skyYaw = 0;
 let simClock = 0;
@@ -300,6 +303,7 @@ const WGSL = /* wgsl */`
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
   prints: array<vec4f, 12>,
+  prev: mat4x4f,
 };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var samp: sampler;
@@ -310,7 +314,11 @@ struct U {
 @group(0) @binding(6) var fallArr: texture_2d_array<f32>;
 @group(0) @binding(7) var archArr: texture_2d_array<f32>;
 @group(0) @binding(8) var seracArr: texture_2d_array<f32>;
-struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
+@group(0) @binding(9) var taaSamp: sampler;
+@group(0) @binding(10) var taaCur: texture_2d<f32>;
+@group(0) @binding(11) var taaHist: texture_2d<f32>;
+@group(0) @binding(12) var taaDepth: texture_depth_multisampled_2d;
+struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f, @location(5) err: f32 };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
 struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
@@ -323,13 +331,13 @@ ${IDLE.wgsl}
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
   var o: VO;
   o.p = u.vp * vec4f(a.xyz, 1.0);
-  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = b.xyz;
+  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = b.xyz; o.err = 0.0;
   return o;
 }
-@vertex fn vsWorld(@location(0) a: vec4f, @location(1) b: vec4f, @location(4) shade: vec3f) -> VO {
+@vertex fn vsWorld(@location(0) a: vec4f, @location(1) b: vec4f, @location(4) shade: vec4f) -> VO {
   var o: VO;
   o.p = u.vp * vec4f(a.xyz, 1.0);
-  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = shade;
+  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = shade.xyz; o.err = shade.w;
   return o;
 }
 @vertex fn vsInst(@location(0) a: vec4f, @location(1) b: vec4f, @location(2) i0: vec4f, @location(3) i1: vec4f) -> VO {
@@ -343,7 +351,7 @@ ${IDLE.wgsl}
   let nr = normalize(vec3f(c * nL.x + s * nL.z, nL.y, -s * nL.x + c * nL.z));
   var o: VO;
   o.p = u.vp * vec4f(pr, 1.0);
-  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w;
+  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w; o.err = 0.0;
   return o;
 }
 @vertex fn vsSky(@builtin(vertex_index) vi: u32) -> SO {
@@ -362,6 +370,7 @@ fn darken15(c: vec3f) -> vec3f {
   return c * (y2 / y);
 }
 @fragment fn fsSky(v: SO) -> @location(0) vec4f {
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) { return vec4f(0.0, 0.0, 0.0, 1.0); }
   let hw = u.ivp * vec4f(v.ndc, 1.0, 1.0);
   var sky = skyColour(normalize(hw.xyz / hw.w - u.cam.xyz));
   if (u.spin.z > 0.5) {
@@ -375,9 +384,28 @@ fn darken15(c: vec3f) -> vec3f {
   let gx = dpdx(v.w);
   let gy = dpdy(v.w);
   let nUv = normalize(v.n);
-  var n = normalize(v.lit);
+  let nLen = clamp(length(v.lit), 1e-3, 1.0);
+  let nFilt = normalize(v.lit);
   let m = v.mat;
   let dist = length(v.w - u.cam.xyz);
+  // Normal LOD. A close facet (small metres per pixel) keeps its face.
+  // At 100 m a pixel is ~0.09 m, so the prefiltered normal takes over.
+  // Not a multiply of distance onto colour.
+  let mpp = max(max(length(gx), length(gy)), 1e-5);
+  let spire = (m > 0.5 && m < 2.5) || (m > 5.5 && m < 7.5);
+  let lodN = smoothstep(0.02, 0.08, mpp);
+  let nShade = select(nUv, nFilt, spire && lodN > 0.5);
+  var n = nShade;
+  // Change of the shade normal across this pixel. That is the mip variance
+  // of the normal field. Taken here so the derivative is in uniform flow.
+  let nDx = dpdx(n);
+  let nDy = dpdy(n);
+  // G-buffer for the no-fog / flicker gate. Not the picture.
+  if (u.misc.z > 2.5 && u.misc.z < 3.5) {
+    let ndlG = clamp(dot(normalize(v.lit), sunN()), 0.0, 1.0);
+    return vec4f((m + 0.5) / 8.0, clamp(dist / 4000.0, 0.0, 1.0), 0.08 + 0.92 * ndlG, 1.0);
+  }
+  // Far spires read a coarser mip of the same chain. Close faces stay native.
   let alb = albedoOf(m, v.w, nUv, gx, gy);
   let iso = u.sun.w;
   if (iso > 29.5 && iso < 35.5) { return present(alb); }
@@ -400,6 +428,19 @@ fn darken15(c: vec3f) -> vec3f {
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
   var col = litIce(alb, nLit, view);
+  // Toksvig. The filtered-normal length and the normal's change across the
+  // pixel both widen the sheen. The sheen stays the albedo colour. Metal is 0.
+  if (spire) {
+    let pwr = 36.0;
+    let sLen = nLen / max(nLen + pwr * (1.0 - nLen), 1e-4);
+    let sigma = dot(nDx, nDx) + dot(nDy, nDy);
+    let sMip = 1.0 / (1.0 + sigma * pwr);
+    let ft = min(sLen, sMip);
+    let ndh = clamp(dot(nLit, normalize(sunN() + view)), 0.0, 1.0);
+    let spec = pow(ndh, pwr);
+    let specF = pow(ndh, max(pwr * ft, 1.0));
+    col = col + alb * (specF - spec) * smoothstep(0.50, 0.08, ndv) * 0.045;
+  }
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
@@ -408,23 +449,24 @@ fn darken15(c: vec3f) -> vec3f {
     col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
     col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7;
   }
-  // Run 11 dither. Walls, arches, falls, and distant rock fade in by noise.
-  // Snow is not discarded, so the horizon ridge stays solid. No fog.
-  if ((m > 0.5 && m < 2.5) || (m > 5.5 && m < 7.5)) {
-    let cover = smoothstep(460.0, 160.0, dist);
-    let n = fract(sin(dot(v.p.xy, vec2f(12.9898, 78.233))) * 43758.5453);
-    if (cover < n) { discard; }
-  }
-  let aerial = smoothstep(280.0, 6200.0, dist);
-  let horizon = skyColour(normalize(v.w - u.cam.xyz));
-  col = mix(col, horizon, aerial * 0.62);
   if (m > 6.5 && m < 7.5) {
     let rim = pow(1.0 - ndv, 1.6) * smoothstep(0.0, 0.35, ndl);
     let head = max(col.r, max(col.g, col.b));
-    col = col + vec3f(0.9, 0.36, 0.22) * rim * clamp(1.15 - head, 0.0, 1.0) * (1.0 - aerial * 0.25);
+    col = col + vec3f(0.9, 0.36, 0.22) * rim * clamp(1.15 - head, 0.0, 1.0);
   }
   if (u.misc.w > 0.5 && abs(m - (u.misc.w - 1.0)) < 0.25) { col = darken15(col); }
-  return present(col);
+  // Screen-error LOD. Derivatives were taken above, in uniform flow.
+  // Zero is the terminal surface. Positive is the coarse sibling.
+  // Negative is the fine sibling of that coarse surface.
+  // Coverage crossfades across one pixel of error. Alpha-to-coverage,
+  // not a screen-space hash. Snow stays at zero, so the ridge stays solid.
+  let geom = v.err;
+  let errPx = abs(geom) / max(max(length(gx), length(gy)), 1e-4);
+  let fade = smoothstep(${LOD.errLo.toFixed(1)}, ${LOD.errHi.toFixed(1)}, errPx);
+  var cover = 1.0;
+  if (geom > 0.0) { cover = 1.0 - fade; }
+  else if (geom < 0.0) { cover = fade; }
+  return vec4f(pow(clamp(col, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), cover);
 }
 @fragment fn fsPlanet(v: VO) -> @location(0) vec4f {
   let n = normalize(v.n);
@@ -590,6 +632,93 @@ struct FO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) fa
   let a = soft * v.fade * gain;
   return vec4f(col, a);
 }
+fn rgbYCoCg(c: vec3f) -> vec3f {
+  return vec3f(dot(c, vec3f(0.25, 0.5, 0.25)), dot(c, vec3f(0.5, 0.0, -0.5)), dot(c, vec3f(-0.25, 0.5, -0.25)));
+}
+fn ycocgRgb(c: vec3f) -> vec3f {
+  return vec3f(c.x + c.y - c.z, c.x + c.z, c.x - c.y - c.z);
+}
+struct TaaOut { @location(0) color: vec4f, @location(1) hist: vec4f };
+@fragment fn fsTaa(@builtin(position) pos: vec4f) -> TaaOut {
+  let pix = vec2i(pos.xy);
+  let dim = vec2f(720.0, 1280.0);
+  let uv = pos.xy / dim;
+  let curS = textureLoad(taaCur, pix, 0).rgb;
+  let cur = pow(max(curS, vec3f(0.0)), vec3f(2.2));
+  var out = cur;
+  let enabled = u.grid.x > -1.0;
+  let inBolt = enabled && pos.x >= u.grid.x && pos.x <= u.grid.z && pos.y >= u.grid.y && pos.y <= u.grid.w;
+  let d = textureLoad(taaDepth, pix, 0);
+  var pc = vec4f(0.0);
+  var puv = vec2f(0.0);
+  if (enabled && !inBolt && d < 1.0) {
+    let ndc = vec4f(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, d, 1.0);
+    let hw = u.ivp * ndc;
+    let world = hw.xyz / max(hw.w, 1e-6);
+    pc = u.prev * vec4f(world, 1.0);
+    puv = vec2f(pc.x / pc.w * 0.5 + 0.5, 0.5 - pc.y / pc.w * 0.5);
+    if (pc.w > 0.0 && puv.x > 0.0 && puv.x < 1.0 && puv.y > 0.0 && puv.y < 1.0) {
+      let h = textureSampleLevel(taaHist, taaSamp, puv, 0.0).rgb;
+      var m1 = vec3f(0.0);
+      var m2 = vec3f(0.0);
+      for (var oy = -1; oy <= 1; oy++) {
+        for (var ox = -1; ox <= 1; ox++) {
+          let q = clamp(pix + vec2i(ox, oy), vec2i(0), vec2i(719, 1279));
+          let n = rgbYCoCg(pow(max(textureLoad(taaCur, q, 0).rgb, vec3f(0.0)), vec3f(2.2)));
+          m1 += n;
+          m2 += n * n;
+        }
+      }
+      m1 *= (1.0 / 9.0);
+      m2 *= (1.0 / 9.0);
+      let sigma = sqrt(max(m2 - m1 * m1, vec3f(0.0)));
+      let gamma = u.bp.y;
+      let yv = rgbYCoCg(h);
+      let hc = select(yv, clamp(yv, m1 - sigma * gamma, m1 + sigma * gamma), gamma > 0.0);
+      let hist = ycocgRgb(hc);
+      let vel = length((puv - uv) * dim);
+      let lyC = dot(cur, vec3f(0.2126, 0.7152, 0.0722));
+      let lyH = dot(hist, vec3f(0.2126, 0.7152, 0.0722));
+      let wC = 1.0 / (1.0 + lyC);
+      let wH = 1.0 / (1.0 + lyH);
+      // History is 0.9 while the pixel is still. Karis lets a darker
+      // current sample in a little more than a brighter one. A fast
+      // pixel drops the history instead of smearing it.
+      let velT = smoothstep(1.5, 6.0, vel);
+      let base = select(0.1, u.misc.w, u.misc.w > 0.02 && u.misc.w <= 0.5);
+      let currentW = mix(base, 1.0, velT) * clamp(wC / max(wH, 1e-3), 0.5, 1.5);
+      out = mix(hist, cur, clamp(currentW, 0.0, 1.0));
+    }
+  }
+  let e = clamp(pix + vec2i(1, 0), vec2i(0), vec2i(719, 1279));
+  let wpx = clamp(pix + vec2i(-1, 0), vec2i(0), vec2i(719, 1279));
+  let n = clamp(pix + vec2i(0, 1), vec2i(0), vec2i(719, 1279));
+  let s = clamp(pix + vec2i(0, -1), vec2i(0), vec2i(719, 1279));
+  let cE = pow(max(textureLoad(taaCur, e, 0).rgb, vec3f(0.0)), vec3f(2.2));
+  let cW = pow(max(textureLoad(taaCur, wpx, 0).rgb, vec3f(0.0)), vec3f(2.2));
+  let cN = pow(max(textureLoad(taaCur, n, 0).rgb, vec3f(0.0)), vec3f(2.2));
+  let cS = pow(max(textureLoad(taaCur, s, 0).rgb, vec3f(0.0)), vec3f(2.2));
+  let blur = (cE + cW + cN + cS) * 0.25;
+  // A negative sharpen keeps the same gain on grain and drops it on a
+  // high-contrast edge, so a 1 px canyon step does not grow a halo.
+  var gain = abs(u.misc.y);
+  if (u.misc.y < 0.0) {
+    let ly = vec3f(0.2126, 0.7152, 0.0722);
+    let lo = min(min(dot(cE, ly), dot(cW, ly)), min(dot(cN, ly), dot(cS, ly)));
+    let hi = max(max(dot(cE, ly), dot(cW, ly)), max(dot(cN, ly), dot(cS, ly)));
+    gain = gain * (1.0 - smoothstep(0.06, 0.16, hi - lo));
+  }
+  out = out + (out - blur) * gain;
+  out = max(out, vec3f(0.0));
+  let srgb = pow(out, vec3f(1.0 / 2.2));
+  var o: TaaOut;
+  o.color = vec4f(srgb, 1.0);
+  o.hist = vec4f(out, 1.0);
+  return o;
+}
+@fragment fn fsDepth(@builtin(position) pos: vec4f) -> @location(0) f32 {
+  return textureLoad(taaDepth, vec2i(pos.xy), 0);
+}
 `;
 
 function establishEye() {
@@ -692,6 +821,8 @@ async function main() {
       w = nw;
       h = nh;
     }
+    const need = Math.floor(Math.log2(Math.max(bitmap.width, bitmap.height))) + 1;
+    if (out.length < need) throw new Error('mip chain short ' + out.length + ' < ' + need);
     return out;
   }
   async function loadAlbedo(file) {
@@ -824,6 +955,9 @@ async function main() {
   };
   const vb = mk(world.verts, GPUBufferUsage.VERTEX);
   const shadeVb = mk(world.shadeNormals, GPUBufferUsage.VERTEX);
+  const lodVb = mk(world.lod.verts, GPUBufferUsage.VERTEX);
+  const lodShade = mk(world.lod.shade, GPUBufferUsage.VERTEX);
+  const lodVerts = world.lod.verts.length / 8;
   const mkInst = (slot) => ({
     proto: mk(slot.proto, GPUBufferUsage.VERTEX),
     inst: mk(slot.data, GPUBufferUsage.VERTEX),
@@ -836,10 +970,9 @@ async function main() {
   const planetBuf = mk(world.planet, GPUBufferUsage.VERTEX);
   const planetVerts = world.planet.length / 8;
   const ub = dev.createBuffer({ size: 512, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-  const aniso = Math.min(16, ad.limits.maxSamplerAnisotropy || 1);
-  window.__glacierAniso = aniso;
+  window.__glacierAniso = 16;
   const samp = dev.createSampler({
-    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: aniso,
+    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', maxAnisotropy: 16,
     addressModeU: 'repeat', addressModeV: 'repeat',
   });
   const bgl = dev.createBindGroupLayout({ entries: [
@@ -885,14 +1018,14 @@ async function main() {
     fragment: { module: mod, entryPoint: fs, targets: [{ format: fmt, blend: alpha ? { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } : undefined }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES, alphaToCoverageEnabled: vs === 'vsBolt' },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: depthWrite, depthCompare },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: depthWrite, depthCompare },
   });
   const instBuf = { arrayStride: 32, stepMode: 'instance', attributes: [
     { shaderLocation: 2, offset: 0, format: 'float32x4' },
     { shaderLocation: 3, offset: 16, format: 'float32x4' },
   ] };
-  const shadeBuf = { arrayStride: 12, attributes: [
-    { shaderLocation: 4, offset: 0, format: 'float32x3' },
+  const shadeBuf = { arrayStride: 16, attributes: [
+    { shaderLocation: 4, offset: 0, format: 'float32x4' },
   ] };
   const pWorld = dev.createRenderPipeline({
     layout,
@@ -900,7 +1033,15 @@ async function main() {
     fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less' },
+  });
+  const pLod = dev.createRenderPipeline({
+    layout,
+    vertex: { module: mod, entryPoint: 'vsWorld', buffers: [vbuf, shadeBuf] },
+    fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    multisample: { count: SAMPLES, alphaToCoverageEnabled: true },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less', depthBias: 2, depthBiasSlopeScale: 2, depthBiasClamp: 0 },
   });
   const pInst = dev.createRenderPipeline({
     layout,
@@ -908,7 +1049,7 @@ async function main() {
     fragment: { module: mod, entryPoint: 'fs', targets: [{ format: fmt }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: true, depthCompare: 'less' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'less' },
   });
   const pSky = pipe('vsSky', 'fsSky', false, false, 'always');
   const pBolt = pipe('vsBolt', 'fsBolt', false, true, 'less');
@@ -920,7 +1061,7 @@ async function main() {
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
     // The decal sits on the snow. A negative bias keeps it from losing the depth test.
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less', depthBias: -8, depthBiasSlopeScale: -4, depthBiasClamp: 0 },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'less', depthBias: -8, depthBiasSlopeScale: -4, depthBiasClamp: 0 },
   });
   const flakeStep = { arrayStride: 32, stepMode: 'instance', attributes: [
     { shaderLocation: 0, offset: 0, format: 'float32x4' },
@@ -932,7 +1073,7 @@ async function main() {
     fragment: { module: mod, entryPoint: 'fsFlake', targets: [{ format: fmt, blend: { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     multisample: { count: SAMPLES },
-    depthStencil: { format: 'depth24plus', depthWriteEnabled: false, depthCompare: 'less' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'less' },
   });
   const flakeGpu = new Float32Array(FLAKE_N * 8);
   const flakeBuf = dev.createBuffer({
@@ -940,12 +1081,94 @@ async function main() {
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
   });
   const msaa = dev.createTexture({ size: [W, H], format: fmt, sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT });
-  const depth = dev.createTexture({ size: [W, H], format: 'depth24plus', sampleCount: SAMPLES, usage: GPUTextureUsage.RENDER_ATTACHMENT });
+  const depth = dev.createTexture({
+    size: [W, H], format: 'depth32float', sampleCount: SAMPLES,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+  });
+  const raw = dev.createTexture({
+    size: [W, H], format: fmt,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+  });
   const off = dev.createTexture({ size: [W, H], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC });
+  const histTex = [0, 1].map(() => dev.createTexture({
+    size: [W, H], format: 'rgba16float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+  }));
+  let histI = 0;
+  let taaReady = false;
+  const taaSamp = dev.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge' });
+  const taaBgl = dev.createBindGroupLayout({ entries: [
+    { binding: 0, visibility: GPUShaderStage.FRAGMENT, buffer: {} },
+    { binding: 9, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+    { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    { binding: 11, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'float' } },
+    { binding: 12, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: 'depth', multisampled: true } },
+  ] });
+  const taaLayout = dev.createPipelineLayout({ bindGroupLayouts: [taaBgl] });
+  const pTaa = dev.createRenderPipeline({
+    layout: taaLayout,
+    vertex: { module: mod, entryPoint: 'vsSky' },
+    fragment: {
+      module: mod, entryPoint: 'fsTaa',
+      targets: [
+        { format: fmt },
+        { format: 'rgba16float' },
+      ],
+    },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+  });
+  const taaGroup = (hist) => dev.createBindGroup({
+    layout: taaBgl,
+    entries: [
+      { binding: 0, resource: { buffer: ub } },
+      { binding: 9, resource: taaSamp },
+      { binding: 10, resource: raw.createView() },
+      { binding: 11, resource: hist.createView() },
+      { binding: 12, resource: depth.createView() },
+    ],
+  });
+  const pDepth = dev.createRenderPipeline({
+    layout: taaLayout,
+    vertex: { module: mod, entryPoint: 'vsSky' },
+    fragment: { module: mod, entryPoint: 'fsDepth', targets: [{ format: 'r32float' }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+  });
+  const depthOut = dev.createTexture({
+    size: [W, H], format: 'r32float',
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
   const bpr = Math.ceil(W * 4 / 256) * 256;
   const rb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const depthRb = dev.createBuffer({ size: bpr * H, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
   const U = new Float32Array(128);
+  const prevVp = new Float32Array(16);
+  const currentVp = new Float32Array(16);
+  let taaN = 1;
   let lastEye = [0, 0, 0];
+  function halton(index, base) {
+    let f = 1, r = 0, i = index;
+    while (i > 0) { f /= base; r += f * (i % base); i = Math.floor(i / base); }
+    return r;
+  }
+  function projectFrom(vp, p) {
+    const x = vp[0] * p[0] + vp[4] * p[1] + vp[8] * p[2] + vp[12];
+    const y = vp[1] * p[0] + vp[5] * p[1] + vp[9] * p[2] + vp[13];
+    const w = vp[3] * p[0] + vp[7] * p[1] + vp[11] * p[2] + vp[15];
+    if (!(w > 0)) return null;
+    return [(x / w * 0.5 + 0.5) * W, (1 - (y / w * 0.5 + 0.5)) * H];
+  }
+  function boltRectOf(vp) {
+    const y0 = pawGround();
+    const feet = projectFrom(vp, [live.x, y0, live.z]);
+    const head = projectFrom(vp, [live.x, y0 + 1.45, live.z]);
+    if (!feet || !head) return null;
+    return {
+      x0: feet[0] - 150,
+      y0: Math.min(feet[1], head[1]) - 40,
+      x1: feet[0] + 150,
+      y1: Math.max(feet[1], head[1]) + 40,
+    };
+  }
   const worldVerts = world.verts.length / 8;
 
   let snowDiag = 0;
@@ -963,30 +1186,56 @@ async function main() {
     }
     const view = lookAt(eye, tgt, [0, 1, 0]);
     const proj = persp(FOV_Y, W / H, 0.08, 14000);
+    const histMode = Number(window.__glacierMipBias) > 20 || window.__glacierSingle === true;
+    const useJitter = !histMode;
+    const useTaa = useJitter && gateMode === 0;
+    if (useJitter) {
+      const j = (taaN % 16) + 1;
+      const jx = (halton(j, 2) - 0.5) * (2 / W);
+      const jy = (halton(j, 3) - 0.5) * (2 / H);
+      proj[8] = -jx;
+      proj[9] = -jy;
+    }
     const vp = mul(proj, view);
+    currentVp.set(vp);
     U.set(vp, 0);
     U.set(invertMat4(vp), 16);
+    U.set(prevVp, 112);
     lastEye = [eye[0], eye[1], eye[2]];
     U.set([eye[0], eye[1], eye[2], t], 32);
     U.set([bp[0], bp[1], bp[2], live.psi], 36);
     const ff = (live.phase % 1) * 32;
     const roll = Math.max(-8 * Math.PI / 180, Math.min(8 * Math.PI / 180, live.w * 0.15));
     U.set([roll, live.w, live.v, ff], 40);
+    U[41] = window.__glacierClamp == null ? 1.1 : Number(window.__glacierClamp);
     const f0 = Math.floor(ff) % 32;
     const f1 = (f0 + 1) % 32;
     const pawFrac = Math.min(PAW_FRAC[f0], PAW_FRAC[f1]);
     const pawLy = (pawFrac - 6 / 652) * 1.15 - 0.095;
     // Four centimetres into the snow. The card size stays 1.15 m.
     U[56] = pawLy + 0.04;
-    U.set([0.70, 0.78, 0.88, 0], 44);
+    if (useTaa && taaReady) {
+      const feet = [live.x, bp[1], live.z];
+      const pf = projectFrom(vp, feet);
+      const ph = projectFrom(vp, [feet[0], feet[1] + 1.45, feet[2]]);
+      if (pf && ph) {
+        const cx = pf[0];
+        U.set([cx - 150, Math.min(pf[1], ph[1]) - 40, cx + 150, Math.max(pf[1], ph[1]) + 40], 44);
+      } else {
+        U.set([-2, -2, -2, -2], 44);
+      }
+    } else {
+      U.set([-2, -2, -2, -2], 44);
+    }
     U.set([sunDir[0], sunDir[1], sunDir[2], snowDiag], 48);
     IDLE.writeUniforms(U, IDLE.sample());
-    U[53] = 0;
+    U[53] = window.__glacierSharp == null ? 0.15 : Number(window.__glacierSharp);
     U[54] = gateMode;
-    U[55] = gateBreak;
+    U[55] = window.__glacierFeedback == null ? gateBreak : Number(window.__glacierFeedback);
+    U[57] = Number(window.__glacierMipBias) || Number(window.__glacierMipCap) || 0;
     U[58] = skySwim;
     U[59] = skyYaw;
-    U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 60);
+    U.set([pCenter[0], pCenter[1], pCenter[2], window.__glacierMipFloor == null ? PLANET.radius : Number(window.__glacierMipFloor)], 60);
     for (let i = 0; i < PRINT_N; i++) {
       const p = prints[i];
       U[64 + i * 4] = p.x;
@@ -996,11 +1245,36 @@ async function main() {
     }
   }
 
-  function beginPass(enc, clear) {
+  function beginPass(enc, clear, target, keepDepth) {
     return enc.beginRenderPass({
-      colorAttachments: [{ view: msaa.createView(), resolveTarget: off.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear }],
-      depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
+      colorAttachments: [{ view: msaa.createView(), resolveTarget: target.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear }],
+      depthStencilAttachment: {
+        view: depth.createView(),
+        depthLoadOp: 'clear', depthClearValue: 1,
+        depthStoreOp: keepDepth ? 'store' : 'discard',
+      },
     });
+  }
+  function drawWorld(pass) {
+    pass.setBindGroup(0, drawBg);
+    pass.setPipeline(pSky); pass.draw(3);
+    pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
+    pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.setVertexBuffer(1, shadeVb); pass.draw(worldVerts);
+    pass.setPipeline(pLod); pass.setVertexBuffer(0, lodVb); pass.setVertexBuffer(1, lodShade); pass.draw(lodVerts);
+    pass.setPipeline(pInst);
+    pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
+    pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
+    pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
+  }
+  function drawActors(pass) {
+    if (gatePose) return;
+    pass.setPipeline(pContact); pass.draw(96);
+    if (!(snowDiag > 29.5 && snowDiag < 37.5) && !hideFlakes) {
+      pass.setPipeline(pFlake);
+      pass.setVertexBuffer(0, flakeBuf);
+      pass.draw(6, FLAKE_N);
+    }
+    pass.setPipeline(pBolt); pass.draw(6);
   }
 
   function renderFixed(t) {
@@ -1024,25 +1298,41 @@ async function main() {
       dev.queue.writeBuffer(flakeBuf, 0, flakeGpu);
     }
     const enc = dev.createCommandEncoder();
-    const pass = beginPass(enc, [0, 0, 0, 1]);
-    pass.setBindGroup(0, drawBg);
-    pass.setPipeline(pSky); pass.draw(3);
-    pass.setPipeline(pPlanet); pass.setVertexBuffer(0, planetBuf); pass.draw(planetVerts);
-    pass.setPipeline(pWorld); pass.setVertexBuffer(0, vb); pass.setVertexBuffer(1, shadeVb); pass.draw(worldVerts);
-    pass.setPipeline(pInst);
-    pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
-    pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
-    pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
-    if (!gatePose) {
-      pass.setPipeline(pContact); pass.draw(96);
-      if (!(snowDiag > 29.5 && snowDiag < 37.5)) {
-        pass.setPipeline(pFlake);
-        pass.setVertexBuffer(0, flakeBuf);
-        pass.draw(6, FLAKE_N);
-      }
-      pass.setPipeline(pBolt); pass.draw(6);
-    }
+    const histMode = Number(window.__glacierMipBias) > 20 || window.__glacierSingle === true;
+    const useTaa = !histMode && gateMode === 0;
+    const sceneTarget = useTaa ? raw : off;
+    const pass = beginPass(enc, [0, 0, 0, 1], sceneTarget, useTaa || window.__glacierDepth === true);
+    drawWorld(pass);
+    drawActors(pass);
     pass.end();
+    if (useTaa) {
+      const histIn = histTex[histI];
+      const histOut = histTex[1 - histI];
+      const passT = enc.beginRenderPass({
+        colorAttachments: [
+          { view: off.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] },
+          { view: histOut.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] },
+        ],
+      });
+      passT.setPipeline(pTaa);
+      passT.setBindGroup(0, taaGroup(histIn));
+      passT.draw(3);
+      passT.end();
+      histI = 1 - histI;
+      prevVp.set(currentVp);
+      taaReady = true;
+      taaN += 1;
+    }
+    if (window.__glacierDepth === true) {
+      const pd = enc.beginRenderPass({
+        colorAttachments: [{ view: depthOut.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [1, 0, 0, 1] }],
+      });
+      pd.setPipeline(pDepth);
+      pd.setBindGroup(0, taaGroup(histTex[histI]));
+      pd.draw(3);
+      pd.end();
+      enc.copyTextureToBuffer({ texture: depthOut }, { buffer: depthRb, bytesPerRow: bpr }, [W, H]);
+    }
     enc.copyTextureToBuffer({ texture: off }, { buffer: rb, bytesPerRow: bpr }, [W, H]);
     if (!CAP) {
       const show = enc2(dev, ctx, off, W, H);
@@ -1067,6 +1357,11 @@ async function main() {
     drawNames: DRAWS,
     extentZ: world.extentZ,
     columns: world.columns,
+    trisGround: world.budget.trisGround,
+    trisWall: world.budget.trisWall,
+    trisBeforePlateau: world.budget.trisBeforePlateau,
+    trisAfterFloor: world.budget.trisAfterFloor,
+    hashProbe: world.budget.hashProbe,
     bolt: 'bolt439_atlas',
     cardH: IDLE.cfg.cardH,
     cardW: IDLE.cfg.cardW,
@@ -1200,11 +1495,25 @@ async function main() {
     renderFixed(simClock);
     const gpuErr = await dev.popErrorScope();
     const src = await readback();
-    return { src, gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null };
+    let depth = null;
+    if (window.__glacierDepth === true) {
+      await depthRb.mapAsync(GPUMapMode.READ);
+      depth = new Float32Array(depthRb.getMappedRange().slice(0));
+      depthRb.unmap();
+    }
+    return {
+      src,
+      depth,
+      vp: Float32Array.from(currentVp),
+      ivp: Float32Array.from(U.subarray(16, 32)),
+      cam: [U[32], U[33], U[34]],
+      bolt: boltRectOf(currentVp),
+      gpuErr: gpuErr ? String(gpuErr.message || gpuErr) : null,
+    };
   }
   function renderBoltMask() {
     const enc = dev.createCommandEncoder();
-    const pass = beginPass(enc, [0, 0, 0, 1]);
+    const pass = beginPass(enc, [0, 0, 0, 1], off, false);
     pass.setBindGroup(0, drawBg);
     pass.setPipeline(pBolt);
     pass.draw(6);
@@ -1566,6 +1875,221 @@ async function main() {
     drawBg = bg;
     return { t, z: live.z, rows };
   };
+  function lumaAt(src, i) {
+    return src[i] * 0.2126 + src[i + 1] * 0.7152 + src[i + 2] * 0.0722;
+  }
+  function matOf(src, i) {
+    if (src[i] === 0 && src[i + 1] === 0 && src[i + 2] === 0) return -1;
+    return Math.round(src[i] / 255 * 8 - 0.5);
+  }
+  function ndlOf(src, i) {
+    return Math.max(0, (src[i + 2] / 255 - 0.08) / 0.92);
+  }
+  function distOf(src, i) {
+    return src[i + 1] / 255 * 4000;
+  }
+  const SPIRE = new Set([1, 2, 6, 7]);
+  async function renderSettled() {
+    dev.pushErrorScope('validation');
+    renderFixed(simClock);
+    const err = await dev.popErrorScope();
+    if (err) throw new Error(String(err.message || err));
+    await dev.queue.onSubmittedWorkDone();
+  }
+  // Sixteen real 1/30 s steps, each one a resolved frame, so history has
+  // seen the phone rate before the sample. The sim between samples is not rendered.
+  async function converge(t) {
+    const phone = 1 / 30;
+    const fine = 1 / 60;
+    const begin = Math.max(0, t - 16 * phone);
+    while (sim < begin - 1e-5) { const h = Math.min(fine, begin - sim); stepLive(h); sim += h; }
+    if (window.__glacierSingle === true) {
+      while (sim < t - 1e-5) { const h = Math.min(fine, t - sim); stepLive(h); sim += h; }
+      return;
+    }
+    for (let i = 0; i < 16; i++) {
+      const target = Math.min(t, begin + (i + 1) * phone);
+      while (sim < target - 1e-5) { const h = Math.min(fine, target - sim); stepLive(h); sim += h; }
+      await renderSettled();
+    }
+  }
+  window.__glacierD8 = async (t) => {
+    const step = 1 / 60;
+    await converge(t);
+    hideFlakes = true;
+    window.__glacierDepth = true;
+    const shot = async () => {
+      const n = taaN;
+      gateMode = window.__glacierAlbedo ? 2 : 0;
+      const colour = await readFrame();
+      taaN = n;
+      gateMode = 3;
+      const geo = await readFrame();
+      taaN = n + 1;
+      return { colour, geo };
+    };
+    const A = await shot();
+    const colourA = A.colour;
+    const geoA = A.geo;
+    const pairDt = window.__glacierPair == null ? 1 / 30 : Number(window.__glacierPair);
+    const t2 = t + pairDt;
+    while (sim < t2 - 1e-5) { const h = Math.min(step, t2 - sim); stepLive(h); sim += h; }
+    const B = await shot();
+    const colourB = B.colour;
+    const geoB = B.geo;
+    const t3 = t2 + 1 / 60;
+    while (sim < t3 - 1e-5) { const h = Math.min(step, t3 - sim); stepLive(h); sim += h; }
+    const C = await shot();
+    const colourC = C.colour;
+    const geoC = C.geo;
+    gateMode = 0;
+    hideFlakes = false;
+    let flicker = 0;
+    let flickerN = 0;
+    let flicker60 = 0;
+    let flicker60N = 0;
+    const flickerSamp = [];
+    let mid = 0;
+    let midN = 0;
+    let inn = 0;
+    let innN = 0;
+    let nearSum = 0;
+    let nearN = 0;
+    let farSum = 0;
+    let farN = 0;
+    const farPx = [];
+    const nearPx = [];
+    const skyPx = [];
+    const spire = [];
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = y * bpr + x * 4;
+        const ma = matOf(geoA.src, i);
+        const mb = matOf(geoB.src, i);
+        const da = distOf(geoA.src, i);
+        const db = distOf(geoB.src, i);
+        if (SPIRE.has(ma) && SPIRE.has(mb) && da >= 100 && da <= 300 && db >= 100 && db <= 300) {
+          const dlt = Math.abs(lumaAt(colourA.src, i) - lumaAt(colourB.src, i));
+          flicker += dlt;
+          flickerN++;
+          const mc = matOf(geoC.src, i);
+          const dc = distOf(geoC.src, i);
+          if (SPIRE.has(mc) && dc >= 100 && dc <= 300) {
+            flicker60 += Math.abs(lumaAt(colourB.src, i) - lumaAt(colourC.src, i));
+            flicker60N++;
+          }
+          if ((flickerN & 15) === 0) flickerSamp.push(dlt);
+          if (da >= 220 && da <= 320 && db >= 220 && db <= 320) { mid += dlt; midN++; }
+          let edge = x < 2 || y < 2 || x >= W - 2 || y >= H - 2;
+          if (!edge) {
+            for (let oy = -1; oy <= 1 && !edge; oy++) {
+              for (let ox = -1; ox <= 1; ox++) {
+                const j = (y + oy) * bpr + (x + ox) * 4;
+                if (!SPIRE.has(matOf(geoA.src, j)) || !SPIRE.has(matOf(geoB.src, j))) { edge = true; break; }
+              }
+            }
+          }
+          if (!edge) { inn += dlt; innN++; }
+          spire.push((y << 16) | x);
+        }
+        if (!SPIRE.has(ma)) {
+          if (ma < 0 && y < H * 0.42 && skyPx.length < 800 && (x + y) % 37 === 0) skyPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]);
+          continue;
+        }
+        const lum = lumaAt(colourA.src, i);
+        let solid = x > 1 && y > 1 && x < W - 2 && y < H - 2;
+        if (solid && (da < 140 || da > 400)) {
+          for (let oy = -1; oy <= 1 && solid; oy++) {
+            for (let ox = -1; ox <= 1; ox++) {
+              const j = (y + oy) * bpr + (x + ox) * 4;
+              if (!SPIRE.has(matOf(geoA.src, j)) || Math.abs(distOf(geoA.src, j) - da) > 50) { solid = false; break; }
+            }
+          }
+        } else solid = false;
+        if (!solid) continue;
+        const ndl = ndlOf(geoA.src, i);
+        if (ndl < 0.2 || ndl > 0.55) continue;
+        if (ma !== 6) continue;
+        if (da >= 90 && da <= 160) { nearSum += lum; nearN++; if (nearPx.length < 800) nearPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]); }
+        if (da >= 450 && da <= 1400) { farSum += lum; farN++; if (farPx.length < 800) farPx.push([colourA.src[i], colourA.src[i + 1], colourA.src[i + 2]]); }
+      }
+    }
+    const delta = new Float32Array(W * H);
+    delta.fill(NaN);
+    for (let k = 0; k < spire.length; k++) {
+      const packed = spire[k];
+      const x = packed & 65535;
+      const y = packed >>> 16;
+      const i = y * bpr + x * 4;
+      delta[y * W + x] = lumaAt(colourB.src, i) - lumaAt(colourA.src, i);
+    }
+    let shimmer = 0;
+    let shimmerN = 0;
+    for (let k = 0; k < spire.length; k++) {
+      const packed = spire[k];
+      const x = packed & 65535;
+      const y = packed >>> 16;
+      const dl = delta[y * W + x];
+      const l = delta[y * W + Math.max(0, x - 4)];
+      const r = delta[y * W + Math.min(W - 1, x + 4)];
+      if (Number.isNaN(l) || Number.isNaN(r)) continue;
+      shimmer += Math.abs(dl - (l + r) * 0.5);
+      shimmerN++;
+    }
+    shimmer = shimmerN ? shimmer / shimmerN : null;
+    const rowStep = [];
+    for (let y = 420; y < 680 && y + 1 < H; y++) {
+      const diffs = [];
+      for (let x = 0; x < W; x++) {
+        if (x > 280 && x < 440) continue;
+        const i = y * bpr + x * 4;
+        const j = (y + 1) * bpr + x * 4;
+        diffs.push(Math.abs(lumaAt(colourA.src, i) - lumaAt(colourA.src, j)));
+      }
+      diffs.sort((p, q) => p - q);
+      rowStep.push(diffs[diffs.length >> 1] || 0);
+    }
+    rowStep.sort((p, q) => p - q);
+    const horizon = rowStep.length ? rowStep[rowStep.length - 1] : 0;
+    const motion = glacierResidual({
+      colour: colourA.src, geo: geoA.src, depth: colourA.depth, vp: colourA.vp, ivp: colourA.ivp, cam: colourA.cam, bolt: colourA.bolt,
+    }, {
+      colour: colourB.src, geo: geoB.src, depth: colourB.depth, vp: colourB.vp, ivp: colourB.ivp, cam: colourB.cam, bolt: colourB.bolt,
+    });
+    return {
+      t,
+      z: live.z,
+      flicker: flickerN ? flicker / flickerN : null,
+      flicker60: flicker60N ? flicker60 / flicker60N : null,
+      flickerMotion: motion.mean,
+      flickerMotionN: motion.n,
+      pair: '1/30',
+      pair60: '1/60',
+      flickerN,
+      flickerP50: (() => { flickerSamp.sort((a, b) => a - b); return flickerSamp.length ? flickerSamp[flickerSamp.length >> 1] : null; })(),
+      flickerP90: flickerSamp.length ? flickerSamp[Math.floor(flickerSamp.length * 0.9)] : null,
+      mid: midN ? mid / midN : null,
+      midN,
+      interior: innN ? inn / innN : null,
+      interiorN: innN,
+      shimmer,
+      nearLuma: nearN ? nearSum / nearN : null,
+      nearN,
+      farLuma: farN ? farSum / farN : null,
+      farN,
+      contrast: nearN && farN ? (nearSum / nearN) / (farSum / farN) : null,
+      horizon,
+      nearPx,
+      farPx,
+      skyPx,
+      gpuErr: colourA.gpuErr || colourB.gpuErr || geoA.gpuErr || geoB.gpuErr,
+      tris: world.budget.totalTris,
+      worldTris: world.budget.worldTris,
+      lodTris: world.budget.lodTris || 0,
+      particleTris: world.budget.particleTris,
+      draws: DRAWS.length,
+    };
+  };
   window.__glacierFrame = async (t) => {
     const dt = 1 / 60;
     while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
@@ -1594,7 +2118,14 @@ async function main() {
   };
   window.__glacierFilm = async (t) => {
     const dt = 1 / 60;
-    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    const gap = t - sim;
+    if (window.__glacierSingle === true) {
+      while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    } else if (!taaReady || gap > 1 / 20) {
+      await converge(t);
+    } else {
+      while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    }
     const frame = await readFrame();
     const jpg = await blobOf(frame.src, 'image/jpeg', 0.92);
     const pix = projectPixel([live.x, pawGround(), live.z]);

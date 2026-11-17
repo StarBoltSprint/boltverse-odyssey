@@ -1,0 +1,42 @@
+{
+  "method": {
+    "detail": "High-pass radius 2 on the resolved JPEG, crop x 180-540, y 240-520. The still is a converged frame: 16 rendered steps of 1/30 s with Halton jitter length 16, then the film frame.",
+    "flicker": "Mean absolute luma delta on pixels that are spire material (fall 1, arch 2, wall 6, mountain 7) in BOTH frames and 100-300 m in BOTH frames. Flakes hidden. Bolt is not in that material set, so the card is outside the mask. The Bolt screen rect is excluded from TAA history, not from this mask.",
+    "flickerSpacing": "Primary pair is t and t+1/30, the same spacing as the run 31 bar. flicker60 is the next resolved frame, t+1/30 to t+1/30+1/60.",
+    "run31": "The stored run 31 index was already this mask and this 1/30 s spacing (glacier.js at 639f8498, t2 = t + 1/30, SPIRE 1/2/6/7, distance 100-300). It had no TAA and no Bolt rect. The bar is half of those stored numbers. The recomputed spacing matches, so the comparable run 31 number is the stored number. Both are listed.",
+    "horizon24": "At 24 s the max median vertical step is row 499, just left of the skipped center. x 200 is the peak: RGB 113,136,172 above and 172,165,175 below. That is the left canyon edge, dark ice against the pale snow shoulder and the sky notch. It is one pixel tall. The ridge mesh was not moved."
+  },
+  "bars": {
+    "detailFloorRun31": { "5.1": 7.344, "5.567": 7.236, "7.9": 6.628, "11.7": 5.972, "24": 6.135, "30": 7.893 },
+    "flickerRun31": { "5.1": 5.262, "5.567": 5.274, "7.9": 5.641, "11.7": 4.367, "24": 4.850, "30": 5.563 },
+    "flickerHalf": { "5.1": 2.631, "5.567": 2.637, "7.9": 2.821, "11.7": 2.183, "24": 2.425, "30": 2.781 },
+    "horizonRun31PlusHalf": { "5.1": 5.97, "5.567": 4.64, "7.9": 5.64, "11.7": 3.64, "24": 3.29, "30": 3.93 }
+  },
+  "singleFrame": {
+    "hwAnisoNoCap": [
+      { "t": 5.1, "detail": 7.049, "flicker": 6.685, "horizon": 6.217 },
+      { "t": 11.7, "detail": 5.96, "flicker": 5.244, "horizon": 4.14 },
+      { "t": 30, "detail": 7.651, "flicker": 6.703, "horizon": 4.0 }
+    ],
+    "cap75Toksvig": [
+      { "t": 5.1, "detail": 7.786, "flicker": 8.252, "horizon": 7.503 },
+      { "t": 11.7, "detail": 6.469, "flicker": 6.703, "horizon": 4.345 },
+      { "t": 30, "detail": 8.968, "flicker": 9.402, "horizon": 5.838 }
+    ]
+  },
+  "resolved": {
+    "what": "7.5 mip cap, Toksvig, anisotropy 16, variance clip gamma 1.1, Karis blend, velocity weight, sharpen 0.15, 16 warmup frames at 1/30 s, jitter length 16.",
+    "rows": [
+      { "t": 5.1, "detail": 7.824, "flicker": 8.180, "flicker60": 8.760, "horizon": 7.068 },
+      { "t": 5.567, "detail": 7.895, "flicker": 9.486, "flicker60": 10.062, "horizon": 6.281 },
+      { "t": 7.9, "detail": 7.068, "flicker": 9.505, "flicker60": 7.055, "horizon": 6.068 },
+      { "t": 11.7, "detail": 6.436, "flicker": 8.944, "flicker60": 9.370, "horizon": 4.353 },
+      { "t": 24, "detail": 6.84, "flicker": 9.046, "flicker60": 10.019, "horizon": 4.353 },
+      { "t": 30, "detail": 9.072, "flicker": 11.844, "flicker60": 12.772, "horizon": 4.430 }
+    ]
+  },
+  "historyBytes": 7372800,
+  "historyBuffers": 2,
+  "draws": 11,
+  "tris": 194498
+}
