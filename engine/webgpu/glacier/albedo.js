@@ -262,6 +262,13 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
     let cap = smoothstep(0.42, 0.75, nrm.y);
     return mix(wallIce, snow, cap);
   }
+  if (m > 7.5) {
+    // Ridge ring and skirt. Hex triplanar, bias 1 (full mips). Not the lane snow fetch.
+    let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 1.0);
+    let crust = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 1.0);
+    let cap = smoothstep(0.08, 0.40, nrm.y);
+    return mix(serac, crust, cap);
+  }
   let face = smoothstep(0.22, 0.62, nrm.y);
   let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 4.0);
   return mix(serac, snow, face * 0.35);

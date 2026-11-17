@@ -16,7 +16,7 @@ export const IMAGINE = [
     surfaceClass: 'snow',
     tileMetres: TILE_M,
     files: ['tex/snow-v2/snow-v2-0.png', 'tex/snow-v2/snow-v2-2.png', 'tex/snow-v2/snow-v2-3.png', 'tex/crust/v4.jpg'],
-    worldMats: [MAT.snow, MAT.drift],
+    worldMats: [MAT.snow, MAT.drift, MAT.horizon],
     instances: ['drift', 'chunk'],
   },
   {
@@ -34,7 +34,7 @@ export const IMAGINE = [
     surfaceClass: 'ice',
     tileMetres: TILE_M,
     files: ['tex/serac/v1.jpg', 'tex/serac/v2.jpg', 'tex/serac/v3.jpg', 'tex/serac/v4.jpg'],
-    worldMats: [MAT.mountain],
+    worldMats: [MAT.mountain, MAT.horizon],
   },
   {
     id: 'fall-ice',

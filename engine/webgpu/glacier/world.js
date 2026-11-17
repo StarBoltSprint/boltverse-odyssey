@@ -53,11 +53,9 @@ export function routeSmooth(z) {
 
 export function floorH(x, z) {
   const lat = x - pathX(z);
-  const crevLat = 6.4 + 1.8 * Math.sin(z * 0.0047);
-  const crevW = 0.42 + 0.35 * fbm2(z * 0.031, 2.2);
-  const crev = Math.exp(-((lat - crevLat) ** 2) / crevW) * (2.4 + 1.1 * fbm2(z * 0.017, 4.1));
   // The lane the body runs on stays the smooth route. Sastrugi start outside
   // that band, so no ridge triangle can cross the paws or the torso.
+  // The positive-lat crevasse was the right-hand drop (about 2.8 m). It stays filled.
   const edge = 1.8;
   const lane = Math.min(1, Math.max(0, (Math.abs(lat) - edge) / 0.8));
   const wind = fbm2(lat * 0.11, z * 0.02);
@@ -68,7 +66,7 @@ export function floorH(x, z) {
   const band = Math.min(1, Math.max(0, (Math.abs(lat) - edge) / 0.5));
   // No sine ripple on the shoulder. A 5.5 m wave lines up with the column
   // gate as the lane scrolls. The sastrugi stay.
-  return routeSmooth(z) + (sast - crev - footDent(x, z, lat)) * band;
+  return routeSmooth(z) + (sast - footDent(x, z, lat)) * band;
 }
 
 function footDent(x, z, lat) {
@@ -412,49 +410,6 @@ function addChaseFall(mesh, z0) {
   addStream(mesh, z0 - 16, 2.8, 12.6, yBot, z0 * 0.01 + 4.7);
 }
 
-// A broken serac skyline across the canyon gap. Z stays constant so the
-// face does not stretch, but the crest and the width are teeth, not a box.
-function addHorizonRidge(mesh, z0, height, half) {
-  const cols = 36;
-  const rows = 8;
-  const base = routeSmooth(z0);
-  const grid = [];
-  for (let j = 0; j <= rows; j++) {
-    const row = [];
-    const t = j / rows;
-    for (let i = 0; i <= cols; i++) {
-      const u = i / cols;
-      const humpN = 4 + Math.floor(hash(z0 * 0.01, 2.2) * 3);
-      const phase = u * humpN;
-      const hk = Math.floor(phase);
-      const hu = phase - hk;
-      const width = 0.28 + hash(hk + z0 * 0.001, 6.1) * 0.34;
-      const center = 0.2 + hash(hk, z0 * 0.002) * 0.6;
-      const dd = Math.abs(hu - center) / width;
-      const tooth = dd < 1 ? Math.pow(1 - dd, 0.55) : 0;
-      const nick = 0.4 + 0.6 * hash(hk * 3, z0 * 0.003);
-      const crest = tooth * nick;
-      const jag = (hash(i * 5, z0 * 0.01) - 0.5) * 8 * tooth;
-      row.push([pathX(z0) + (u - 0.5) * 2 * half + jag, base + t * height * crest, z0]);
-    }
-    grid.push(row);
-  }
-  const depth = 18;
-  const back = grid.map((row) => row.map((p) => [p[0], p[1], p[2] - depth]));
-  for (let j = 0; j < rows; j++) {
-    for (let i = 0; i < cols; i++) {
-      face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.snow, [0, 0.05, 1]);
-      face(mesh, back[j][i + 1], back[j][i], back[j + 1][i], back[j + 1][i + 1], MAT.snow, [0, 0.05, -1]);
-    }
-  }
-  for (let i = 0; i < cols; i++) {
-    const a = grid[rows][i];
-    const b = grid[rows][i + 1];
-    const c = back[rows][i + 1];
-    const d = back[rows][i];
-    face(mesh, a, b, c, d, MAT.snow, [0, 1, 0]);
-  }
-}
 
 function addFall(mesh, z0, side) {
   const cols = 14;
@@ -489,77 +444,6 @@ function addFall(mesh, z0, side) {
   }
 }
 
-function addPlateau(mesh, side) {
-  const nz = 28;
-  const nx = 8;
-  const zFar = -10500;
-  const grid = [];
-  for (let j = 0; j <= nz; j++) {
-    const t = j / nz;
-    const z = GLACIER.z0 + (zFar - GLACIER.z0) * t;
-    const rim = wallPoint(z, side, 1);
-    const row = [];
-    for (let i = 0; i <= nx; i++) {
-      const u = i / nx;
-      const reach = -7 + u * (980 + Math.min(4400, Math.max(0, -z) * 0.45));
-      const x = rim[0] + side * reach;
-      let y = (i === 0 ? rim[1] : plateauH(x, z)) + 0.3;
-      const crackN = fbm2(x * 0.0015, z * 0.00105);
-      const crack = Math.exp(-((crackN - 0.57) ** 2) / 0.0014);
-      // A deep cut beside the lane opens a dark gap. Keep the trench off the rim.
-      y -= crack * (i < 2 ? 1.5 : 8);
-      row.push([x, y, z]);
-    }
-    grid.push(row);
-  }
-  for (let j = 0; j < nz; j++) {
-    for (let i = 0; i < nx; i++) {
-      const a = grid[j][i];
-      const b = grid[j][i + 1];
-      const c = grid[j + 1][i + 1];
-      const d = grid[j + 1][i];
-      const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
-      face(mesh, a, b, c, d, MAT.snow, [mid[0], mid[1] + 1, mid[2]]);
-    }
-  }
-}
-
-function addFarFloor(mesh) {
-  const z0 = GLACIER.z1;
-  const z1 = -10500;
-  const nz = 8;
-  const nx = 12;
-  const grid = [];
-  for (let j = 0; j <= nz; j++) {
-    const z = z0 + (z1 - z0) * (j / nz);
-    const left = wallPoint(z, -1, 1);
-    const right = wallPoint(z, 1, 1);
-    const row = [];
-    for (let i = 0; i <= nx; i++) {
-      const x = left[0] + (right[0] - left[0]) * (i / nx);
-      const cx = pathX(z);
-      const lat = Math.abs(x - cx);
-      const half = floorHalf(z);
-      const rimLat = Math.max(half + 1, Math.min(Math.abs(left[0] - cx), Math.abs(right[0] - cx)));
-      const edge = Math.min(1, Math.max(0, (lat - half * 0.65) / Math.max(1, rimLat - half * 0.65)));
-      const floor = floorH(cx, z);
-      const rimY = x < cx ? left[1] : right[1];
-      const far = Math.min(1, Math.max(0, (-z - 5000) / 4200));
-      const y = floor + (rimY - floor) * edge + far * 90 * (1 - edge);
-      row.push([x, y, z]);
-    }
-    grid.push(row);
-  }
-  for (let j = 0; j < nz; j++) {
-    for (let i = 0; i < nx; i++) {
-      const a = grid[j][i];
-      const b = grid[j][i + 1];
-      const c = grid[j + 1][i + 1];
-      const d = grid[j + 1][i];
-      face(mesh, a, b, c, d, MAT.snow, [0, 1, 0]);
-    }
-  }
-}
 
 function addRange(mesh, x0, z0, x1, z1, height, halfW, fine) {
   const segs = fine ? 28 : 16;
@@ -738,7 +622,7 @@ function weldKey(x, y, z) {
 // Faces more than about 37° off the nearest axis project with stretch above 1.3.
 // Nudge those triangles toward that axis. Shared corners move once, so the sheet stays closed.
 function relaxOffAxis(verts) {
-  for (let pass = 0; pass < 5; pass++) {
+  for (let pass = 0; pass < 8; pass++) {
     stampFaceNormals(verts);
     const acc = new Map();
     const add = (x, y, z, d) => {
@@ -855,6 +739,101 @@ function stampFaceNormals(verts) {
   }
 }
 
+// World-fixed ridge ring and side skirt. Mat horizon (no LOD dither).
+// Slopes stay off the vertical so the crest is not a grazing sheet, and off
+// the flat so a cap is not one grey plane. Edges stay under the slab bar.
+function addSlopeGrid(mesh, grid, toward) {
+  for (let j = 0; j < grid.length - 1; j++) {
+    for (let i = 0; i < grid[j].length - 1; i++) {
+      face(mesh, grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i], MAT.horizon, toward);
+    }
+  }
+}
+
+function addBerm(mesh, zCrest, height) {
+  const cols = 80;
+  const rows = 4;
+  const depth = 16;
+  const xMin = -700;
+  const xMax = 700;
+  const grid = [];
+  for (let j = 0; j <= rows; j++) {
+    const t = j / rows;
+    const z = zCrest + (1 - t) * depth;
+    const row = [];
+    for (let i = 0; i <= cols; i++) {
+      const u = i / cols;
+      const x = xMin + (xMax - xMin) * u;
+      const tooth = 0.78 + 0.22 * Math.abs(Math.sin(u * 22 + zCrest * 0.013));
+      const base = floorH(pathX(z), z);
+      row.push([x, base + 0.5 + t * height * tooth, z]);
+    }
+    grid.push(row);
+  }
+  // Faces the chase, which comes from +z.
+  addSlopeGrid(mesh, grid, [0, 0.55, 1]);
+}
+
+function addRidgeRing(mesh) {
+  const cx = 0;
+  const cz = -460;
+  const r0 = 520;
+  const segs = 360;
+  const rows = 6;
+  const radial = 36;
+  const grid = [];
+  for (let j = 0; j <= rows; j++) {
+    const t = j / rows;
+    const r = r0 + t * radial;
+    const row = [];
+    for (let i = 0; i <= segs; i++) {
+      const a = (i / segs) * Math.PI * 2;
+      const x = cx + Math.cos(a) * r;
+      const z = cz + Math.sin(a) * r;
+      const tooth = 0.82 + 0.18 * Math.abs(Math.sin(i * 0.08 + 1.7));
+      const base = floorH(pathX(z), z);
+      const y = base + 1.2 + t * 16 * tooth;
+      row.push([x, y, z]);
+    }
+    grid.push(row);
+  }
+  addSlopeGrid(mesh, grid, [0, 0.6, 0]);
+}
+
+function addSideSkirt(mesh) {
+  const z0 = 120;
+  const z1 = -680;
+  const step = 10;
+  const radial = 4;
+  const reach = 8;
+  for (const side of [-1, 1]) {
+    const zs = [];
+    for (let z = z0; z >= z1; z -= step) zs.push(z);
+    let prev = null;
+    for (const z of zs) {
+      const edge = floorHalf(z) + 2;
+      const base = floorH(pathX(z), z);
+      const row = [];
+      for (let i = 0; i <= radial; i++) {
+        const lat = edge + i * reach;
+        row.push([pathX(z) + side * lat, base + 0.3 + i * 9, z]);
+      }
+      if (prev) {
+        const grid = [prev, row];
+        addSlopeGrid(mesh, grid, [side * 0.35, 0.75, 0]);
+      }
+      prev = row;
+    }
+  }
+}
+
+function addHorizonSeal(mesh) {
+  addBerm(mesh, -340, 34);
+  addBerm(mesh, -560, 42);
+  addRidgeRing(mesh);
+  addSideSkirt(mesh);
+}
+
 export function buildWorld() {
   const mesh = createMesh();
   const nx = 26;
@@ -872,7 +851,7 @@ export function buildWorld() {
   while (groundZs[groundZs.length - 1] > GLACIER.z1 + 1e-3 && guardG++ < 8000) {
     const z = groundZs[groundZs.length - 1];
     const d = Math.max(0, -z);
-    const base = d < 55 ? 0.2 : d < 450 ? 0.55 + (d - 55) * 0.0018 : d < 900 ? 8 : d < 2200 ? 32 : 56;
+    const base = d < 55 ? 0.2 : d < 450 ? 0.55 + (d - 55) * 0.0018 : d < 900 ? 5 : d < 2200 ? 32 : 56;
     const step = base * (0.4 + hash(z * 17.3, 2.8) * 1.35);
     groundZs.push(Math.max(GLACIER.z1, z - step));
   }
@@ -903,12 +882,7 @@ export function buildWorld() {
   addCurtain(mesh, -120);
   addChaseFall(mesh, -115);
   addChaseFall(mesh, -210);
-  addHorizonRidge(mesh, -520, 180, 240);
-  addHorizonRidge(mesh, -980, 240, 360);
-  addHorizonRidge(mesh, -1700, 320, 480);
-  addPlateau(mesh, -1);
-  addPlateau(mesh, 1);
-  addFarFloor(mesh);
+  addHorizonSeal(mesh);
 
   const ranges = [
     { side: -1, z: -1050, reach: 420, len: 480, h: 70, w: 120 },
