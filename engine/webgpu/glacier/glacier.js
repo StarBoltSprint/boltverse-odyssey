@@ -428,13 +428,12 @@ fn darken15(c: vec3f) -> vec3f {
     col = col + alb * (specF - spec) * smoothstep(0.50, 0.08, ndv) * 0.045;
   }
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
-  let rimK = select(1.0, 0.05, spire && lodN > 0.5);
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
-    col = col + vec3f(0.03, 0.08, 0.16) * iceEdge * rimK;
+    col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
     let shade = 1.0 - smoothstep(0.02, 0.32, ndl);
     let rim = pow(1.0 - ndv, 1.8) * smoothstep(0.55, 0.18, ndv);
-    col = col + alb * vec3f(0.20, 0.26, 0.38) * shade * rimK;
-    col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7 * rimK;
+    col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
+    col = col + alb * vec3f(0.42, 0.52, 0.70) * rim * 0.7;
   }
   if (m > 6.5 && m < 7.5) {
     let rim = pow(1.0 - ndv, 1.6) * smoothstep(0.0, 0.35, ndl);
@@ -1109,6 +1108,11 @@ async function main() {
     drawNames: DRAWS,
     extentZ: world.extentZ,
     columns: world.columns,
+    trisGround: world.budget.trisGround,
+    trisWall: world.budget.trisWall,
+    trisBeforePlateau: world.budget.trisBeforePlateau,
+    trisAfterFloor: world.budget.trisAfterFloor,
+    hashProbe: world.budget.hashProbe,
     bolt: 'bolt439_atlas',
     cardH: IDLE.cfg.cardH,
     cardW: IDLE.cfg.cardW,

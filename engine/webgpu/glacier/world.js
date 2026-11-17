@@ -12,6 +12,14 @@ function hash(x, y) {
   return s - Math.floor(s);
 }
 
+// Step size only. Math.sin does not match between this runtime and Chrome, so the
+// ground rows and the wall columns drifted by 184 triangles. An integer mix does.
+function stepHash(x, y) {
+  let n = (Math.floor(x * 4096) * 374761393 + Math.floor(y * 4096) * 668265263) | 0;
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+}
+
 function noise2(x, z) {
   const ix = Math.floor(x), iz = Math.floor(z);
   const fx = x - ix, fz = z - iz;
@@ -176,7 +184,7 @@ function columns(z0, z1) {
   let guard = 0;
   while (zs[zs.length - 1] > z1 + 1e-3 && guard++ < 8000) {
     const z = zs[zs.length - 1];
-    const wobble = 0.72 + hash(z * 9.2, 4.4) * 0.5;
+    const wobble = 0.72 + stepHash(z * 9.2, 4.4) * 0.5;
     zs.push(Math.max(z1, z - stepZ(z) * wobble));
   }
   return zs;
@@ -933,7 +941,7 @@ export function buildWorld() {
     const z = groundZs[groundZs.length - 1];
     const d = Math.max(0, -z);
     const base = d < 55 ? 0.2 : d < 450 ? 0.55 + (d - 55) * 0.0018 : d < 900 ? 8 : d < 2200 ? 32 : 56;
-    const step = base * (0.4 + hash(z * 17.3, 2.8) * 1.35);
+    const step = base * (0.4 + stepHash(z * 17.3, 2.8) * 1.35);
     groundZs.push(Math.max(GLACIER.z1, z - step));
   }
   let prev = null;
@@ -955,7 +963,9 @@ export function buildWorld() {
     }
     prev = row;
   }
+  const trisGround = mesh.count / 3;
   const columnsN = addWall(mesh, -1) + addWall(mesh, 1);
+  const trisWall = mesh.count / 3;
 
   const arches = [-24, -70, -480, -1200, -2200];
   arches.forEach((z, i) => addArch(mesh, z, i));
@@ -966,9 +976,11 @@ export function buildWorld() {
   addHorizonRidge(mesh, -520, 180, 240);
   addHorizonRidge(mesh, -980, 240, 360);
   addHorizonRidge(mesh, -1700, 320, 480);
+  const trisBeforePlateau = mesh.count / 3;
   addPlateau(mesh, -1);
   addPlateau(mesh, 1);
   addFarFloor(mesh);
+  const trisAfterFloor = mesh.count / 3;
 
   const ranges = [
     { side: -1, z: -1050, reach: 420, len: 480, h: 70, w: 120 },
@@ -1093,6 +1105,12 @@ export function buildWorld() {
     draws: DRAWS.length,
     drawNames: DRAWS,
     spireBent: shadeNormalsFor.spireBent || 0,
+    trisGround,
+    trisWall,
+    trisBeforePlateau,
+    trisAfterFloor,
+    columns: columnsN,
+    hashProbe: hash(1.25, 4.5),
   };
   budget.particleTris = (FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow + FLAKES.puff) * 2;
   budget.particles = FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow;
