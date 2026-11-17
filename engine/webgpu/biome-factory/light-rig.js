@@ -32,16 +32,20 @@ function v3(a) {
   return `vec3f(${a[0]}, ${a[1]}, ${a[2]})`;
 }
 
-export function lightWgsl(light) {
+export function lightWgsl(light, ambientCall = null) {
   const sun = sunOf(light);
   const dir = norm3(sun.direction);
+  const amb = ambientCall || v3(light.ambient.rgb);
   return `
 fn sunN() -> vec3f { return normalize(vec3f(${dir[0]}, ${dir[1]}, ${dir[2]})); }
-fn dawnIrr(n: vec3f) -> vec3f {
+fn sunIrr(n: vec3f) -> vec3f {
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   let up = clamp(n.y, 0.0, 1.0);
   let face = mix(1.0, ${light.flatScale}, up * up);
-  return ${v3(light.ambient.rgb)} + ${v3(sun.rgb)} * (${sun.intensity} * ndl * face);
+  return ${v3(sun.rgb)} * (${sun.intensity} * ndl * face);
+}
+fn dawnIrr(n: vec3f) -> vec3f {
+  return ${amb} + sunIrr(n);
 }
 fn present(c: vec3f) -> vec4f {
   return vec4f(pow(clamp(c, vec3f(0.0), vec3f(1.0)), vec3f(1.0 / 2.2)), 1.0);

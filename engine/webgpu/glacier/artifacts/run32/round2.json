@@ -1,0 +1,408 @@
+{
+  "ground": {
+    "w": 2880,
+    "h": 3040,
+    "texel": 0.125,
+    "bytes": 11673522,
+    "mips": 12,
+    "traced": 833677,
+    "dark": 410437,
+    "ms": 78011
+  },
+  "tris": 195634,
+  "draws": 9,
+  "p50": 0.6632,
+  "exposureMultiplier": 1.0676,
+  "sunFacingBeforeClamp": 1.856,
+  "sh": {
+    "upCool": -0.144,
+    "downCool": -0.323,
+    "flatDelta": 0.7083
+  },
+  "rows": [
+    {
+      "t": 5.1,
+      "boltX": 360,
+      "boltLuma": {
+        "off": 0.3404,
+        "on": 0.3404,
+        "delta": 0
+      },
+      "bases": [],
+      "nearest": {
+        "name": "fall",
+        "px": [
+          332,
+          559
+        ],
+        "skip": true
+      },
+      "contactMin": null,
+      "contactBefore": null,
+      "open": {
+        "on": {
+          "spread": 0.0027,
+          "raw": 0.6437,
+          "p50": 0.65,
+          "p50n": 52416
+        },
+        "off": {
+          "spread": 0.0027,
+          "raw": 0.6437,
+          "p50": 0.65,
+          "p50n": 52417
+        },
+        "legacy": {
+          "spread": 0.0061,
+          "raw": 0.367,
+          "p50": 0.3692,
+          "p50n": 52417
+        },
+        "aoDelta": 0,
+        "shDelta": 0.754
+      },
+      "shade": {
+        "n": 740,
+        "dE76": 0.05
+      },
+      "shadeSnow": {
+        "t": 5.1,
+        "n": 1639,
+        "L": 61.8,
+        "a": 4.85,
+        "b": -4.85,
+        "dE76": 2.97,
+        "pass": false
+      },
+      "shadeSnowLegacy": {
+        "t": 5.1,
+        "n": 1499,
+        "L": 48.99,
+        "a": 3.42,
+        "b": -7.71,
+        "dE76": 10.84,
+        "pass": false
+      }
+    },
+    {
+      "t": 5.567,
+      "boltX": 360,
+      "boltLuma": {
+        "off": 0.3345,
+        "on": 0.3345,
+        "delta": 0
+      },
+      "bases": [],
+      "nearest": {
+        "name": "fall",
+        "px": [
+          332,
+          559
+        ],
+        "skip": true
+      },
+      "contactMin": null,
+      "contactBefore": null,
+      "open": {
+        "on": {
+          "spread": 0.0081,
+          "raw": 0.6564,
+          "p50": 0.6632,
+          "p50n": 51898
+        },
+        "off": {
+          "spread": 0.0081,
+          "raw": 0.6564,
+          "p50": 0.6637,
+          "p50n": 51899
+        },
+        "legacy": {
+          "spread": 0.0126,
+          "raw": 0.3778,
+          "p50": 0.3828,
+          "p50n": 51899
+        },
+        "aoDelta": 0,
+        "shDelta": 0.7374
+      },
+      "shade": {
+        "n": 737,
+        "dE76": 0.14
+      },
+      "shadeSnow": {
+        "t": 5.567,
+        "n": 1453,
+        "L": 67.69,
+        "a": 5.15,
+        "b": -3.5,
+        "dE76": 8.7,
+        "pass": true
+      },
+      "shadeSnowLegacy": {
+        "t": 5.567,
+        "n": 1270,
+        "L": 52.57,
+        "a": 3.55,
+        "b": -6.96,
+        "dE76": 7.28,
+        "pass": false
+      }
+    },
+    {
+      "t": 7.9,
+      "boltX": 360,
+      "boltLuma": {
+        "off": 0.3512,
+        "on": 0.3512,
+        "delta": 0
+      },
+      "bases": [],
+      "nearest": {
+        "name": "fall",
+        "px": [
+          325,
+          515
+        ],
+        "skip": true
+      },
+      "contactMin": null,
+      "contactBefore": null,
+      "open": {
+        "on": {
+          "spread": 0.0026,
+          "raw": 0.7085,
+          "p50": 0.7141,
+          "p50n": 53722
+        },
+        "off": {
+          "spread": 0.0026,
+          "raw": 0.7085,
+          "p50": 0.7141,
+          "p50n": 53723
+        },
+        "legacy": {
+          "spread": 0.0042,
+          "raw": 0.4331,
+          "p50": 0.4374,
+          "p50n": 53723
+        },
+        "aoDelta": 0,
+        "shDelta": 0.6359
+      },
+      "shade": {
+        "n": 721,
+        "dE76": 0.15
+      },
+      "shadeSnow": {
+        "t": 7.9,
+        "n": 484,
+        "L": 69.43,
+        "a": 5.06,
+        "b": -3.34,
+        "dE76": 10.45,
+        "pass": false
+      },
+      "shadeSnowLegacy": {
+        "t": 7.9,
+        "n": 410,
+        "L": 56.86,
+        "a": 3.68,
+        "b": -5.89,
+        "dE76": 3.25,
+        "pass": false
+      }
+    },
+    {
+      "t": 11.7,
+      "boltX": 360,
+      "boltLuma": {
+        "off": 0.3441,
+        "on": 0.3441,
+        "delta": 0
+      },
+      "bases": [],
+      "nearest": {
+        "name": "fall",
+        "px": [
+          315,
+          558
+        ],
+        "skip": true
+      },
+      "contactMin": null,
+      "contactBefore": null,
+      "open": {
+        "on": {
+          "spread": 0.0042,
+          "raw": 0.6154,
+          "p50": 0.6287,
+          "p50n": 53244
+        },
+        "off": {
+          "spread": 0.0042,
+          "raw": 0.6154,
+          "p50": 0.6287,
+          "p50n": 53244
+        },
+        "legacy": {
+          "spread": 0.0092,
+          "raw": 0.3377,
+          "p50": 0.3473,
+          "p50n": 53244
+        },
+        "aoDelta": 0,
+        "shDelta": 0.8223
+      },
+      "shade": {
+        "n": 747,
+        "dE76": 0.13
+      },
+      "shadeSnow": {
+        "t": 11.7,
+        "n": 1612,
+        "L": 65.76,
+        "a": 5.02,
+        "b": -4.03,
+        "dE76": 6.76,
+        "pass": true
+      },
+      "shadeSnowLegacy": {
+        "t": 11.7,
+        "n": 1361,
+        "L": 50.18,
+        "a": 3.39,
+        "b": -7.86,
+        "dE76": 9.81,
+        "pass": false
+      }
+    },
+    {
+      "t": 24,
+      "boltX": 360,
+      "boltLuma": {
+        "off": 0.3529,
+        "on": 0.3529,
+        "delta": 0
+      },
+      "bases": [],
+      "nearest": {
+        "name": "wall",
+        "px": [
+          370,
+          494
+        ],
+        "skip": true
+      },
+      "contactMin": null,
+      "contactBefore": null,
+      "open": {
+        "on": {
+          "spread": 0.0094,
+          "raw": 0.7136,
+          "p50": 0.7074,
+          "p50n": 51393
+        },
+        "off": {
+          "spread": 0.0094,
+          "raw": 0.7136,
+          "p50": 0.7074,
+          "p50n": 51393
+        },
+        "legacy": {
+          "spread": 0.0142,
+          "raw": 0.4386,
+          "p50": 0.437,
+          "p50n": 51393
+        },
+        "aoDelta": 0,
+        "shDelta": 0.627
+      },
+      "shade": {
+        "n": 714,
+        "dE76": 0.25
+      },
+      "shadeSnow": {
+        "t": 24,
+        "n": 2027,
+        "L": 66.56,
+        "a": 5.08,
+        "b": -3.51,
+        "dE76": 7.57,
+        "pass": true
+      },
+      "shadeSnowLegacy": {
+        "t": 24,
+        "n": 1880,
+        "L": 54.31,
+        "a": 3.73,
+        "b": -6.07,
+        "dE76": 5.35,
+        "pass": false
+      }
+    },
+    {
+      "t": 30,
+      "boltX": 360,
+      "boltLuma": {
+        "off": 0.3625,
+        "on": 0.3625,
+        "delta": 0
+      },
+      "bases": [],
+      "nearest": {
+        "name": "wall",
+        "px": [
+          386,
+          532
+        ],
+        "skip": true
+      },
+      "contactMin": null,
+      "contactBefore": null,
+      "open": {
+        "on": {
+          "spread": 0.0098,
+          "raw": 0.6584,
+          "p50": 0.6738,
+          "p50n": 49953
+        },
+        "off": {
+          "spread": 0.0098,
+          "raw": 0.6584,
+          "p50": 0.676,
+          "p50n": 49953
+        },
+        "legacy": {
+          "spread": 0.0173,
+          "raw": 0.388,
+          "p50": 0.3991,
+          "p50n": 49953
+        },
+        "aoDelta": 0,
+        "shDelta": 0.6969
+      },
+      "shade": {
+        "n": 753,
+        "dE76": 0.08
+      },
+      "shadeSnow": {
+        "t": 30,
+        "n": 542,
+        "L": 67.26,
+        "a": 5.13,
+        "b": -3.84,
+        "dE76": 8.26,
+        "pass": true
+      },
+      "shadeSnowLegacy": {
+        "t": 30,
+        "n": 491,
+        "L": 54.22,
+        "a": 3.64,
+        "b": -6.73,
+        "dE76": 5.74,
+        "pass": false
+      }
+    }
+  ]
+}
