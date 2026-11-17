@@ -151,3 +151,22 @@ Key shade/sun linear-luma ratio is 0.605. ±10% is 0.544 to 0.666. Round 2’s u
 7.90’s L\* came down from 69.4 to 60.7, next to the key’s 59. CIE76 is still 10.17 because b\* is −13.8. 5.10 went from 0.45 too blue to b\* −15.4. The cast shadow is up-facing snow, and that face receives none of the lower-hemisphere bounce, so the fill is the sky plate. The ratio passes at 5.567, 11.70, and 24, and fails at 5.10, 7.90, and 30. No colour offset was added to chase b\*.
 
 Open snow versus the constant ambient is +20%, +21%, +18%, +22%, +17%, +19%. That is the sky integral, not the round-2 lift. Not re-exposed. The round-2 multiplier 1.068 was not applied. A face aimed at the sun is 1.150 before `present()` clamps. ×1.068 is 1.228, which still crosses 1: the sun term alone is 0.858 on authored snow, and the sky plate on that normal supplies the rest. Up-facing path snow is 0.544, and ×1.068 is 0.581, which does not clip. Bolt luma did not move. Screen x stays 360. Card stays 1.15 m.
+
+## Round 3 steer — clean shade down to L\* 59
+
+E's `round12-diag.json` grades this SH on clean snow at Lab `[70.67, 2.42, -4.28]`. b\* is in the band. L\* is 11.7 over the key. The same note puts a downward wall's ambient luma at 0.744 against the old 0.205. The crop that produced the blue medians was Bolt, the decals, the prints, and the flakes.
+
+The grade is scaled so clean shaded snow presents at L\* 59 with b\* still in the band. Upward faces take that fill. Downward walls keep the scaled ground bounce: ambient luma 0.281, not 0.744. A 24 m sun ray on the ground map, ignoring hits closer than 0.75 m, is the shadow factor. It multiplies the sun on snow only. The mask blue test drops overlays.
+
+Clean shade, shadow factor under 0.35, mask blue under 0.03, lower-center crop:
+
+| t (s) | L\* | a\* | b\* | CIE76 |
+| --- | --- | --- | --- | --- |
+| 5.10 | 59.11 | 2.12 | −3.46 | 3.01 |
+| 5.567 | 59.38 | 2.12 | −3.45 | 3.04 |
+| 7.90 | 59.11 | 2.12 | −3.45 | 3.01 |
+| 11.70 | 59.38 | 2.12 | −3.33 | 3.06 |
+| 24 | 59.00 | 2.12 | −3.47 | 3.01 |
+| 30 | 59.00 | 2.12 | −3.47 | 3.01 |
+
+All six pass the b\* band and CIE76 ≤ 10. Shade/sun linear luma ratio against 0.605: 0.533, 0.538, 0.566, 0.501, 0.551, 0.501. 7.90 and 24 are inside ±10%. The other four are low because the snow that clears the walls is brighter than the key's sun, while the shade is held at L\* 59. A face aimed at the sun is 1.101 before the clamp. ×1.068 is 1.176, which still crosses 1. The up-facing path product stays under 0.63.

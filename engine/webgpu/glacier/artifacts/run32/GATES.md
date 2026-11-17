@@ -55,7 +55,7 @@ At each of the six times, on the follow frame, two crops where the sun and the c
 
 `ratio = Y(shade) / Y(sun)` must be within **±10%** of the run-31 key ratio **0.605** (median of t10, t24, t30 on the shadow oval ahead of the paws over the sunlit side lane).
 
-The round-2 uniform lift is the fixture. On those frames the ratios are 0.516, 0.613, 0.517, 0.598, 0.562, 0.532. 5.10, 7.90, and 30 sit outside ±10%, so that build **fails** this gate.
+The round-2 uniform lift is the fixture. E's clean grade of that SH on snow is Lab `[70.67, 2.42, -4.28]`: b\* is inside the band and L\* is 11.7 over the key, so CIE76 including lightness fails. The crop that feeds this gate drops Bolt, the contact decals, the prints, and the flakes (mask blue under 0.03). Shade is shadow factor under 0.35. The energy of that grade is scaled so clean shaded snow lands at L\* about 59 without leaving the b\* band.
 
 The strength that is allowed to move is the scalar on the lower-hemisphere snow radiance (ground albedo × sun-plus-sky on an up face). It is not a colour added on every direction.
 

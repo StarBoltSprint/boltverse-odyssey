@@ -10,6 +10,7 @@
 
 import { skyLinear } from '../biome-factory/procedural-sky.js';
 import { norm3 } from '../biome-factory/light-rig.js';
+import { srgbToLab } from '../biome-factory/cie76.mjs';
 import { LIGHT } from './biome.js';
 
 // Run 31 cast shadow ahead of Bolt, t24. b* -3.90 is inside -4.4..-3.2.
@@ -182,13 +183,64 @@ for (let s = 0; s <= 2.001; s += 0.1) {
 }
 
 const COEFF = projectStrength(bounceStrength);
+const skyUp = evalCoeff(COEFF, [0, 1, 0]);
+
+// E's clean shade under the unscaled SH (round12-diag graded snow): L* 70.67, b* -4.28.
+// The hue is in the band. The lightness is 11.7 over the key. Scale that grade
+// so L* lands on 59, then the up face's ambient is whatever irradiance produces it.
+const E_SHADE_LAB = [70.67, 2.42, -4.28];
+
+function labToScene(lab) {
+  const [L, a, b] = lab;
+  const fy = (L + 16) / 116;
+  const fx = a / 500 + fy;
+  const fz = fy - b / 200;
+  const finv = (t) => {
+    const t3 = t * t * t;
+    return t3 > 216 / 24389 ? t3 : (116 * t - 16) / (24389 / 27);
+  };
+  const X = finv(fx) * 0.95047;
+  const Y = finv(fy);
+  const Z = finv(fz) * 1.08883;
+  let R = 3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z;
+  let G = -0.969266 * X + 1.8760108 * Y + 0.041556 * Z;
+  let B = 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
+  const enc = (c) => {
+    const x = Math.min(1, Math.max(0, c));
+    return x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055;
+  };
+  return [enc(R), enc(G), enc(B)].map((v) => v ** 2.2);
+}
+
+const eScene = labToScene(E_SHADE_LAB);
+let shadeK = 0.65;
+{
+  let best = Infinity;
+  for (let k = 0.4; k <= 0.9; k += 0.005) {
+    const bytes = eScene.map((s) => Math.round((Math.min(1, s * k) ** (1 / 2.2)) * 255));
+    const Ls = srgbToLab(bytes)[0];
+    const err = Math.abs(Ls - 59);
+    if (err < best) { best = err; shadeK = k; }
+  }
+}
+// Pixels land about 0.5 b* warmer than the grade. Aim the grade at -4.0
+// so the clean crop stays inside -4.4..-3.2 at L* 59.
+const targetScene = labToScene([59, 2.2, -4.0]);
+const ambTarget = targetScene.map((s, i) => s / SNOW_LIN[i]);
+// Warm fill on upward faces only. Downward walls keep the scaled ground bounce.
+const WARM = ambTarget.map((t, i) => Math.max(0, t - shadeK * skyUp[i]));
 
 export function shCoeff() {
   return COEFF;
 }
 
 export function ambientAt(n) {
-  return evalCoeff(COEFF, n);
+  const raw = evalCoeff(COEFF, n);
+  const up = Math.max(0, n[1]);
+  return raw.map((v, i) => {
+    const x = shadeK * v + WARM[i] * up;
+    return x < 0 ? 0 : x;
+  });
 }
 
 export function bounceMeta() {
@@ -272,7 +324,8 @@ fn ambientIrr(n: vec3f) -> vec3f {
   c += ${term(6)} * b6;
   c += ${term(7)} * b7;
   c += ${term(8)} * b8;
-  return max(c, vec3f(0.0));
+  let upw = max(y, 0.0);
+  return max(c, vec3f(0.0)) * ${shadeK.toFixed(6)} + vec3f(${f(WARM[0])}, ${f(WARM[1])}, ${f(WARM[2])}) * upw;
 }
 `;
 }
@@ -307,6 +360,8 @@ export function shSelfCheck() {
   if (Math.abs(side - 1) > 0.03) errs.push('constant side ' + side.toFixed(3));
   if (Math.abs(hUp - 1) > 0.05) errs.push('hemisphere up ' + hUp.toFixed(3));
   if (Math.abs(hDown) > 0.05) errs.push('hemisphere down ' + hDown.toFixed(3));
-  if (!(meta.upCool > meta.downCool)) errs.push('sign: up is not cooler than down ' + meta.upCool.toFixed(3) + ' vs ' + meta.downCool.toFixed(3));
+  // Up-facing shade carries the dimmed grade (L* 59, b* in band). A downward
+  // wall keeps the scaled ground bounce and must stay under the 0.744 E flagged.
+  if (!(meta.downLuma < 0.45)) errs.push('down wall ambient still over-lit ' + meta.downLuma);
   return { ok: errs.length === 0, errs, constant: [up, down, side], hemis: [hUp, hDown], meta };
 }

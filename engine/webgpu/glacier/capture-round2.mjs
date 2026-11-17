@@ -21,13 +21,13 @@ async function pass(aoOff, dir) {
     await withChrome({
       debugPort: aoOff ? 9451 : 9453,
       url,
-      tries: 900,
+      tries: 1400,
       fn: async ({ evalJson }) => {
         for (const t of TIMES) {
           const frame = await evalJson(`window.__glacierAoFrame(${t}).then(r => JSON.stringify(r))`);
           if (frame.info && frame.info.gpuErr) throw new Error(frame.info.gpuErr);
           const tag = String(t).replace('.', 'p');
-          for (const key of ['beauty', 'surface', 'bolt', 'shade', 'normal', 'albedo']) {
+          for (const key of ['beauty', 'surface', 'bolt', 'shade', 'normal', 'albedo', 'mask']) {
             fs.writeFileSync(path.join(dir, `t${tag}-${key}.png`), Buffer.from(frame[key], 'base64'));
           }
           spawnSync('ffmpeg', ['-y', '-v', 'error', '-i', path.join(dir, `t${tag}-beauty.png`), '-q:v', '2', path.join(dir, `t${tag}.jpg`)]);

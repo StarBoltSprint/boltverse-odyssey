@@ -2,6 +2,9 @@
 // Static world only. No dependencies. The result multiplies ambient only;
 // this module just returns the factor.
 
+import { LIGHT } from './biome.js';
+import { norm3 } from '../biome-factory/light-rig.js';
+
 const RAYS = 64;
 const RADIUS = 3.4;
 const BIAS = 0.05;
@@ -123,10 +126,10 @@ function sphereNear(bvh, x, y, z) {
   return false;
 }
 
-function rayBox(bvh, n, ox, oy, oz, ix, iy, iz) {
+function rayBox(bvh, n, ox, oy, oz, ix, iy, iz, maxT = RADIUS) {
   const o = n * 3;
   let t0 = BIAS;
-  let t1 = RADIUS;
+  let t1 = maxT;
   const orig = [ox, oy, oz];
   const inv = [ix, iy, iz];
   for (let a = 0; a < 3; a++) {
@@ -164,7 +167,7 @@ function rayOccluded(bvh, ox, oy, oz, dx, dy, dz) {
   return false;
 }
 
-function hitTri(ox, oy, oz, dx, dy, dz, tri, o) {
+function hitTri(ox, oy, oz, dx, dy, dz, tri, o, maxT = RADIUS, minT = BIAS) {
   const ax = tri[o], ay = tri[o + 1], az = tri[o + 2];
   const e1x = tri[o + 3] - ax, e1y = tri[o + 4] - ay, e1z = tri[o + 5] - az;
   const e2x = tri[o + 6] - ax, e2y = tri[o + 7] - ay, e2z = tri[o + 8] - az;
@@ -183,7 +186,31 @@ function hitTri(ox, oy, oz, dx, dy, dz, tri, o) {
   const v = (dx * qx + dy * qy + dz * qz) * inv;
   if (v < 0 || u + v > 1) return false;
   const t = (e2x * qx + e2y * qy + e2z * qz) * inv;
-  return t > BIAS && t < RADIUS;
+  return t > minT && t < maxT;
+}
+
+function rayOccludedFar(bvh, ox, oy, oz, dx, dy, dz, maxT, minT = BIAS) {
+  if (!bvh.nNodes) return false;
+  const ix = Math.abs(dx) > 1e-12 ? 1 / dx : (dx >= 0 ? 1e30 : -1e30);
+  const iy = Math.abs(dy) > 1e-12 ? 1 / dy : (dy >= 0 ? 1e30 : -1e30);
+  const iz = Math.abs(dz) > 1e-12 ? 1 / dz : (dz >= 0 ? 1e30 : -1e30);
+  let sp = 0;
+  STACK[sp++] = 0;
+  while (sp) {
+    const n = STACK[--sp];
+    if (!rayBox(bvh, n, ox, oy, oz, ix, iy, iz, maxT)) continue;
+    if (bvh.isLeaf[n]) {
+      const s = bvh.left[n];
+      const c = bvh.right[n];
+      for (let i = 0; i < c; i++) {
+        if (hitTri(ox, oy, oz, dx, dy, dz, bvh.tri, bvh.order[s + i] * 18, maxT, minT)) return true;
+      }
+    } else {
+      STACK[sp++] = bvh.left[n];
+      STACK[sp++] = bvh.right[n];
+    }
+  }
+  return false;
 }
 
 function frame(nx, ny, nz) {
@@ -462,6 +489,25 @@ function bakeGroundMap(solid, groundBvh, floorAt, power) {
     cw = nw;
     ch = nh;
   }
+  const sun = norm3(LIGHT.sun.direction);
+  const sunVis = new Uint8Array(gw * gh);
+  sunVis.fill(255);
+  const step = 4;
+  let sunBlocked = 0;
+  for (let iz = 0; iz < gh; iz += step) {
+    const z = G_Z0 - (iz + 0.5) * G_TEXEL;
+    for (let ix = 0; ix < gw; ix += step) {
+      const x = G_X0 + (ix + 0.5) * G_TEXEL;
+      const y = floorAt(x, z) + 0.2;
+      const blocked = rayOccludedFar(solid, x, y, z, sun[0], sun[1], sun[2], 24, 0.75);
+      if (!blocked) continue;
+      sunBlocked++;
+      for (let oz = 0; oz < step && iz + oz < gh; oz++) {
+        const row = (iz + oz) * gw;
+        for (let ox = 0; ox < step && ix + ox < gw; ox++) sunVis[row + ix + ox] = 0;
+      }
+    }
+  }
   let bytes = 0;
   for (const level of levels) bytes += level.length;
   return {
@@ -475,6 +521,8 @@ function bakeGroundMap(solid, groundBvh, floorAt, power) {
     spanX,
     spanZ,
     levels,
+    sunVis,
+    sunBlocked,
     bytes,
     traced,
     dark,

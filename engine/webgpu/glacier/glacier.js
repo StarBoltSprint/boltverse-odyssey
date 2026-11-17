@@ -333,6 +333,12 @@ fn groundAoVert(xz: vec2f) -> f32 {
   let s = textureSampleLevel(aoTex, aoSamp, q.xy, 0.0).r;
   return mix(1.0, s, q.z);
 }
+@group(0) @binding(11) var sunTex: texture_2d<f32>;
+fn groundSun(xz: vec2f) -> f32 {
+  let q = groundAoUv(xz);
+  let s = textureSampleLevel(sunTex, aoSamp, q.xy, 0.0).r;
+  return mix(1.0, s, q.z);
+}
 struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f, @location(5) ao: f32 };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
@@ -432,7 +438,11 @@ fn darken15(c: vec3f) -> vec3f {
   let ao = ${AO_OFF ? '1.0' : 'aoUse'};
   if (mode > 2.5 && mode < 3.5) { return vec4f(nLit * 0.5 + 0.5, ao); }
   if (mode > 4.5 && mode < 5.5) { return vec4f((m + 0.5) / 8.0, ndlLit, ndvLit, ao); }
+  if (mode > 5.5 && mode < 6.5) { return vec4f(groundSun(v.w.xz), 0.0, 0.0, 1.0); }
   var col = litIce(alb, nLit, view, ao);
+  if (m < 0.5 && groundSun(v.w.xz) < 0.5) {
+    col = alb * ambientIrr(nLit) * ao;
+  }
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
@@ -904,6 +914,18 @@ async function main() {
       mh = Math.max(1, mh >> 1);
     }
   }
+  const sunTex = dev.createTexture({
+    size: [gAo.w, gAo.h],
+    format: 'r8unorm',
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  });
+  {
+    const row = Math.ceil(gAo.w / 256) * 256;
+    const padded = new Uint8Array(row * gAo.h);
+    const src = gAo.sunVis;
+    for (let y = 0; y < gAo.h; y++) padded.set(src.subarray(y * gAo.w, y * gAo.w + gAo.w), y * row);
+    dev.queue.writeTexture({ texture: sunTex }, padded, { bytesPerRow: row }, [gAo.w, gAo.h, 1]);
+  }
   const bgl = dev.createBindGroupLayout({ entries: [
     { binding: 0, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, buffer: {} },
     { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
@@ -916,6 +938,7 @@ async function main() {
     { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: '2d-array' } },
     { binding: 9, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, texture: {} },
     { binding: 10, visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, sampler: {} },
+    { binding: 11, visibility: GPUShaderStage.FRAGMENT, texture: {} },
   ] });
   const snowEntries = (snow) => [
     { binding: 0, resource: { buffer: ub } },
@@ -929,6 +952,7 @@ async function main() {
     { binding: 8, resource: seracTex.createView({ dimension: '2d-array' }) },
     { binding: 9, resource: aoTex.createView() },
     { binding: 10, resource: aoSamp },
+    { binding: 11, resource: sunTex.createView() },
   ];
   const bg = dev.createBindGroup({ layout: bgl, entries: snowEntries(snowTex) });
   const bgAstc = snowAstc ? dev.createBindGroup({ layout: bgl, entries: snowEntries(snowAstc) }) : null;
@@ -1723,6 +1747,9 @@ async function main() {
     gateMode = 2;
     const albedo = await readFrame();
     const albedoPng = await blobOf(albedo.src, 'image/png');
+    gateMode = 6;
+    const mask = await readFrame();
+    const maskPng = await blobOf(mask.src, 'image/png');
     gateMode = 0;
     surfaceOnly = false;
     const bp = [live.x, pawGround(), live.z];
@@ -1735,6 +1762,7 @@ async function main() {
       shade: shadePng,
       normal: normalPng,
       albedo: albedoPng,
+      mask: maskPng,
       contact: contactProbes(world, projectPixel, eye, W, H, pix),
       open: openProbes(world, live, projectPixel, eye, W, H, pix),
       info: {
