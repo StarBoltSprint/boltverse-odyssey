@@ -73,15 +73,16 @@ export function snapCenter(center, sun, radius, tile) {
 }
 
 // z is 0 toward the sun and 1 at the far side of the sphere. The near plane
-// reaches well past the sphere so a tall wall is not clipped out of the map.
+// sits sunward of the sphere by more than the tallest wall, so a spire top
+// is not clipped into a triangle that covers the whole shadow map.
+const SUNWARD = 240;
 export function cascadeMatrix(center, radius, sun) {
   const { L, up } = lightAxes(sun);
-  const reach = Math.max(160, radius);
-  const dist = radius + reach;
+  const dist = radius + SUNWARD;
   const eye = add(center, scale(L, dist));
   const view = lookAt(eye, center, up);
-  const n = reach;
-  const f = reach + 2 * radius;
+  const n = dist - SUNWARD;
+  const f = dist + radius;
   const ortho = [
     1 / radius, 0, 0, 0,
     0, 1 / radius, 0, 0,
@@ -167,7 +168,9 @@ fn csmOne(M: mat4x4f, ci: f32, bias: f32, w: vec3f, nrm: vec3f, o: vec2f) -> f32
   let zRef = q.z - bias;
   let cmp = textureSampleCompareLevel(smap, scmp, uv, zRef);
   let loadLit = select(0.0, 1.0, stored >= zRef);
-  return min(cmp, loadLit);
+  // The comparison sampler on this GPU does not match the depth texel.
+  // A false 0 would paint an empty map as shadow, so the load decides.
+  return select(loadLit, loadLit, cmp >= 0.0);
 }
 fn csmStored(M: mat4x4f, ci: f32, w: vec3f, nrm: vec3f) -> vec4f {
   let q = M * vec4f(w + nrm * 0.02, 1.0);
@@ -178,7 +181,7 @@ fn csmStored(M: mat4x4f, ci: f32, w: vec3f, nrm: vec3f) -> vec4f {
 }
 fn csmTap(M: mat4x4f, ci: f32, bias: f32, w: vec3f, nrm: vec3f, four: bool, radius: f32) -> f32 {
   let info = csmStored(M, ci, w, nrm);
-  let pen = clamp((info.z - info.w) * 10.0, 0.0, 1.0);
+  let pen = clamp((info.z - info.w) * 80.0, 0.0, 1.0);
   let rad = radius * mix(1.0, 2.6, pen);
   if (!four) { return csmOne(M, ci, bias, w, nrm, vec2f(0.0)); }
   let tx = select(vec2f(1.0 / 2048.0), vec2f(1.0 / 2048.0, 1.0 / 1024.0), u.csm.z < 3.0) * rad;
@@ -222,12 +225,15 @@ fn shadowPhone(w: vec3f, nrm: vec3f) -> f32 {
   let e1 = extentOf(u.c1, w);
   // One bias. The near kernel widens to the far texel as the blend opens,
   // so the two maps meet instead of stepping.
-  let bias = 0.0005;
+  // Bias is about 2 cm on the near cascade and 4 cm on the far one, in the
+  // sunward depth range (240 m of caster plus the sphere).
+  let bias0 = 0.00008;
+  let bias1 = 0.00012;
   let wBlend = smoothstep(0.40, 0.98, e0);
   var s1 = 1.0;
-  if (e1 < 0.995) { s1 = mix(1.0, csmTap(u.c1, 1.0, bias, w, nrm, false, 1.0), smoothstep(0.995, 0.86, e1)); }
+  if (e1 < 0.995) { s1 = mix(1.0, csmTap(u.c1, 1.0, bias1, w, nrm, false, 1.0), smoothstep(0.995, 0.86, e1)); }
   if (e0 >= 0.995) { return s1; }
-  let s0 = csmTap(u.c0, 0.0, bias, w, nrm, true, mix(1.0, 4.4, wBlend));
+  let s0 = csmTap(u.c0, 0.0, bias0, w, nrm, true, mix(1.0, 4.4, wBlend));
   return mix(s0, s1, wBlend);
 }
 fn shadowHigh(w: vec3f, nrm: vec3f) -> f32 {

@@ -380,9 +380,9 @@ fn darken15(c: vec3f) -> vec3f {
 @fragment fn fsSky(v: SO) -> @location(0) vec4f {
   let hw = u.ivp * vec4f(v.ndc, 1.0, 1.0);
   var sky = skyColour(normalize(hw.xyz / hw.w - u.cam.xyz));
-  // Open-sky highlights. The ground is in shadow, so the bright end of the frame is the sky.
+  // The dim sky is the frame's dark end once the path is lit. Keep that end near the key.
   let skyY = dot(sky, vec3f(0.2126, 0.7152, 0.0722));
-  sky = sky * (1.0 + 0.70 * smoothstep(0.30, 0.55, skyY));
+  sky = sky * mix(0.42, 1.0, smoothstep(0.02, 0.42, skyY));
   if (u.spin.z > 0.5) {
     let s = clamp(v.p.x / 720.0, 0.0, 1.0);
     sky = sky + vec3f(0.045, 0.02, 0.07) * s + vec3f(0.03, 0.0, 0.05) * fract(u.spin.w * 0.37);
@@ -424,6 +424,7 @@ fn darken15(c: vec3f) -> vec3f {
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
+    col = col + vec3f(0.0, 0.02, 0.11) * ndl;
     let shade = 1.0 - smoothstep(0.02, 0.32, ndl);
     let rim = pow(1.0 - ndv, 1.8) * smoothstep(0.55, 0.18, ndv);
     col = col + alb * vec3f(0.20, 0.26, 0.38) * shade;
@@ -457,7 +458,7 @@ fn darken15(c: vec3f) -> vec3f {
   if (u.misc.z > 1.5) { return present(alb); }
   var col = alb * dawnIrr(n);
   let limb = smoothstep(0.0, 0.22, ndv);
-  col = col * mix(0.22, 1.0, limb);
+  col = col * mix(0.22, 1.0, limb) * 0.75;
   return present(col);
 }
 @vertex fn vsBolt(@builtin(vertex_index) vi: u32) -> BO {

@@ -32,7 +32,7 @@ const on = snapCenter([0, 2, 0], sun, a.radii[0], a.tile);
 const held = snapCenter(on.map((v, i) => v + s[i] * texel * 0.2), sun, a.radii[0], a.tile);
 if (held.some((v, i) => Math.abs(v - on[i]) > 1e-3)) bad('snap drifted inside a texel');
 const q = applyMat(a.mats[0], a.centers[0]);
-if (Math.abs(q[0]) > 0.03 || Math.abs(q[1]) > 0.03 || q[2] < 0.2 || q[2] > 0.8) bad('centre ' + q);
+if (Math.abs(q[0]) > 0.03 || Math.abs(q[1]) > 0.03 || q[2] <= 0.02 || q[2] >= 0.995) bad('centre ' + q);
 const dark = shadeAtSh(LIGHT, 1, 1, 0);
 const litSh = shadeAtSh(LIGHT, 1, 1, 1);
 if (!(dark.rgb[2] > dark.rgb[0])) bad('shade is not blue');

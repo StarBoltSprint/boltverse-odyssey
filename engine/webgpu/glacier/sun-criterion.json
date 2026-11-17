@@ -1,0 +1,60 @@
+{
+  "writtenBeforeSunTrial": "2026-11-17",
+  "note": "The sun angle is chosen by this rule only. IoU, seam, keyscore, snow p50, and the tone-map deltas are not inputs.",
+  "keep": {
+    "rgb": [0.85, 0.58, 0.42],
+    "intensity": 1.25,
+    "exposureEv": 0.32
+  },
+  "r2": {
+    "direction": [0.72, 0.28, -0.63],
+    "elevationDeg": 16.3,
+    "azimuthFromMinusZDeg": 49
+  },
+  "survey": {
+    "elevationDeg": [20, 24, 28],
+    "azimuthFromMinusZDeg": [0, 8, 16],
+    "result": "No sample passed both tests. Azimuth 8 and 16 put the 24 s sun-facing slope entirely in cast shadow (lit-and-open share 0). Azimuth 0 keeps that terminator, and at elevation 24 the path shadow is 0.10 to 0.37, with 24 s and 30 s under 0.15."
+  },
+  "box": {
+    "elevationDeg": [21, 23],
+    "azimuthFromMinusZDeg": [1, 2, 3, 4, 5],
+    "note": "The joint pass, if there is one, sits between the two survey columns. Azimuth 0 is down the run. These samples stay in that gap. Elevation stays a few degrees above 16."
+  },
+  "coverage": { "min": 0.15, "max": 0.85 },
+  "targetShadowFrac": 0.35,
+  "terminator": {
+    "tag": "24",
+    "slopeNyMax": 0.92,
+    "litNdl": 0.35,
+    "darkNdl": 0.15,
+    "minLitUnoccluded": 0.2,
+    "minDarkShare": 0.12
+  },
+  "chosen": {
+    "elevationDeg": 28,
+    "azimuthFromMinusZDeg": 132,
+    "direction": [0.6561, 0.4695, 0.5910],
+    "pathShadow": { "51": 0.833, "5567": 0.262, "79": 0.584, "117": 0.842, "24": 0.402, "30": 0.768 },
+    "note": "Every standard time is inside 0.15 and 0.85. The sun sits behind the runner and 48 degrees toward +X, at 28 degrees elevation. Peach colour and exposure are unchanged."
+  },
+  "select": "Among samples that pass coverage on every standard time, keep the one whose path is a mix of lit snow and cast bands. Do not move the sun to chase IoU, seam, or the tone map.",
+  "forwardMeasured": {
+    "direction": [0.0161, 0.3907, -0.9204],
+    "elevationDeg": 23,
+    "azimuthFromMinusZDeg": 1,
+    "gpuPathShadow": [0.974, 0.965, 0.984, 1, 0.999, 0.982],
+    "note": "The rendered follow frame stays inside the wall shadow. A sun ahead of the runner throws the spires' shadows back over the path. The CPU raster had skipped those long walls, so it is not the coverage measure."
+  },
+  "depthLoad": "The comparison sampler was painting empty shadow texels as umbra. The depth texel is the test. After that, elevation 26 and azimuth 184 leaves 0.042 and 0.032 of the path in shadow, under the 0.15 floor.",
+  "sideBox": {
+    "elevationDeg": [24],
+    "azimuthFromMinusZDeg": [168, 156, 144, 132],
+    "note": "Still behind the runner, swung further toward +X so the walls can lay a band on the path. 180 is straight behind."
+  },
+  "rearBox": {
+    "elevationDeg": [22, 26],
+    "azimuthFromMinusZDeg": [168, 176, 184],
+    "note": "Azimuth 180 places the sun behind the runner, so light travels with the heading. Shadows fall down-course, as bands beyond the spires, and the path in the follow view can be lit. 168 and 184 are 12 degrees off that axis. Elevation stays dawn."
+  }
+}

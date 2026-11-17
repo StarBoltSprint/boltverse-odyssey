@@ -1,0 +1,16 @@
+{
+  "writtenBeforeSunTrial": "2026-11-17",
+  "note": "Path-snow coverage in the follow frame. Written before the sun was moved. Not relaxed after the pictures come back. Round 2 is the fixture that must fail the upper bound.",
+  "shadowFracMin": 0.15,
+  "shadowFracMax": 0.85,
+  "minSamples": 8000,
+  "frame": [720, 1280],
+  "path": {
+    "mat": 0,
+    "minNy": 0.55,
+    "minRowFrac": 0.4,
+    "shadowBelow": 0.5,
+    "bolt": "The follow card is not snow. Pixels inside the projected card are dropped as well, so a coat pixel that quantizes to snow cannot count."
+  },
+  "times": ["51", "5567", "79", "117", "24", "30"]
+}

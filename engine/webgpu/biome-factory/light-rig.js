@@ -31,7 +31,7 @@ export function shadeAt(light, ndl, ny = 0) {
 // Order-1 sky dome. Upward snow sees zenith and horizon. Downward faces keep
 // the dark blue ambient. sh is not in this term.
 const SKY_ZEN_W = 0.70;
-const SKY_GAIN = 1.43;
+const SKY_GAIN = 1.36;
 // Circumsolar sky lobe. It is sky light, so the shadow map does not zero it.
 // The lobe opens only toward the sun, which is where shaded snow still sees the aureole.
 const CIRCUM = 0.016;
