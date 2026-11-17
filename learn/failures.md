@@ -1316,3 +1316,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Branch `terrace/fix-door-ghost` (off dd80963f): ground = plain snow `Color(0.78, 0.84, 0.9)` like the offline render; rebuilt materials keep `side` from the GLB material. Page-only, 3 lines, to merge into Engine Core's `engine/bench-load-1013` (b1e99d2e; textual conflict on the adjacent `parseAsync` line only). |
 | Guard | `python3 -m tools.gate.playgate <served_url> <out>` renders the SERVED page headless at 412x915 CSS x1.5 (door-3m, threshold-3m/8m-30d, wall-end-left/right), runs per-region no-grey, and inventories the live scene: FAIL on any undeclared node, a ground that maps an object plate, an object material whose GLB is doubleSided but runtime side != DoubleSide, unexpected transparency, page errors, and camera vs spine.json beyond tolerance. Self-test `python3 -m tools.gate.selftest_playgate`: current build FAILs both (a) and (b); fixed build PASSes the scene checks. Known gap: `nogrey` skips luma <= 20, so a dark flat band is not flagged; the scene check is what catches (a). |
 | Sources | `tools/gate/playgate.py`, `tools/gate/playgate.mjs`, `tools/gate/playgate.views.json`, `tools/gate/selftest_playgate.py`. |
+
+### 2026-11-17 — glacier far-ice detail and motion flicker still trade off, and the 24 s rim step is the live footprint
+
+| | |
+| --- | --- |
+| Take | PR 241 round 6. Not a KEEP. |
+| Defect | No TAA / mip / sharpen setting cleared far-detail ≥ the run 31 floor and motion flicker ≤ half of run 31 at 5.1 s. The 24 s horizon median stays above 3.29 on the live cap. |
+| Root cause | Motion compensation removes the parallax term (static residual ~0, run 31 mip bias −2 stays above the half bar) and the remaining residual still rises with grain. The 24 s step is not the ridge and not the sharpen: sharpen off reproduces 4.353, resolve off is 4.493, run 31 derivatives on the same frame are 1.928. |
+| Fix | None that clears both bars. Curve recorded. Bars not moved. |
+| Guard | `node engine/webgpu/glacier/test-motion-flicker.mjs` — static ~0, translation ~0, bias −2 above half of run 31. |
+| Sources | `engine/webgpu/glacier/motion-flicker.js`, `engine/webgpu/glacier/fixtures/motion/`, `engine/webgpu/glacier/artifacts/round6/curve.json`. |

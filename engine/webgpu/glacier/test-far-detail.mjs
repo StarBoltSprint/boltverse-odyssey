@@ -83,13 +83,23 @@ if (candidate) {
   }
 }
 
+const motionRows = JSON.parse(fs.readFileSync(path.join(here, 'fixtures/motion/run31.json'), 'utf8')).rows;
+const motionOf = (t) => {
+  const hit = motionRows.find((r) => Math.abs(r.t - Number(t)) < 0.02);
+  return hit ? hit.flickerMotion : null;
+};
 const report = process.argv[3];
 if (report) {
   const rows = JSON.parse(fs.readFileSync(report, 'utf8')).rows;
   for (const row of rows) {
-    const base = RUN31_FLICKER[row.t] || RUN31_FLICKER[Number(row.t)];
-    if (base && !(row.flicker <= base * 0.5)) {
-      bad('flicker ' + row.t + ' ' + row.flicker + ' bar ' + (base * 0.5).toFixed(3));
+    const rawBase = RUN31_FLICKER[row.t] || RUN31_FLICKER[Number(row.t)];
+    const motionBase = motionOf(row.t);
+    if (row.flickerMotion != null && motionBase != null) {
+      if (!(row.flickerMotion <= motionBase * 0.5)) {
+        bad('motion ' + row.t + ' ' + row.flickerMotion + ' bar ' + (motionBase * 0.5).toFixed(3));
+      }
+    } else if (rawBase && !(row.flicker <= rawBase * 0.5)) {
+      bad('flicker ' + row.t + ' ' + row.flicker + ' bar ' + (rawBase * 0.5).toFixed(3));
     }
     if (row.worldTris !== world.budget.worldTris) {
       bad('page worldTris ' + row.worldTris + ' node ' + world.budget.worldTris);

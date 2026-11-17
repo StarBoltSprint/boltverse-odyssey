@@ -1,0 +1,36 @@
+{
+  "notKeep": true,
+  "detailFloorAt5_1": 7.344,
+  "motionBarAt5_1": 1.7876,
+  "motionBarRule": "half of the remeasured run 31 motion residual, same mask and reprojection",
+  "rawFlickerBarUnchanged": {"5.1": 2.631, "note": "half of stored run 31 raw 5.262, reported beside the new metric, not the gate"},
+  "curveAt5_1": [
+    {"feedback": 0.1, "sharp": 0.15, "clamp": 1.1, "detail": 6.37, "motion": 1.172, "raw": 4.73, "detailPass": false, "motionPass": true},
+    {"feedback": 0.25, "sharp": 0.15, "clamp": 1.1, "detail": 7.104, "motion": 2.033, "raw": 6.25, "detailPass": false, "motionPass": false},
+    {"feedback": 0.4, "sharp": 0.15, "clamp": 1.1, "detail": 7.547, "motion": 2.759, "raw": 7.318, "detailPass": true, "motionPass": false},
+    {"feedback": 0.1, "sharp": 0.35, "clamp": 1.1, "detail": 7.702, "motion": 2.039, "raw": 6.424, "detailPass": true, "motionPass": false},
+    {"feedback": 0.1, "sharp": 0.15, "clamp": 0, "detail": 6.09, "motion": 0.789, "raw": 4.657, "detailPass": false, "motionPass": true}
+  ],
+  "noRowPassesBoth": true,
+  "horizon24": {
+    "bar": 3.29,
+    "fMeasureRun31": 2.425,
+    "rows": [
+      {"name": "run 31 derivatives, no TAA", "horizon": 1.928, "pass": true},
+      {"name": "resolve off, live cap 7.5", "horizon": 4.493, "pass": false},
+      {"name": "TAA, sharpen 0", "horizon": 4.353, "pass": false},
+      {"name": "TAA, sharpen 0.15, clamp 1.1", "horizon": 4.209, "pass": false},
+      {"name": "TAA, clamp off", "horizon": 4.634, "pass": false},
+      {"name": "TAA, edge-limited sharpen", "horizon": 4.634, "pass": false},
+      {"name": "resolve off, mip floor 7", "horizon": 4.285, "pass": false},
+      {"name": "resolve off, mip floor 12", "horizon": 3.651, "pass": false}
+    ],
+    "finding": "The 4.353 step is the live grazing footprint, not the ridge and not the sharpen. Sharpen off reproduces 4.353. Resolve off is 4.493. Run 31 derivatives on this same frame are 1.928, under the bar, which matches F. Forcing the last mip only reaches 3.651, so a blurrier isotropic mip is not the run 31 smear."
+  },
+  "run31Motion": {
+    "5.1": 3.575, "5.567": 3.46, "7.9": 2.713, "11.7": 3.039, "24": 3.771, "30": 3.472
+  },
+  "run31RawBesideIt": {
+    "5.1": 4.995, "5.567": 5.127, "7.9": 5.104, "11.7": 3.975, "24": 4.679, "30": 5.05
+  }
+}

@@ -127,9 +127,12 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
       return h0 * w.x + h1 * w.y + h2 * w.z;
     }
     let cap = select(7.5, u.spin.y, u.spin.y > 0.5 && u.spin.y < 20.0);
-    let k0 = lodScale(du0 / 4.0, dv0 / 4.0, 0.0, cap);
-    let k1 = lodScale(du1 / 4.0, dv1 / 4.0, 0.0, cap);
-    let k2 = lodScale(du2 / 4.0, dv2 / 4.0, 0.0, cap);
+    // planet.w below 20 is a minimum lod. The canyon rim was sampling a
+    // sharper mip than run 31 and the 1 px step grew. Flats stay under the cap.
+    let floorLod = select(0.0, u.planet.w, u.planet.w > 0.5 && u.planet.w < 20.0);
+    let k0 = lodScale(du0 / 4.0, dv0 / 4.0, floorLod, cap);
+    let k1 = lodScale(du1 / 4.0, dv1 / 4.0, floorLod, cap);
+    let k2 = lodScale(du2 / 4.0, dv2 / 4.0, floorLod, cap);
     let h0 = blend4(arr, uv0, du0 / 4.0 * k0, dv0 / 4.0 * k0, variantW(i), gain);
     let h1 = blend4(arr, uv1, du1 / 4.0 * k1, dv1 / 4.0 * k1, variantW(id1), gain);
     let h2 = blend4(arr, uv2, du2 / 4.0 * k2, dv2 / 4.0 * k2, variantW(id2), gain);

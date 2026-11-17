@@ -672,8 +672,9 @@ struct TaaOut { @location(0) color: vec4f, @location(1) hist: vec4f };
       m1 *= (1.0 / 9.0);
       m2 *= (1.0 / 9.0);
       let sigma = sqrt(max(m2 - m1 * m1, vec3f(0.0)));
-      let gamma = 1.1;
-      let hc = clamp(rgbYCoCg(h), m1 - sigma * gamma, m1 + sigma * gamma);
+      let gamma = u.bp.y;
+      let yv = rgbYCoCg(h);
+      let hc = select(yv, clamp(yv, m1 - sigma * gamma, m1 + sigma * gamma), gamma > 0.0);
       let hist = ycocgRgb(hc);
       let vel = length((puv - uv) * dim);
       let lyC = dot(cur, vec3f(0.2126, 0.7152, 0.0722));
@@ -684,17 +685,30 @@ struct TaaOut { @location(0) color: vec4f, @location(1) hist: vec4f };
       // current sample in a little more than a brighter one. A fast
       // pixel drops the history instead of smearing it.
       let velT = smoothstep(1.5, 6.0, vel);
-      let currentW = mix(0.1, 1.0, velT) * clamp(wC / max(wH, 1e-3), 0.5, 1.5);
+      let base = select(0.1, u.misc.w, u.misc.w > 0.02 && u.misc.w <= 0.5);
+      let currentW = mix(base, 1.0, velT) * clamp(wC / max(wH, 1e-3), 0.5, 1.5);
       out = mix(hist, cur, clamp(currentW, 0.0, 1.0));
     }
   }
-  let blur = (
-    pow(max(textureLoad(taaCur, clamp(pix + vec2i(1, 0), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2)) +
-    pow(max(textureLoad(taaCur, clamp(pix + vec2i(-1, 0), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2)) +
-    pow(max(textureLoad(taaCur, clamp(pix + vec2i(0, 1), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2)) +
-    pow(max(textureLoad(taaCur, clamp(pix + vec2i(0, -1), vec2i(0), vec2i(719, 1279)), 0).rgb, vec3f(0.0)), vec3f(2.2))
-  ) * 0.25;
-  out = out + (out - blur) * u.misc.y;
+  let e = clamp(pix + vec2i(1, 0), vec2i(0), vec2i(719, 1279));
+  let wpx = clamp(pix + vec2i(-1, 0), vec2i(0), vec2i(719, 1279));
+  let n = clamp(pix + vec2i(0, 1), vec2i(0), vec2i(719, 1279));
+  let s = clamp(pix + vec2i(0, -1), vec2i(0), vec2i(719, 1279));
+  let cE = pow(max(textureLoad(taaCur, e, 0).rgb, vec3f(0.0)), vec3f(2.2));
+  let cW = pow(max(textureLoad(taaCur, wpx, 0).rgb, vec3f(0.0)), vec3f(2.2));
+  let cN = pow(max(textureLoad(taaCur, n, 0).rgb, vec3f(0.0)), vec3f(2.2));
+  let cS = pow(max(textureLoad(taaCur, s, 0).rgb, vec3f(0.0)), vec3f(2.2));
+  let blur = (cE + cW + cN + cS) * 0.25;
+  // A negative sharpen keeps the same gain on grain and drops it on a
+  // high-contrast edge, so a 1 px canyon step does not grow a halo.
+  var gain = abs(u.misc.y);
+  if (u.misc.y < 0.0) {
+    let ly = vec3f(0.2126, 0.7152, 0.0722);
+    let lo = min(min(dot(cE, ly), dot(cW, ly)), min(dot(cN, ly), dot(cS, ly)));
+    let hi = max(max(dot(cE, ly), dot(cW, ly)), max(dot(cN, ly), dot(cS, ly)));
+    gain = gain * (1.0 - smoothstep(0.06, 0.16, hi - lo));
+  }
+  out = out + (out - blur) * gain;
   out = max(out, vec3f(0.0));
   let srgb = pow(out, vec3f(1.0 / 2.2));
   var o: TaaOut;
@@ -1193,6 +1207,7 @@ async function main() {
     const ff = (live.phase % 1) * 32;
     const roll = Math.max(-8 * Math.PI / 180, Math.min(8 * Math.PI / 180, live.w * 0.15));
     U.set([roll, live.w, live.v, ff], 40);
+    U[41] = window.__glacierClamp == null ? 1.1 : Number(window.__glacierClamp);
     const f0 = Math.floor(ff) % 32;
     const f1 = (f0 + 1) % 32;
     const pawFrac = Math.min(PAW_FRAC[f0], PAW_FRAC[f1]);
@@ -1216,11 +1231,11 @@ async function main() {
     IDLE.writeUniforms(U, IDLE.sample());
     U[53] = window.__glacierSharp == null ? 0.15 : Number(window.__glacierSharp);
     U[54] = gateMode;
-    U[55] = gateBreak;
+    U[55] = window.__glacierFeedback == null ? gateBreak : Number(window.__glacierFeedback);
     U[57] = Number(window.__glacierMipBias) || Number(window.__glacierMipCap) || 0;
     U[58] = skySwim;
     U[59] = skyYaw;
-    U.set([pCenter[0], pCenter[1], pCenter[2], PLANET.radius], 60);
+    U.set([pCenter[0], pCenter[1], pCenter[2], window.__glacierMipFloor == null ? PLANET.radius : Number(window.__glacierMipFloor)], 60);
     for (let i = 0; i < PRINT_N; i++) {
       const p = prints[i];
       U[64 + i * 4] = p.x;
