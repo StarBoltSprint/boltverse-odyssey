@@ -1415,3 +1415,25 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | None kept. The tooth mesh and the glacier-ice sample stay. Exposure, the fill, and the ambient were not moved. Snow p50 stays with the grade. |
 | Guard | `tonemap-gate.mjs` writes `iceChannels` and `wallChannels` (dL, da, db). The dE76 bar stays 10. |
 | Sources | `engine/webgpu/glacier/tonemap-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/tonemap-gate.json`, `engine/webgpu/glacier/artifacts/run33-horizon/notes.md`. |
+
+### 2026-11-17 — Two copies of one hex lattice are a lattice
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 7. Not a KEEP. |
+| Defect | Round-5 3× crops failed the tile-period gate by about +0.18, with a second harmonic. Round-4 crops of the older teeth passed. |
+| Root cause | The tooth path sampled the hex lattice twice and mixed the copies at 0.5. Both copies share the cell period, so the sum repeats at that period and at the next harmonic. Rotating world xz does not turn the rows on a vertical face. |
+| Fix | One hex sample. The per-tooth angle rotates the rows on the face. The cell interior is one of the four glacier-ice stills and the edge is the blend. Cells are finer so a face at 25 m is not one smooth tile. Both shipped crops pass at periods 12, 15, 19, 24, and 32. A grazing flank still streaks. |
+| Guard | `repeat-gate.mjs` on `fixture-repeat/plain-tile.jpg` at period 64 must fail. The same command on `tex/glacier-ice/v1.jpg` must pass. The two crops in `crops/` must pass at periods 12 through 32. |
+| Sources | `engine/webgpu/glacier/albedo.js`, `engine/webgpu/glacier/artifacts/run33-horizon/crops/`. |
+
+### 2026-11-17 — The ice shade fill replaces the sun's luma
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 7. Not a KEEP. |
+| Defect | A wall at sun-dot 0.32 and a wall at sun-dot 0.00 both display near L* 57. |
+| Root cause | The sun at ndl 0.32 contributes linear luma 0.250 and the fill is off. At ndl 0 the sun is off and the fill contributes 0.256. The sums are 0.410 and 0.416. The shade normal matches the geometric normal. Wall ice uses the same sun term as the other ice. |
+| Fix | None. The curve is doing what it says. Exposure and the grade were not moved. The remaining lightness gap stays with the grade. |
+| Guard | `artifacts/run33-horizon/ice-light.json` records the split. The dE76 bar stays 10. |
+| Sources | `engine/webgpu/glacier/glacier.js`, `engine/webgpu/glacier/artifacts/run33-horizon/ice-light.json`. |

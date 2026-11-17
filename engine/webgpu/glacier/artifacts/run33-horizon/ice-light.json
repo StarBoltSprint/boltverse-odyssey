@@ -1,0 +1,15 @@
+{
+  "note": "Linear luma of each term before the grade, albedo held at 1. Sun is alb * sunRgb * 1.25 * ndl * face. Fill is alb * (0.20, 0.26, 0.38) * shade, and shade is 1 at ndl 0 and 0 at ndl 0.32. The shade normal and the geometric normal agree (tooth abs diff 0.08). Wall ice uses the same litIce sun term as the other ice. Nothing multiplies that term by zero.",
+  "fixedNormals": [
+    {"name": "ndl 0 vertical", "sunY": 0.0, "ambY": 0.16, "fillY": 0.256, "sum": 0.416},
+    {"name": "ndl 0.32 vertical", "sunY": 0.25, "ambY": 0.16, "fillY": 0.0, "sum": 0.41},
+    {"name": "side wall ndl 0.67", "sunY": 0.534, "ambY": 0.16, "fillY": 0.0, "sum": 0.694}
+  ],
+  "pixels": [
+    {"name": "round-3 top wall", "n": 20339, "ndl": 0.31, "sunY": 0.244, "ambY": 0.16, "fillY": 0.141, "sum": 0.546},
+    {"name": "round-3 side wall", "n": 628, "ndl": 0.672, "sunY": 0.631, "ambY": 0.16, "fillY": 0.0, "sum": 0.791},
+    {"name": "round-5 tooth", "n": 74043, "ndl": 0.107, "sunY": 0.084, "ambY": 0.16, "fillY": 0.212, "sum": 0.457},
+    {"name": "round-5 side wall", "n": 628, "ndl": 0.672, "sunY": 0.631, "ambY": 0.16, "fillY": 0.0, "sum": 0.791}
+  ],
+  "reading": "At ndl 0.32 the sun contributes 0.250 and the fill is off. At ndl 0 the sun is off and the fill contributes 0.256. The two sums are 0.410 and 0.416, so a face at either end displays the same lightness. The round-3 top is brighter because its pixels are split: the lit ones take the sun and the shaded ones take the fill, and the average keeps both (sum 0.546). That is the shade curve, not a disabled sun. Exposure and the grade were not changed."
+}

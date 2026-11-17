@@ -64,3 +64,20 @@ Two full-frame slopes and one serac swap, each a render, none of which moved L*.
 - Do not set an autocorrelation bar the source still fails. Compare the tile-period lag to that lag on the still.
 - ndl mean is not the ice median. These teeth grade to the same L* at ndl 0 and at ndl 0.32.
 - Serac stills are further from the glacier-ice key than the glacier-ice albedo is. They do not close this dE.
+
+## This step
+
+- Step: round 7. Remove the two-copy tooth lattice, and measure sun against fill before touching the grade.
+- Accepted because: both 3× crops pass `repeat-gate.mjs` at periods 12, 15, 19, 24, and 32. The plain tile still fails. The glacier-ice still still passes. Follow sky-window on the six stills is 0.023–0.092. Dark-row passes the six stills. Round-3 fixtures still fail the follow gate. Round-2 t=30 still fails dark-row. Texel PASS, glacier-ice stretch 1.30. Draws 9. Page tris 196866. Sun at ndl 0.32 is luma 0.250 and the fill is 0. At ndl 0 the fill is 0.256 and the sun is 0. The sums match. The grade was not changed. Ice dE76 is 11.53–13.05, still over 10, and the split is still dL.
+- Recipe appended: none. The tooth sample is `albedo.js`.
+- Failure appended: `learn/failures.md` headings `2026-11-17 — Two copies of one hex lattice are a lattice` and `2026-11-17 — The ice shade fill replaces the sun's luma`.
+
+## Biggest waste
+
+A flat mix of the four stills made every cell the same average, so the autocorrelation did not move. The cell interior has to stay one still. A grazing flank is a streak either way, because the footprint is one long derivative.
+
+## Reuse next time
+
+- Do not mix two copies of a lattice at a constant weight. The sum keeps the period.
+- Rotating world xz does not turn the rows on a vertical face. Rotate the face coordinates.
+- The shade fill is sized to the sun it replaces. ndl 0 and ndl 0.32 land on the same luma. That gap is the grade's.

@@ -46,14 +46,26 @@ fn cover(d: vec2f) -> vec2f {
   return d;
 }
 // One lead still, a little of the other three. The pick is the hex cell, not the pixel.
-fn variantW(id: vec2f) -> vec4f {
-  let lead = i32(floor(hash21(id + vec2f(8.0, 1.0)) * 4.0)) % 4;
-  return vec4f(
+fn variantW(id: vec2f, even: f32) -> vec4f {
+  let h = hash21(id + vec2f(8.0, 1.0));
+  // even > 1.5: tooth interior. v2 is the dark still. A two-pixel sliver of it
+  // between a fall and an arch clears the dark-row bar. It stays in the blend.
+  let lead = select(i32(floor(h * 4.0)) % 4, select(0, select(2, 3, h > 0.66), h > 0.33), even > 1.5);
+  let peaked = vec4f(
     select(0.05, 0.85, lead == 0),
     select(0.05, 0.85, lead == 1),
     select(0.05, 0.85, lead == 2),
     select(0.05, 0.85, lead == 3)
   );
+  // Four stills, no lead. A cell that is 0.85 of one still repeats that still.
+  let spread = vec4f(
+    hash21(id + vec2f(1.7, 8.3)),
+    hash21(id + vec2f(4.1, 2.9)),
+    hash21(id + vec2f(7.7, 5.5)),
+    hash21(id + vec2f(3.3, 9.7))
+  );
+  let flat = spread / max(dot(spread, vec4f(1.0)), 1e-4);
+  return mix(peaked, flat, select(even, 0.0, even > 1.5));
 }
 fn blend4(arr: texture_2d_array<f32>, uv: vec2f, du: vec2f, dv: vec2f, w: vec4f, gain: vec4f) -> vec3f {
   let s0 = textureSampleGrad(arr, samp, uv, 0, du, dv).rgb * gain.x;
@@ -69,14 +81,16 @@ fn cellMean(arr: texture_2d_array<f32>, uv: vec2f, id: vec2f, gain: vec4f) -> ve
 }
 // Hex lattice for ice. Each cell rotates and shifts its own still.
 // Weights are the triangle inside the hex, so a cell edge is a blend, not a hash flicker.
-fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f, cells: f32, bias: f32) -> vec3f {
+fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, gain: vec4f, cells: f32, bias: f32, even: f32, spin: f32, sharp: f32) -> vec3f {
   let n = normalize(nrm);
   let helper = select(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), abs(n.y) < 0.9);
   let tng = normalize(cross(helper, n));
   let btg = normalize(cross(n, tng));
-  let metres = vec2f(dot(p, tng), dot(p, btg));
-  let dmu = vec2f(dot(px, tng), dot(px, btg));
-  let dmv = vec2f(dot(py, tng), dot(py, btg));
+  // spin turns the hex rows on the face. Rotating world xz leaves a vertical
+  // face's rows horizontal, which is the band the crops measured.
+  var metres = rot2(vec2f(dot(p, tng), dot(p, btg)), spin);
+  var dmu = rot2(vec2f(dot(px, tng), dot(px, btg)), spin);
+  var dmv = rot2(vec2f(dot(py, tng), dot(py, btg)), spin);
   let skew = vec2f(metres.x + metres.y * 0.5, metres.y * 0.8660254) * cells;
   let i = floor(skew);
   let f = fract(skew);
@@ -85,7 +99,10 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let w1 = select(f.y - f.x, f.x - f.y, lower);
   let w2 = select(f.x, f.y, lower);
   let ws = vec3f(w0, w1, w2);
-  let sm = ws * ws * (3.0 - 2.0 * ws);
+  var sm = ws * ws * (3.0 - 2.0 * ws);
+  // A sharp cell is one still in the interior. The soft curve was mixing the
+  // four stills into one colour, so the face stayed a single period.
+  sm = pow(max(sm, vec3f(1e-4)), vec3f(mix(1.0, 3.0, sharp)));
   let w = sm / max(sm.x + sm.y + sm.z, 1e-4);
   let id1 = i + select(vec2f(0.0, 1.0), vec2f(1.0, 0.0), lower);
   let id2 = i + vec2f(1.0, 1.0);
@@ -109,9 +126,9 @@ fn sampleArr(arr: texture_2d_array<f32>, p: vec3f, nrm: vec3f, px: vec3f, py: ve
   let uv0 = m0 * ${repeats};
   let uv1 = m1 * ${repeats};
   let uv2 = m2 * ${repeats};
-  let c0 = blend4(arr, uv0, du0, dv0, variantW(i), gain);
-  let c1 = blend4(arr, uv1, du1, dv1, variantW(id1), gain);
-  let c2 = blend4(arr, uv2, du2, dv2, variantW(id2), gain);
+  let c0 = blend4(arr, uv0, du0, dv0, variantW(i, even), gain);
+  let c1 = blend4(arr, uv1, du1, dv1, variantW(id1, even), gain);
+  let c2 = blend4(arr, uv2, du2, dv2, variantW(id2, even), gain);
   let hi = c0 * w.x + c1 * w.y + c2 * w.z;
   let lo = cellMean(arr, uv0, i, gain) * w.x + cellMean(arr, uv1, id1, gain) * w.y + cellMean(arr, uv2, id2, gain) * w.z;
   let restore = min(inverseSqrt(max(dot(w, w), 0.45)), 1.2);
@@ -234,25 +251,25 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, phase: f32) -> v
     let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
     let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
     if (m < 1.5) {
-      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0, 2.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+      let fall = sampleArr(fallArr, p, nrm, px, py, iceGain, 2.0, 2.0, 0.0, 0.0, 0.0);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0, 0.0, 0.0, 0.0);
       let lip = smoothstep(0.35, 0.75, nrm.y);
       return mix(fall, snow, lip * 0.85);
     }
     if (m < 2.5) {
-      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 2.0, 4.0);
-      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
+      let arch = sampleArr(archArr, p, nrm, px, py, iceGain, 2.0, 4.0, 0.0, 0.0, 0.0);
+      let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0, 0.0, 0.0, 0.0);
       let cap = smoothstep(0.28, 0.62, nrm.y);
       return mix(arch, snow, cap);
     }
     // Mip bias 4 calms the spire speckle. The sheen stays the ice value, not chrome.
-    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 4.0, 0.0, 0.0, 0.0);
     return ice * vec3f(0.92, 0.96, 1.0);
   }
   let snowGain = vec4f(0.949, 1.005, 1.005, 1.355);
   let iceGain = vec4f(0.853, 1.040, 0.979, 1.0);
-  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0);
-  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 2.0);
+  let snow = sampleArr(snowArr, p, nrm, px, py, snowGain, 2.0, 2.0, 0.0, 0.0, 0.0);
+  let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 2.0, 0.0, 0.0, 0.0);
   if (m < 4.5) {
     let chunk = skyNoise(p * 0.17);
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
@@ -262,19 +279,20 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, phase: f32) -> v
     let wallBias = select(4.0, 1.0, length(p - u.cam.xyz) < 140.0);
     var wallIce = vec3f(0.0);
     if (phase > 1.5) {
-      // Per-tooth lattice. Two phases of the same four stills, so a big face
-      // is not one repeated cell. Derivatives rotate with the sample.
+      // Round 5 mixed two copies of this lattice at 0.5. Both copies share
+      // the cell period, so the sum is a lattice of two harmonics. One hex
+      // sample, rotated per tooth, with the four stills in stochastic weights.
       let ang = phase - 2.0;
       let c = cos(ang);
       let s = sin(ang);
       let q = vec3f(p.x * c - p.z * s, p.y, p.x * s + p.z * c) + vec3f(phase * 19.0, phase * 4.0, phase * 11.0);
       let qx = vec3f(px.x * c - px.z * s, px.y, px.x * s + px.z * c);
       let qy = vec3f(py.x * c - py.z * s, py.y, py.x * s + py.z * c);
-      let a = sampleArr(iceArr, q, nrm, qx, qy, iceGain, 2.0, wallBias);
-      let b = sampleArr(iceArr, q + vec3f(0.41, 0.17, 0.63), nrm, qx, qy, iceGain, 2.0, wallBias);
-      wallIce = mix(a, b, 0.5);
+      // cells 5 puts a new still inside the 12–32 px band on a face 25 m away.
+      // cells 2 left that face one smooth tile, which correlated with itself.
+      wallIce = sampleArr(iceArr, q, nrm, qx, qy, iceGain, 5.0, wallBias, 2.0, ang, 1.0);
     } else {
-      wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, wallBias);
+      wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, wallBias, 0.0, 0.0, 0.0);
     }
     let cap = smoothstep(0.42, 0.75, nrm.y);
     return mix(wallIce, snow, cap);
@@ -282,13 +300,13 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, phase: f32) -> v
   if (m > 7.5) {
     // Same ice family as the walls and seracs. Hex variants, bias 1.
     // Snow only on a real cap, so the face stays ice-blue and form-shaded.
-    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 1.0);
-    let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 1.0);
+    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 1.0, 0.0, 0.0, 0.0);
+    let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 1.0, 0.0, 0.0, 0.0);
     let cap = smoothstep(0.55, 0.86, nrm.y);
     return mix(mix(ice, serac, 0.5), snow, cap);
   }
   let face = smoothstep(0.22, 0.62, nrm.y);
-  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 4.0);
+  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 4.0, 0.0, 0.0, 0.0);
   return mix(serac, snow, face * 0.35);
 }
 fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {
