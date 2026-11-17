@@ -43,3 +43,31 @@ Khronos PBR Neutral, one exposure EV 0.36 calibrated to the snow key (mean |snow
 AgX punchy (log-space power 1.35, saturation 1.4), one exposure EV 1.7 (mean snow error 0.014). Gate `punchy/tonemap-gate.json` FAIL. Contrast and mean saturation rise. Peach sky is 0.142, under 0.15. p50 is 0.055 to 0.075 above the gamma key. Bolt torso Y is about 0.076 high. Ice dE76 is 9.1 to 11.8.
 
 Limits were not moved. Exposure was not refit after these numbers.
+
+## Round 4 — display-matched grade, not a KEEP
+
+The shipped grade is now `tonemap: "display"` at exposureEv 0. Below scene-linear 0.805437471876985 (display-linear 0.800) the curve is the gamma-2.2 picture: sRGB-linear of `pow(clamp(x,0,1), 1/2.2)`, then the exact sRGB OETF, so the encoded byte is that power. Above the knee a C1 Reinhard shoulder, slope 1.02155 at the join, reaches display-linear 1 at scene white 4 and keeps channel ratios. Scene 1 encodes to 0.955 instead of clipping at 1. Values above 4 stay at 1. rgba16float, 4× MSAA, and the sRGB OETF are unchanged. `present`, `gradeLinear`, and `gradeWgsl` keep their signatures. AgX, punchy, Neutral, and ACES stay as named operators and are not selected.
+
+`display/tonemap-gate.json` is FAIL. Limits were not moved. Two rows miss, and both are the identity with the gamma stills, not a new midtone curve.
+
+| Check | Result | Limit |
+| --- | --- | --- |
+| Frame p1/p50/p99 vs gamma | max abs 0.0008 | 0.05 |
+| Look contrast delta | t24 −0.0005, t5567 −0.0002, the other four ≥ 0 | ≥ 0 |
+| Look sat delta | −0.0004 to −0.0007 | ≥ −0.005 |
+| t30 peach sky sat | 0.1613 | ≥ 0.15 |
+| Bolt torso Y / sat | within ±0.0069 / ±0.0042 | ±0.02 |
+| Snow p50 vs texture key 0.7082 | t117 0.621, t51 0.635, t5567 0.643, t30 0.655 miss; t24 0.683 and t79 0.684 pass | 0.05 |
+| Snow p50 vs the gamma before still | 0.0000 on all six | |
+| grey_bright | 0.047 to 0.132, b−r > 0 | < 0.15 |
+| Clip / crushed | 0 / 0 | 0.5% |
+| Keyscore | 87.80 | ≥ 85.84 |
+| 45 s mean-Y std | 0.0148, mean 0.5821 | ≤ 0.015 |
+| CIE76 | snow 0.42, fall 0.21, arch 0.28, wall 0.26; darkened wall blocks at 14.79 | 10 |
+| Texel | PASS, 2048 px/m | 2048 |
+| CPU triangles / draws | 195634 / 9 | unchanged |
+| Page triangles / draws | 195818 / 9 | unchanged |
+
+The snow-key miss is the gamma picture. A highlight shoulder above 0.805 cannot lift snow whose median is 0.62. The contrast hairs are a fraction of one code. The knee was not moved after the gate, and the exposure stayed at 0.
+
+`display/chase.mp4` is 720×1280, 8 s, 5 fps, 40 frames. Bolt pixel x stays at 360 (359.9995–360.0004). Not marked KEEP-candidate.

@@ -151,11 +151,56 @@ export function tonemapNeutral(color, exposure) {
   return c.map((v) => Math.max(0, (v * newPeak) / peak * (1 - g) + newPeak * g));
 }
 
+// Display-matched curve. Below the knee it is the gamma-2.2 picture
+// (sRGB-linear of pow(x, 1/2.2)). Above it, a C1 Reinhard shoulder reaches
+// white at scene value 4 and keeps channel ratios.
+export const DISPLAY_KNEE = 0.805437471876985;
+export const DISPLAY_WHITE = 4;
+
+function matchDisplayLinear(x) {
+  const g = Math.min(1, Math.max(0, x)) ** (1 / 2.2);
+  return srgbEotf(g);
+}
+
+function matchDisplaySlope(x) {
+  const inv = 1 / 2.2;
+  const u = x ** inv;
+  const du = inv * x ** (inv - 1);
+  const t = (u + 0.055) / 1.055;
+  return (2.4 * t ** 1.4 / 1.055) * du;
+}
+
+function reinhardWhite(z, white) {
+  return (z * (1 + z / (white * white))) / (1 + z);
+}
+
+export function displayShoulder(x) {
+  if (x <= DISPLAY_KNEE) return matchDisplayLinear(x);
+  const yk = matchDisplayLinear(DISPLAY_KNEE);
+  const slope = matchDisplaySlope(DISPLAY_KNEE);
+  const a = slope / (1 - yk);
+  const dx = x - DISPLAY_KNEE;
+  const whiteU = (DISPLAY_WHITE - DISPLAY_KNEE) * a;
+  const z = dx * a;
+  if (z >= whiteU) return 1;
+  return yk + (1 - yk) * reinhardWhite(z, whiteU);
+}
+
+export function tonemapDisplay(color, exposure) {
+  const rgb = color.map((v) => Math.max(0, v) * exposure);
+  const m = Math.max(rgb[0], rgb[1], rgb[2]);
+  if (m <= DISPLAY_KNEE) return rgb.map(matchDisplayLinear);
+  const h = displayShoulder(m);
+  const scale = m > 1e-8 ? h / m : 0;
+  return rgb.map((v) => Math.min(1, Math.max(0, v * scale)));
+}
+
 export const TONEMAPS = {
   agx: (c, e) => tonemapAgx(c, e, false),
   'agx-punchy': (c, e) => tonemapAgx(c, e, true),
   aces: tonemapAces,
   neutral: tonemapNeutral,
+  display: tonemapDisplay,
 };
 
 export function exposureOf(light) {
@@ -218,7 +263,11 @@ function mat3(cols) {
 // material ids pass through, albedo probes are sRGB of the linear sample.
 export function gradeWgsl(light) {
   const ev = light.exposureEv || 0;
-  const which = light.tonemap === 'agx' ? 0 : light.tonemap === 'aces' ? 1 : light.tonemap === 'agx-punchy' ? 3 : 2;
+  const which = light.tonemap === 'agx' ? 0
+    : light.tonemap === 'aces' ? 1
+    : light.tonemap === 'agx-punchy' ? 3
+    : light.tonemap === 'display' ? 4
+    : 2;
   return `
 struct U {
   vp: mat4x4f, ivp: mat4x4f, cam: vec4f, bolt: vec4f, bp: vec4f, grid: vec4f, sun: vec4f, misc: vec4f, spin: vec4f, planet: vec4f,
@@ -276,10 +325,46 @@ fn tonemapNeutral(color: vec3f) -> vec3f {
   let g = 1.0 - 1.0 / (0.15 * (peak - newPeak) + 1.0);
   return max(mix(c, vec3f(newPeak), g), vec3f(0.0));
 }
+fn matchDisplayLinear(x: f32) -> f32 {
+  let g = pow(clamp(x, 0.0, 1.0), 1.0 / 2.2);
+  if (g <= 0.04045) { return g / 12.92; }
+  return pow((g + 0.055) / 1.055, 2.4);
+}
+fn matchDisplaySlope(x: f32) -> f32 {
+  let inv = 1.0 / 2.2;
+  let u = pow(x, inv);
+  let du = inv * pow(x, inv - 1.0);
+  let t = (u + 0.055) / 1.055;
+  return (2.4 * pow(t, 1.4) / 1.055) * du;
+}
+fn reinhardWhite(z: f32, white: f32) -> f32 {
+  return (z * (1.0 + z / (white * white))) / (1.0 + z);
+}
+fn displayShoulder(x: f32) -> f32 {
+  let knee = ${DISPLAY_KNEE};
+  if (x <= knee) { return matchDisplayLinear(x); }
+  let yk = matchDisplayLinear(knee);
+  let slope = matchDisplaySlope(knee);
+  let a = slope / (1.0 - yk);
+  let dx = x - knee;
+  let whiteU = (${DISPLAY_WHITE} - knee) * a;
+  let z = dx * a;
+  if (z >= whiteU) { return 1.0; }
+  return yk + (1.0 - yk) * reinhardWhite(z, whiteU);
+}
+fn tonemapDisplay(color: vec3f) -> vec3f {
+  let m = max(color.r, max(color.g, color.b));
+  if (m <= ${DISPLAY_KNEE}) {
+    return vec3f(matchDisplayLinear(color.r), matchDisplayLinear(color.g), matchDisplayLinear(color.b));
+  }
+  let scale = displayShoulder(m) / max(m, 1e-8);
+  return clamp(color * scale, vec3f(0.0), vec3f(1.0));
+}
 fn tonemap(color: vec3f) -> vec3f {
   if (${which} == 0) { return tonemapAgx(color, false); }
   if (${which} == 1) { return tonemapAces(color); }
   if (${which} == 3) { return tonemapAgx(color, true); }
+  if (${which} == 4) { return tonemapDisplay(color); }
   return tonemapNeutral(color);
 }
 fn luma3(c: vec3f) -> f32 { return dot(c, vec3f(0.2126, 0.7152, 0.0722)); }

@@ -1349,3 +1349,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | None. Limits were not moved. The shipped grade stays AgX at EV 0.32. |
 | Guard | `node engine/webgpu/glacier/tonemap-gate.mjs` with the look block in `tonemap-limits.json`. |
 | Sources | `engine/webgpu/glacier/artifacts/run32-hdr/neutral/tonemap-gate.json`, `engine/webgpu/glacier/artifacts/run32-hdr/punchy/tonemap-gate.json`. |
+
+### 2026-11-17 — display-matched grade matches gamma and still misses the snow key
+
+| | |
+| --- | --- |
+| Take | Glacier HDR round 4. Display-matched curve shipped. Not a KEEP. |
+| Defect | `display/tonemap-gate.json` FAIL. Snow p50 vs the texture key (0.7082) misses on t117 (0.621), t51 (0.635), t5567 (0.643), and t30 (0.655). Contrast delta is −0.0005 at t24 and −0.0002 at t5567. |
+| Root cause | The scene is already the gamma-2.2 picture. Snow p50 of the display stills equals the gamma before stills (delta 0.0000 on all six). Four of those medians sit more than 0.05 under the texture key. A shoulder that starts at scene 0.805 cannot lift a median at 0.62. The contrast hairs are under one code. |
+| Fix | None on the thresholds. Knee stays 0.805437471876985, white point 4, exposureEv 0. Do not lift midtones to chase the snow key; that is the round-3 miss. |
+| Guard | `node engine/webgpu/glacier/tonemap-gate.mjs` against `tonemap-limits.json`, including the look block. The snow row compares to the texture key, not to the gamma still. |
+| Sources | `engine/webgpu/biome-factory/light-rig.js`, `engine/webgpu/glacier/dawn-light.json`, `engine/webgpu/glacier/artifacts/run32-hdr/display/tonemap-gate.json`. |
