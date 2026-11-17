@@ -1470,3 +1470,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | The normal is rotated by the same yaw before the frame is built. Past a real 16:1 the shorter derivative is lengthened by ratio/16, which raises its LOD by log2(ratio/16). These faces sit at 1.2 after the frame matches, so that branch does not move them. The graze Laplacian went from 9.56 to 9.97. The crop passes. The chase is 30/30. The round-2 fixture still fails. |
 | Guard | `repeat-gate.mjs` on `crops/t30-graze-3x.jpg` at periods 12, 19, and 32. `dark-row-gate.mjs` on the 30 fps chase must pass, and on `fixture-r2-t30.jpg` must fail. |
 | Sources | `engine/webgpu/glacier/albedo.js`, `engine/webgpu/glacier/artifacts/run33-horizon/crops/t30-graze-3x.jpg`, `engine/webgpu/glacier/artifacts/run33-horizon/notes.md`. |
+
+### 2026-11-17 — A near wall is not a closed horizon
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 10. Not a KEEP. |
+| Defect | The round-9 pictures had no dawn sky, no moon, and no far skyline. A blue-grey wall a few tens of metres out filled the frame. The horizon gate called that closed. |
+| Root cause | The massif teeth at z -130, -250, and -430 were placed across the chase to push horizon_closed to 1. They deleted the sky. A 0.5 m ice tile at that distance is a speckle, not a crack. |
+| Fix | Those three rows are gone. The canyon spires are the skyline. Walls stay solid. The ice tile grows with distance past 16 m and stays 0.5 m near the camera. The round-9 fixture fails `skyline-key-gate.mjs`. 24 s and 30 s pass it. The four earlier times are still under 0.9 of the key's sky fraction. The run-31 foreground snow wedge is not back. |
+| Guard | `node engine/webgpu/glacier/skyline-key-gate.mjs artifacts/run33-horizon/fixture-r9` must fail. `structure-gate.mjs --distance 30 --tile 0.5` on the round-9 graze crop must fail. |
+| Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/albedo.js`, `engine/webgpu/glacier/skyline-key-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/notes.md`. |

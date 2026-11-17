@@ -1,19 +1,12 @@
 {
   "bar": 3.29,
-  "method": "Rows 420-679. Skip columns 281-439. Median absolute rec.709 luma into the next row. The score is the worst row. This is the run-31 horizon step.",
-  "fixture": {
-    "file": "fixture-r7/t24.png",
-    "step": 2.425,
-    "row": 492,
-    "pass": true,
-    "note": "The round-7 lossless t=24 frame is under 3.29. The gate does not fail the fixture. Team C's 4.353 is their TAA frame and was handed back."
-  },
+  "method": "Rows 420-679. Skip columns 281-439. Median absolute rec.709 luma into the next row. The score is the worst row. Lossless PNG.",
   "times": [
-    {"tag": "5.10", "file": "after/t51.jpg", "step": 5.222, "row": 552, "pass": false},
-    {"tag": "5.567", "file": "after/t5567.jpg", "step": 5.345, "row": 551, "pass": false},
-    {"tag": "7.9", "file": "after/t79.jpg", "step": 6.71, "row": 506, "pass": false},
-    {"tag": "11.70", "file": "after/t117.jpg", "step": 6.71, "row": 538, "pass": false},
-    {"tag": "24", "file": "after/t24.jpg", "step": 3.068, "row": 492, "pass": true},
-    {"tag": "30", "file": "after/t30.jpg", "step": 4.63, "row": 583, "pass": false}
+    {"tag": "5.10", "file": "png/t51.png", "step": 4.14, "row": 552, "pass": false},
+    {"tag": "5.567", "file": "png/t5567.png", "step": 3.353, "row": 533, "pass": false},
+    {"tag": "7.9", "file": "png/t79.png", "step": 5.068, "row": 506, "pass": false},
+    {"tag": "11.70", "file": "png/t117.png", "step": 3.52, "row": 538, "pass": false},
+    {"tag": "24", "file": "png/t24.png", "step": 2.281, "row": 492, "pass": true},
+    {"tag": "30", "file": "png/t30.png", "step": 1.928, "row": 505, "pass": true}
   ]
 }

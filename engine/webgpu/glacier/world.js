@@ -720,6 +720,15 @@ function shadeNormalsFor(verts) {
     if (mat === 0 && !up(sy, sx, sz)) continue;
     out[i * 3] = sx; out[i * 3 + 1] = sy; out[i * 3 + 2] = sz;
   }
+  // A downward wall face is an unlit lip. The shade normal stays a side face
+  // so that lip is not a one-pixel dark row. The geometric normal is unchanged.
+  for (let i = 0; i < nVerts; i++) {
+    if (Math.round(verts[i * 8 + 3]) !== 6) continue;
+    if (out[i * 3 + 1] >= 0.12) continue;
+    out[i * 3 + 1] = 0.12;
+    const l = Math.hypot(out[i * 3], out[i * 3 + 1], out[i * 3 + 2]) || 1;
+    out[i * 3] /= l; out[i * 3 + 1] /= l; out[i * 3 + 2] /= l;
+  }
   return out;
 }
 
@@ -831,28 +840,39 @@ function addHorizonRange(mesh, x0, z0, x1, z1, height, halfW, segs = 18, sides =
   }
 }
 
-function addMassif(mesh) {
-  // A row of the same serac teeth as the canyon, across the gap, close enough
-  // to keep their faces. Side faces catch the sun. The run stays on the snow.
-  for (const z of [-130, -250, -430]) {
-    const span = z < -400 ? 2 : 3;
-    for (let i = -span; i <= span; i++) {
-      const cx = pathX(z) + i * 18;
-      const h = 72 + ((i + 3) % 3) * 24;
-      // Yaw so the face the chase sees is not an edge-on sliver, and not every
-      // flank is in the sun. The lit share stays near the existing walls.
-      // Flank stays within 37° of an axis so the texel stretch stays ≤ 1.3.
-      // Most teeth show a sunward flank. A few turn toward the camera and sit in shade.
-      const ang = 0.34 + hash(i * 4.2, z * 0.013) * 0.38;
-      const spanM = 34;
-      const x0 = cx - Math.sin(ang) * spanM * 0.5;
-      const z0 = z + Math.cos(ang) * spanM * 0.5;
-      const x1 = cx + Math.sin(ang) * spanM * 0.5;
-      const z1 = z - Math.cos(ang) * spanM * 0.5;
-      const phase = 2 + hash(i * 9.0, z * 0.02) * 4;
-      addRange(mesh, x0, z0, x1, z1, h, 18, false, MAT.wall, phase, 16, 0.5);
+// Snow from a tall right-hand crest down to the lane. The run-31 frame shows
+// that face as the lit bank and the shadowed flank. Edges stay under 8 m.
+function addSnowBank(mesh) {
+  for (const z of columns(40, -480)) {
+    const crest = wallPoint(z, 1, 1);
+    const floor = floorH(pathX(z), z);
+    if (crest[1] < floor + 8) continue;
+    const lat = crest[0] - pathX(z);
+    if (lat < 4 || lat > 40) continue;
+    const toe = [pathX(z) + Math.max(4, lat - 9), floor + 0.3, z];
+    const span = Math.hypot(crest[0] - toe[0], crest[1] - toe[1], crest[2] - toe[2]);
+    const n = Math.max(2, Math.ceil(span / 6));
+    let prev = null;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n;
+      const p = [
+        crest[0] + (toe[0] - crest[0]) * u,
+        crest[1] + (toe[1] - crest[1]) * u,
+        crest[2] + (toe[2] - crest[2]) * u,
+      ];
+      // A two-metre thickness so the fan is a face, not a line.
+      const q = [p[0] + 6, p[1], p[2]];
+      if (prev) face(mesh, prev.p, p, q, prev.q, MAT.wall, [-1, 0.35, 0.4]);
+      prev = { p, q };
     }
   }
+}
+
+function addMassif(mesh) {
+  // The near tooth rows (z -130 / -250 / -430) were a wall a few tens of
+  // metres out. They closed the follow picture by deleting the dawn sky,
+  // the moon, and the run-31 skyline. The far ridge stays, past the course,
+  // so the level row is not a void. The canyon spires are the skyline.
   const zFar = GLACIER.z1 - 110;
   addHorizonRange(mesh, -2000, zFar, 2000, zFar, 480, 28, 20, 5);
 }
@@ -910,6 +930,7 @@ export function buildWorld() {
   addChaseFall(mesh, -115);
   addChaseFall(mesh, -210);
   addHorizonSeal(mesh);
+  addSnowBank(mesh);
 
   const ranges = [
     { side: -1, z: -1050, reach: 420, len: 480, h: 70, w: 120 },

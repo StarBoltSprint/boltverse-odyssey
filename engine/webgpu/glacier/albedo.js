@@ -284,44 +284,41 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f, phase: f32) -> v
     let chunk = skyNoise(p * 0.17);
     return mix(snow, ice, smoothstep(0.58, 0.86, chunk));
   }
+  // 0.5 m near the camera, so the texel floor stays 2048 px/m. Farther, the
+  // tile grows with distance. A crack in the 1024 still then stays a few
+  // pixels instead of collapsing to speckle. The still is not enlarged.
+  let dist = length(p - u.cam.xyz);
+  let tile = mix(0.5, max(0.5, dist * 0.37), smoothstep(6.0, 16.0, dist));
+  let sc = 0.5 / tile;
   if (m > 5.5 && m < 6.5) {
-    // Near walls keep the native mip. Far walls stay one bias coarser so the repeat does not column.
-    let wallBias = select(4.0, 1.0, length(p - u.cam.xyz) < 140.0);
     var wallIce = vec3f(0.0);
     if (phase > 1.5) {
-      // Round 5 mixed two copies of this lattice at 0.5. Both copies share
-      // the cell period, so the sum is a lattice of two harmonics. One hex
-      // sample, rotated per tooth, with the four stills in stochastic weights.
+      // One hex sample, rotated per tooth. The yaw rotates the normal with
+      // the derivative, or one axis collapses.
       let ang = phase - 2.0;
       let c = cos(ang);
       let s = sin(ang);
       let q = vec3f(p.x * c - p.z * s, p.y, p.x * s + p.z * c) + vec3f(phase * 19.0, phase * 4.0, phase * 11.0);
       let qx = vec3f(px.x * c - px.z * s, px.y, px.x * s + px.z * c);
       let qy = vec3f(py.x * c - py.z * s, py.y, py.x * s + py.z * c);
-      // The yaw that decorrelates the tooth has to rotate the normal too.
-      // Projecting the rotated derivative onto the unrotated face collapses
-      // one axis (measured 6:1 to 10:1 on a face whose real ratio is 1.2).
       let nr = normalize(vec3f(nrm.x * c - nrm.z * s, nrm.y, nrm.x * s + nrm.z * c));
-      // cells 5 puts a new still inside the 12–32 px band on a face 25 m away.
-      // cells 2 left that face one smooth tile, which correlated with itself.
-      wallIce = sampleArr(iceArr, q, nr, qx, qy, iceGain, 5.0, wallBias, 2.0, ang, 1.0);
+      wallIce = sampleArr(iceArr, q * sc, nr, qx * sc, qy * sc, iceGain, 5.0, 1.0, 2.0, ang, 1.0);
     } else {
-      wallIce = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, wallBias, 0.0, 0.0, 0.0);
+      wallIce = sampleArr(iceArr, p * sc, nrm, px * sc, py * sc, iceGain, 2.0, 1.0, 0.0, 0.0, 0.0);
     }
     let cap = smoothstep(0.42, 0.75, nrm.y);
     return mix(wallIce, snow, cap);
   }
   if (m > 7.5) {
-    // Same ice family as the walls and seracs. Hex variants, bias 1.
-    // Snow only on a real cap, so the face stays ice-blue and form-shaded.
-    let ice = sampleArr(iceArr, p, nrm, px, py, iceGain, 2.0, 1.0, 0.0, 0.0, 0.0);
-    let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 1.0, 0.0, 0.0, 0.0);
+    let ice = sampleArr(iceArr, p * sc, nrm, px * sc, py * sc, iceGain, 2.0, 1.0, 0.0, 0.0, 0.0);
     let cap = smoothstep(0.55, 0.86, nrm.y);
-    return mix(mix(ice, serac, 0.5), snow, cap);
+    return mix(ice, snow, cap);
   }
-  let face = smoothstep(0.22, 0.62, nrm.y);
-  let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 4.0, 0.0, 0.0, 0.0);
-  return mix(serac, snow, face * 0.35);
+  // Spires were a blurred serac, which the sun turned into flat brown card.
+  // Same ice as the walls, form from the face normal, snow only on a cap.
+  let spire = sampleArr(iceArr, p * sc, nrm, px * sc, py * sc, iceGain, 2.0, 1.0, 0.0, 0.0, 0.0);
+  let cap = smoothstep(0.55, 0.82, nrm.y);
+  return mix(spire, snow, cap);
 }
 fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);

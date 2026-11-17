@@ -15,7 +15,9 @@ export const CORRIDOR_CLEARANCE_M = 0.5;
 export const MCAMS = [0, 0.9, 1.57];
 const W = 720;
 const H = 1280;
-const GRAZE = 0.08;
+// A crest seen almost edge-on is still the skyline. 0.05 keeps a true
+// sliver out and lets the spire edges that close the row count.
+const GRAZE = 0.05;
 
 const world = buildWorld();
 const verts = world.verts;
@@ -88,7 +90,8 @@ function raster(vp, y0, y1) {
 
 // LOD dither in glacier.js. Fall, arch, wall, mountain. Snow and horizon are not in it.
 function dithered(mat) {
-  return (mat > 0.5 && mat < 2.5) || (mat > 5.5 && mat < 7.5);
+  // Same test as the shader. Walls stay solid.
+  return (mat > 0.5 && mat < 2.5) || (mat > 6.5 && mat < 7.5);
 }
 function cover(d) {
   const t = Math.min(1, Math.max(0, (d - 460) / (160 - 460)));

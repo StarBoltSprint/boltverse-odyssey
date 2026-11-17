@@ -96,3 +96,11 @@ A flat mix of the four stills made every cell the same average, so the autocorre
 - Recipe appended: none. The frame fix is `albedo.js`.
 - Failure appended: `learn/failures.md` heading `2026-11-17 — A yaw that rotates the derivative and not the normal collapses one axis`.
 - Quota: not appended. This session has no Grok CLI ndjson, and a row was not invented.
+
+## This step
+
+- Step: round 10. Put the dawn sky and the far skyline back, and make the ice cracks legible.
+- Accepted because: the near massif rows are gone. `skyline-key-gate.mjs` fails the round-9 fixture on all six times. 24 s and 30 s pass that gate (sky 0.946 and 0.901, moon 0.879 and 0.901). The four earlier times are under 0.9 of the key's sky fraction. Horizon closed is 0.993 / 1 / 1. Structure gate fails the round-9 0.5 m tile and passes the new wall crops at 5.0 and 8.0 px against an expected 5.0. Horizon step on the lossless PNGs is 4.14, 3.353, 5.068, 3.52, 2.281, 1.928. Four fail the 3.29 bar. 30 s is under it. Dark-row: 5.567 s still fails, 24 s chase is 59/60, 30 s chase is 60/60, the round-2 fixture still fails. The run-31 foreground snow wedge is not reproduced. Texel PASS, stretch 1.28. Page tris 196812. Draws 9. Bolt x 360. Exposure was not changed.
+- Recipe appended: none.
+- Failure appended: `learn/failures.md` heading `2026-11-17 — A near wall is not a closed horizon`.
+- Quota: not appended. This session has no Grok CLI ndjson.

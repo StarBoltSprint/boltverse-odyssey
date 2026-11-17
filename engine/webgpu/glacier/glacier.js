@@ -415,7 +415,9 @@ fn darken15(c: vec3f) -> vec3f {
   }
   // Run 11 dither. Walls, arches, falls, and distant rock fade in by noise.
   // Snow is not discarded, so the horizon ridge stays solid. No fog.
-  if ((m > 0.5 && m < 2.5) || (m > 5.5 && m < 7.5)) {
+  // Walls stay solid. Discarding the near ones opened the skyline into a wall,
+  // and discarding the far ones drops the level row back under 0.98.
+  if ((m > 0.5 && m < 2.5) || (m > 6.5 && m < 7.5)) {
     let cover = smoothstep(460.0, 160.0, dist);
     let n = fract(sin(dot(v.p.xy, vec2f(12.9898, 78.233))) * 43758.5453);
     if (cover < n) { discard; }
