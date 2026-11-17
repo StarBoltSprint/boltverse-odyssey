@@ -40,3 +40,10 @@ Pushing wall vertices one at a time sheared them into a grazing edge and the for
 - A constant-z face aimed at this chase is unlit, because the sun points down the canyon.
 - The dark-row bar has to sit on the t=30 crease (dip about 40). A lower bar flags arch grain and drifts.
 - Page tris sit about 630 above the Node count. Budget both. This step's page count is 196682.
+
+## This step
+
+- Step: round 4. Follow-camera horizon gate and crest-staircase gate first, then close that picture without bulldozing the canyon.
+- Accepted because: `horizon-gate.mjs` PASS, closed 1 / 1 / 1, corridor hits 0, sheets 0, caps 0, CPU tris 196234, page tris 196866, draws 9, texel PASS, card 1.15 m, Bolt x 360.00. `follow-horizon-gate.mjs` fails `fixture-r3/t24.jpg` (window 0.757, stairs 2) and `t30.jpg` (window 0.860, stairs 6). The six new stills pass (window ≤ 0.024, stairs ≤ 1). Dark-row fails `fixture-r2-t30.jpg` and passes the six stills. Chase dark-row fails one frame, t=24.6. Tonemap FAIL: ice dE76 12.86–13.42, 11.70 s snow p50 delta 0.0508. Limits not moved.
+- Recipe appended: none.
+- Failure appended: `learn/failures.md` heading `2026-11-17 — The level horizon row is snow in the follow frame`.

@@ -1,6 +1,6 @@
 // Frozen rift. Noise-displaced sheets, arches, and peaks. No box primitives.
 import { createMesh } from '../engine/bricks/facet-mesh.js';
-import { MAT, GLACIER, planetCenter, PLANET, DRAWS, FLAKES, LIGHT } from './biome.js';
+import { MAT, GLACIER, planetCenter, PLANET, DRAWS, FLAKES } from './biome.js';
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
@@ -445,7 +445,7 @@ function addFall(mesh, z0, side) {
 }
 
 
-function addRange(mesh, x0, z0, x1, z1, height, halfW, fine) {
+function addRange(mesh, x0, z0, x1, z1, height, halfW, fine, mat = MAT.mountain) {
   const segs = fine ? 28 : 16;
   const sides = fine ? 11 : 6;
   const dx = x1 - x0;
@@ -484,7 +484,7 @@ function addRange(mesh, x0, z0, x1, z1, height, halfW, fine) {
       const c = rows[s + 1][k + 1];
       const d = rows[s + 1][k];
       const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
-      face(mesh, a, b, c, d, MAT.mountain, [mid[0] - (x0 + x1) * 0.5, 1.2, mid[2] - (z0 + z1) * 0.5]);
+      face(mesh, a, b, c, d, mat, [mid[0] - (x0 + x1) * 0.5, 1.2, mid[2] - (z0 + z1) * 0.5]);
     }
   }
 }
@@ -716,69 +716,6 @@ function shadeNormalsFor(verts) {
   return out;
 }
 
-// Ice that pinches into the reachable lat is the first hit down the run.
-// Slide those vertices out. The triangle stays, so the wall gap test holds,
-// and the ray reaches the massif past the course end.
-function keepWallsOut(verts) {
-  for (let i = 0; i < verts.length; i += 8) {
-    if (Math.round(verts[i + 3]) !== MAT.wall) continue;
-    const z = verts[i + 2];
-    const half = corridorHalf(z) + 6;
-    const cx = pathX(z);
-    const lat = verts[i] - cx;
-    if (Math.abs(lat) >= half) continue;
-    verts[i] = cx + Math.sign(lat || 1) * half;
-  }
-}
-
-// The wall foot is a sloped face turned away from the sun. It reads as a
-// one-pixel dark lip, and deleting it opens a sky crack. Lay that face on
-// the snow normal so the joint is lit snow, and split any long edge first.
-function snowLip(verts) {
-  const out = [];
-  const push = (n, ax, ay, az, bx, by, bz, cx, cy, cz) => {
-    for (const p of [[ax, ay, az], [bx, by, bz], [cx, cy, cz]]) {
-      out.push(p[0], p[1], p[2], MAT.snow, n[0], n[1], n[2], 0);
-    }
-  };
-  for (let t = 0; t + 24 <= verts.length; t += 24) {
-    const mat = Math.round(verts[t + 3]);
-    const ny = verts[t + 5];
-    const P = [0, 8, 16].map((k) => [verts[t + k], verts[t + k + 1], verts[t + k + 2]]);
-    const lip = mat === MAT.wall && Math.abs(ny) > 0.18
-      && (P[0][1] + P[1][1] + P[2][1]) / 3 < floorH((P[0][0] + P[1][0] + P[2][0]) / 3, (P[0][2] + P[1][2] + P[2][2]) / 3) + 3.5;
-    if (!lip) {
-      for (let k = 0; k < 24; k++) out.push(verts[t + k]);
-      continue;
-    }
-    const n = [verts[t + 4], verts[t + 5], verts[t + 6]];
-    // Longest edge first, until every piece is under the cap bar.
-    const queue = [P];
-    while (queue.length) {
-      const tri = queue.pop();
-      let emax = 0;
-      let cut = 0;
-      for (let i = 0; i < 3; i++) {
-        const a = tri[i];
-        const b = tri[(i + 1) % 3];
-        const d = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
-        if (d > emax) { emax = d; cut = i; }
-      }
-      const z = (tri[0][2] + tri[1][2] + tri[2][2]) / 3;
-      if (emax <= 11 || z < -700 || queue.length > 40) {
-        push(n, ...tri[0], ...tri[1], ...tri[2]);
-        continue;
-      }
-      const a = tri[cut];
-      const b = tri[(cut + 1) % 3];
-      const c = tri[(cut + 2) % 3];
-      const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
-      queue.push([a, m, c], [m, b, c]);
-    }
-  }
-  return new Float32Array(out);
-}
-
 // One geometric normal on all three corners. Smoothing across a shared
 // vertex mixes projection axes and the texel gate then sees a skewed UV.
 function stampFaceNormals(verts) {
@@ -838,20 +775,68 @@ function addCliffBand(mesh, z, x0, x1, y0, y1, cols, rows = 4) {
   addSlopeGrid(mesh, grid, [0, 0.12, 1]);
 }
 
-// Ice in the wall gaps the chase actually sees, just outside the lat, and one
-// massif past the course end. The centre stays open. Near bands use short
-// edges so a vertical face is not a sheet.
-function addMassif(mesh) {
-  // Same stations the short fins used, but each face is a cliff, not a lip.
-  // 6 m cells: the triangle diagonal stays under the 10 m sheet bar.
-  for (let z = -240; z >= -1360; z -= 12) {
-    const edge = corridorHalf(z) + 3;
-    const cx = pathX(z);
-    const y0 = floorH(cx, z) - 4;
-    addCliffBand(mesh, z, cx - edge - 18, cx - edge, y0, y0 + 22, 3, 3);
-    addCliffBand(mesh, z, cx + edge, cx + edge + 18, y0, y0 + 22, 3, 3);
+// Same tooth crest as the serac ranges, on the horizon material so the far
+// face is not dithered away. Vertices inside the runnable lat are not emitted
+// while the course is still open.
+function addHorizonRange(mesh, x0, z0, x1, z1, height, halfW, segs = 18, sides = 6) {
+  const dx = x1 - x0;
+  const dz = z1 - z0;
+  const len = Math.hypot(dx, dz) || 1;
+  const rx = -dz / len;
+  const rz = dx / len;
+  const rows = [];
+  for (let s = 0; s <= segs; s++) {
+    const t = s / segs;
+    const envelope = Math.sin(t * Math.PI);
+    const tooth = Math.pow(Math.abs(Math.sin(t * 11.0 + z0 * 0.002)), 0.45);
+    const nick = 0.5 + 0.5 * Math.abs(Math.sin(t * 23.0 + x0 * 0.001));
+    const h = height * envelope * (0.35 + 0.65 * tooth * nick);
+    const cx = x0 + dx * t;
+    const cz = z0 + dz * t;
+    const base = floorH(cx, cz);
+    const row = [];
+    for (let k = 0; k <= sides; k++) {
+      const q = k / sides * 2 - 1;
+      const fall = Math.pow(Math.abs(q), 0.55);
+      const span = halfW * (0.2 + 0.8 * Math.abs(q));
+      const jag = (hash(k * 5 + s, z0 * 0.02) - 0.5) * halfW * 0.12;
+      let x = cx + rx * (q * span + jag);
+      const y = base - 8 + h * (1 - fall);
+      const z = cz + rz * (q * span + jag);
+      if (z > GLACIER.z1) {
+        const half = corridorHalf(z) + 6;
+        const lat = x - pathX(z);
+        if (Math.abs(lat) < half) x = pathX(z) + Math.sign(lat || 1) * half;
+      }
+      row.push([x, y, z]);
+    }
+    rows.push(row);
   }
-  addCliffBand(mesh, GLACIER.z1 - 160, -2400, 2400, -40, 220, 32);
+  for (let s = 0; s < segs; s++) {
+    for (let k = 0; k < sides; k++) {
+      const a = rows[s][k];
+      const b = rows[s][k + 1];
+      const c = rows[s + 1][k + 1];
+      const d = rows[s + 1][k];
+      const mid = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2];
+      face(mesh, a, b, c, d, MAT.horizon, [mid[0] - (x0 + x1) * 0.5, 0.8, mid[2] - (z0 + z1) * 0.5]);
+    }
+  }
+}
+
+function addMassif(mesh) {
+  // A row of the same serac teeth as the canyon, across the gap, close enough
+  // to keep their faces. Side faces catch the sun. The run stays on the snow.
+  for (const z of [-130, -250, -430]) {
+    const span = z < -400 ? 2 : 3;
+    for (let i = -span; i <= span; i++) {
+      const cx = pathX(z) + i * 16;
+      const h = 72 + ((i + 3) % 3) * 24;
+      addRange(mesh, cx, z + 22, cx + 3, z - 34, h, 15, false, MAT.wall);
+    }
+  }
+  const zFar = GLACIER.z1 - 110;
+  addHorizonRange(mesh, -2000, zFar, 2000, zFar, 480, 28, 20, 5);
 }
 
 function addHorizonSeal(mesh) {
@@ -991,42 +976,14 @@ export function buildWorld() {
   const driftProto = makeDrift();
   const chunkProto = makeChunk();
   const planet = makePlanet();
-  let verts = mesh.finish();
+  const verts = mesh.finish();
   relaxOffAxis(verts);
   pinRouteBand(verts);
-  keepWallsOut(verts);
   stampFaceNormals(verts);
-  verts = snowLip(verts);
   stampFaceNormals(icicleProto);
   stampFaceNormals(driftProto);
   stampFaceNormals(chunkProto);
   const shadeNormals = shadeNormalsFor(verts);
-  // The foot keeps its geometric normal for the texel gate. Lighting treats
-  // it as snow facing the sky, so the joint is not a dark lip. A cliff that
-  // faces the camera is back to the sun; its shade normal takes enough of the
-  // sun direction that the edge is ice, not a black seam. The gate still
-  // reads the geometric normal.
-  const sun = LIGHT.sun.direction;
-  for (let i = 0; i < verts.length; i += 8) {
-    const mat = Math.round(verts[i + 3]);
-    const s = i / 8 * 3;
-    if (mat === MAT.snow) {
-      const ny = verts[i + 5];
-      if (Math.abs(ny) <= 0.18 || ny > 0.8) continue;
-      shadeNormals[s] = 0;
-      shadeNormals[s + 1] = 1;
-      shadeNormals[s + 2] = 0;
-      continue;
-    }
-    if (mat !== MAT.horizon) continue;
-    let x = verts[i + 4] * 0.35 + sun[0];
-    let y = verts[i + 5] * 0.35 + sun[1];
-    let z = verts[i + 6] * 0.35 + sun[2];
-    const l = Math.hypot(x, y, z) || 1;
-    shadeNormals[s] = x / l;
-    shadeNormals[s + 1] = y / l;
-    shadeNormals[s + 2] = z / l;
-  }
   const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   const worldTris = verts.length / 24;
   const planetTris = planet.length / 24;

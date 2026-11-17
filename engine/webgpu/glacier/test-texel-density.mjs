@@ -161,7 +161,7 @@ function groupStretch(mats) {
 }
 const stretchById = new Map([
   ['crust', groupStretch([MAT.snow, MAT.drift, MAT.horizon])],
-  ['glacier-ice', groupStretch([MAT.wall, MAT.icicle, MAT.drift])],
+  ['glacier-ice', groupStretch([MAT.wall, MAT.icicle, MAT.drift, MAT.horizon])],
   ['serac', groupStretch([MAT.mountain, MAT.horizon])],
   ['fall-ice', groupStretch([MAT.fall])],
   ['arch-ice', groupStretch([MAT.arch])],

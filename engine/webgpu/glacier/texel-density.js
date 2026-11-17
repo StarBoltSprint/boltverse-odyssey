@@ -25,7 +25,7 @@ export const IMAGINE = [
     surfaceClass: 'ice',
     tileMetres: TILE_M,
     files: ['tex/glacier-ice/v1.jpg', 'tex/glacier-ice/v2.jpg', 'tex/glacier-ice/v3.jpg', 'tex/glacier-ice/v4.jpg'],
-    worldMats: [MAT.wall, MAT.icicle, MAT.drift],
+    worldMats: [MAT.wall, MAT.icicle, MAT.drift, MAT.horizon],
     instances: ['icicle', 'chunk'],
   },
   {

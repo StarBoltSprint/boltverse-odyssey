@@ -1371,3 +1371,14 @@ Fix: size the skirt per stretch from the key-visible bottom, and score the skirt
 | Fix | Fins removed. Cliffs sit outside the reachable lat and one massif sits past z=-4500. The shade normal of the cliff takes part of the sun direction. The geometric normal stays, so horizon_closed still measures the real face. Dark-row X is 32. The round-2 still fails. The new stills and the chase pass. mcam 0 closed is 0.9848. Corridor hits 0. |
 | Guard | `node engine/webgpu/glacier/dark-row-gate.mjs` on `fixture-r2-t30.jpg` must fail. The same command on the new stills and chase frames must pass. `horizon-gate.mjs` stays at 0.98 and 0 corridor hits. |
 | Sources | `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/dark-row-gate.mjs`, `engine/webgpu/glacier/artifacts/run33-horizon/fixture-r2-t30.jpg`. |
+
+### 2026-11-17 — The level horizon row is snow in the follow frame
+
+| | |
+| --- | --- |
+| Take | Glacier wave 2 team F, round 4. Not a KEEP. |
+| Defect | Round 3 closed mcam row 640 and the follow pictures still showed peach sky between the walls, 6 m stair-steps, a beige hash, and a gutted canyon. |
+| Root cause | Row 640 is the level look. The follow camera looks down, so that row is snow. `keepWallsOut` pushed the canyon off the shoulders. The replacement cliffs were flat 6 m cells with a sun-facing shade normal, so they read as foam and as stairs. |
+| Fix | The follow gate measures sky under the ground-connected skyline, and a second gate counts axis-aligned crest steps. Round-3 t=24 and t=30 fail both. The canyon mesh is restored. The gap is the existing serac-range tooth, tagged wall. The level row is 1 / 1 / 1 and corridor hits are 0. Ice dE76 rose to about 13. The large faces still repeat. |
+| Guard | `node engine/webgpu/glacier/follow-horizon-gate.mjs` on `fixture-r3/t24.jpg` and `t30.jpg` must fail. The six new stills must pass. `horizon-gate.mjs` stays at 0.98 and 0 corridor hits. |
+| Sources | `engine/webgpu/glacier/follow-horizon-gate.mjs`, `engine/webgpu/glacier/world.js`, `engine/webgpu/glacier/artifacts/run33-horizon/fixture-r3/`. |

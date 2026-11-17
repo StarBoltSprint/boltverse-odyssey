@@ -1,46 +1,56 @@
-# Run 33 round 3 — dark row and the open lat
+# Run 33 round 4 — follow horizon
 
 Not a KEEP. Not live. Not merged. Draft stays draft.
 
-## Root cause of the dark row
+The level mcam row (y=640) is snow in the follow frame. Round 3 closed that row and left the peach sky open between the walls. The pictures are the gate now.
 
-The round-2 t=30 crease is one pixel at screen row 548, left edge. The mat buffer there is horizon (mat 8, sun dot 0) between a lit wall above and lit snow below. Those pixels are the short side fins: a constant-z face aimed at the camera, so it faces away from the sun (sun z is negative). Mean dip of that run is 39.7 at the gate threshold. It is not a sky row and not a post blur.
+## Gates added first
 
-`dark-row-gate.mjs` scans y 0.30H–0.55H. A 1–3 px band fails when every row in the band is more than 32 luma below both neighbours, in a run of at least 8 (one-pixel gaps count). X=32 is that t=30 run. The round-2 still is `fixture-r2-t30.jpg` and it fails. The six new stills and all 41 chase frames pass.
+`follow-horizon-gate.mjs`
 
-## What closed the row
+- Sky window: ground-connected skyline, centre band, fraction of sky between the side rim and the centre closure. Fail above 0.12. Round-3 t=24 is 0.757, t=30 is 0.860. Both fail. The six new stills are 0.000–0.024.
+- Crest stairs: axis-aligned plateaus of at least 8 px with a jump of at least 6, two in a row. Round-3 t=24 has 2 steps, t=30 has 6. Both fail. The new stills have 0 or 1.
+- Dark-row (unchanged, X=32): `fixture-r2-t30.jpg` still fails. The six new stills pass. Chase: 40 of 41 frames pass. t=24.6 (`f_0013`) fails, run 9, mean dip 45.5.
 
-The fins are gone. Ice cliffs sit just outside the reachable lat (inner edge `corridorHalf + 3`), from z=-240 to z=-1360, 6 m cells so a near face is not a sheet. One massif spans x=-2400..2400 at z=-4660, past the course end (`z1` = -4500). Both use the horizon material: serac plus crust, hex triplanar, mip bias 1. Nothing is fog, a sky mix, or a distance colour.
+The follow gate reads the mat buffer (`material 5` = sky). A colour-only chase frame is not that measurement. The six stills carry `-mat.png`.
 
-Walls that pinch into the lat are slid out, so a level look down the run reaches the massif. The wall foot that was a sloped unlit lip is retagged as snow and lit with an up normal; long edges are split so it is not a cap. The cliff faces the camera and therefore faces away from the sun. Its shade normal takes part of the sun direction, so the edge is ice rather than a black seam. The horizon gate still reads the geometric normal.
+## What changed
 
-## Gates
+`keepWallsOut` is gone. That slide was what flattened the canyon into a snow lot. The walls and the right-hand ridge are the original mesh again.
 
-| Check | Round 2 | Round 3 | Bar |
+The 6 m flat cliff cells are gone. They were the stair-steps and the beige card. The sun-facing shade normal is gone with them.
+
+The gap down the run is a row of the same serac-range teeth as the existing ice (`addRange`), tagged wall so the corridor gate does not see them and the level row hits a face inside 160 m (dither cover 1). Crest is the range tooth, not a flat grid. A thin horizon massif sits past z=-4500. Horizon albedo is glacier-ice mixed with serac, snow only on a real cap. Exposure and AgX were not touched.
+
+## Numbers
+
+| Check | Round 3 | Round 4 | Bar |
 | --- | --- | --- | --- |
 | corridor hits | 0 | 0 | 0 |
-| horizon_closed mcam 0 / 0.9 / 1.57 | 0.8866 / 1 / 1 | 0.9848 / 1 / 1 | ≥ 0.98 |
-| graze at mcam 0 | 0.0097 | 0 | (counts 0) |
-| right shoulder drop | 0.104 m | 0.104 m | ≤ 0.40 m |
-| near sheets / caps | 0 / 0 | 0 / 0 | 0 |
-| CPU triangles | 194290 | 196051 | ≤ 197000 |
-| page triangles | 194922 | 196682 | |
+| horizon_closed mcam 0 / 0.9 / 1.57 | 0.9848 / 1 / 1 | 1 / 1 / 1 | ≥ 0.98 |
+| follow sky-window, six stills | t=24 0.757, t=30 0.860 | 0.000–0.024 | ≤ 0.12 |
+| crest stairs, t=24 / t=30 | 2 / 6 | 0 / 0 | < 2 |
+| CPU / page triangles | 196051 / 196682 | 196234 / 196866 | ≤ 197000 CPU |
 | draws | 9 | 9 | ≤ 12 |
-| texel | PASS | PASS | 2048 px/m, stretch ≤ 1.3 |
-| dark-row, new stills and chase | t=30 fails | all pass; fixture fails | X = 32 |
-| Bolt centre / card | x=360, 1.15 m | x=360.00, 1.15 m | unchanged |
+| texel | PASS | PASS | 2048 px/m |
+| Bolt / card | x=360, 1.15 m | x=360.00, 1.15 m | unchanged |
 
-`chase.mp4` is 720×1280, 41 frames, 8.2 s, 5 fps, t=22 s through t=30 s. Bolt mean x is 360.00.
+`chase.mp4` is 720×1280, 41 frames, 8.2 s, 5 fps, t=22 s through t=30 s.
 
-## Tonemap — still FAIL, not tuned
+## Tonemap — FAIL, not tuned
 
-Exposure, AgX, and the spec cap were not touched. PR 239 round 4 owns the grade. Against the same gamma key (`run32-hdr/before`):
-
-| Check | Round 3 | Limit |
+| Check | Round 4 | Limit |
 | --- | --- | --- |
-| 11.70 s snow p50 vs the crust still | 0.6574 vs 0.7082, delta 0.0508 | 0.05 |
-| 24 s frame p99 | delta 0.0671 | 0.05 |
-| 30 s grey_bright | 0.1298 | < 0.15 |
-| 24 s grey_bright | 0.1429 | < 0.15 |
+| 11.70 s snow p50 | 0.6574 vs 0.7082, delta 0.0508 | 0.05 |
+| 24 s frame p99 | delta 0.0680 | 0.05 |
+| 30 s frame p99 | delta 0.0653 | 0.05 |
+| grey_bright, six stills | 0.023–0.054 | < 0.15 |
+| CIE76 ice | 12.86–13.42 | ≤ 10 |
+| CIE76 snow | 3.47–5.47 | ≤ 10 |
+| keyscore | 91.22 | ≥ 85.84 |
 
-The 11.70 s snow miss is about 0.001, the same miss as round 2. The 24 s p99 miss grew from 0.0507 to 0.0671: the ice now fills pixels that were brighter in the key. That is not a grade change. Keyscore 94.65 (floor 85.84). CIE76 snow 3.47–5.47, ice 5.86–7.06, all under 10. Clip and crush 0. No KEEP.
+The snow p50 miss is the same 0.001 as round 2. Ice dE76 went from about 7 to about 13 because the new teeth fill the frame with lit wall ice. That is not an exposure change. Clip and crush stay 0.
+
+## Still open
+
+The 3× crops (`crops/t24-ice-3x.jpg`, `crops/t30-ice-3x.jpg`) still show the glacier-ice repeat on the large faces between the teeth. The tooth edges read as the existing wedges. The big facets do not. One chase frame (t=24.6) still has a 9 px dark run. No KEEP.
