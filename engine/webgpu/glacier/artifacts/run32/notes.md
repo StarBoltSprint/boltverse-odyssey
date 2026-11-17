@@ -170,3 +170,24 @@ Clean shade, shadow factor under 0.35, mask blue under 0.03, lower-center crop:
 | 30 | 59.00 | 2.12 | −3.47 | 3.01 |
 
 All six pass the b\* band and CIE76 ≤ 10. Shade/sun linear luma ratio against 0.605: 0.533, 0.538, 0.566, 0.501, 0.551, 0.501. 7.90 and 24 are inside ±10%. The other four are low because the snow that clears the walls is brighter than the key's sun, while the shade is held at L\* 59. A face aimed at the sun is 1.101 before the clamp. ×1.068 is 1.176, which still crosses 1. The up-facing path product stays under 0.63.
+
+## Round 4 — sun intensity
+
+One scalar on the sun radiance. Direction stays `[0.72, 0.28, -0.63]`. Intensity goes from 1.25 to 0.85 (×0.68). The 0.68 is the sun-term scale that puts all six clean-mask shade/sun ratios inside 0.605 ±10% while the shade grade stays at L\* 59. Matching the key's lit L\* exactly (about 68) would push the 7.90 ratio above the +10% edge, so the scalar stops at the edge of that band.
+
+Key lit snow, run 31 lane: t10 `[68.15, 4.25, -4.91]`, t24 `[70.98, 5.07, -3.97]`, t30 `[67.79, 4.26, -4.91]`.
+
+| t (s) | shade L\* | b\* | CIE76 | ratio | lit Lab |
+| --- | --- | --- | --- | --- | --- |
+| 5.10 | 59.11 | −3.46 | 3.01 | 0.627 | 71.79, 3.43, 0.25 |
+| 5.567 | 59.38 | −3.45 | 3.04 | 0.632 | 71.85, 3.42, 0.50 |
+| 7.90 | 59.11 | −3.45 | 3.01 | 0.652 | 70.66, 3.23, −0.01 |
+| 11.70 | 59.38 | −3.33 | 3.06 | 0.595 | 73.69, 3.73, 0.75 |
+| 24 | 59.00 | −3.47 | 3.01 | 0.640 | 71.05, 3.23, −0.01 |
+| 30 | 59.00 | −3.47 | 3.01 | 0.598 | 73.07, 3.57, 0.63 |
+
+All six ratios are inside ±10%. Shade stays at L\* 59 and inside the b\* band. Lit snow is still about 3 to 5 L\* above the key's lane.
+
+A face aimed at the sun is 0.807 before `present()` clamps. ×1.068 is 0.861, which does not cross 1. The fraction of presented pixels with a channel at 255 is 0.
+
+Flat snow linear p50, `ny > 0.9`, all six frames together, is 0.280. Most of that snow is inside the sun ray's shadow. The multiplier that would put 0.280 at 0.708 is **2.533**. It was not applied. The sunlit subset of that snow has per-time medians 0.442, 0.446, 0.425, 0.466, 0.432, 0.466.

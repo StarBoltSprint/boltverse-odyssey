@@ -44,8 +44,10 @@ async function pass(aoOff, dir) {
   }
 }
 
-console.log('AO_OFF');
-await pass(true, path.join(root, 'off'));
+if (process.env.GLACIER_ONLY !== 'on') {
+  console.log('AO_OFF');
+  await pass(true, path.join(root, 'off'));
+}
 console.log('AO_ON');
 await pass(false, path.join(root, 'on'));
 console.log('STILLS_DONE');
