@@ -531,7 +531,8 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
     kind = 1.0;
   } else if (which == 2u || which == 3u) {
     let s = select(-1.0, 1.0, which == 3u);
-    w = vec3f(b.x + right.x * (c.x * 0.07 + s * 0.11) + fwd.x * c.y * 0.045, b.y + 0.02, b.z + right.y * (c.x * 0.07 + s * 0.11) + fwd.y * c.y * 0.045);
+    // A little behind the toes, on snow the camera can see.
+    w = vec3f(b.x + right.x * (c.x * 0.12 + s * 0.11) + fwd.x * (c.y * 0.07 - 0.08), b.y + 0.02, b.z + right.y * (c.x * 0.12 + s * 0.11) + fwd.y * (c.y * 0.07 - 0.08));
     kind = 2.0;
   } else {
     let pr = u.prints[which - 4u];
@@ -552,8 +553,12 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
   if (r2 > 1.0) { discard; }
   let r = sqrt(r2);
   let soft = 1.0 - smoothstep(0.15, 1.0, r);
-  // The cascaded shadow already darkens this snow. Do not paint a second blot.
-  let keep = select(1.0, smoothstep(0.08, 0.7, shadowAt(v.wp, vec3f(0.0, 1.0, 0.0))), v.k < 2.5);
+  // Body and paws are occlusion under the dog. They stay when the snow is
+  // already in cascade shade. The sun-offset blot is the attached shadow:
+  // it draws only on lit snow, so it does not stack on the cast shadow.
+  let sh = shadowAt(v.wp, vec3f(0.0, 1.0, 0.0));
+  let ao = v.k < 0.5 || (v.k > 1.5 && v.k < 2.5);
+  let keep = select(smoothstep(0.08, 0.7, sh), 1.0, ao);
   if (v.k < 0.5) {
     return vec4f(toLin(vec3f(0.16, 0.18, 0.26)), soft * 0.46 * keep);
   }
@@ -561,7 +566,7 @@ fn cell(f: u32, uv: vec2f) -> vec4f {
     return vec4f(toLin(vec3f(0.18, 0.20, 0.32)), soft * 0.34 * keep);
   }
   if (v.k < 2.5) {
-    return vec4f(toLin(vec3f(0.14, 0.16, 0.24)), soft * 0.40 * keep);
+    return vec4f(toLin(vec3f(0.10, 0.12, 0.18)), soft * 0.62 * keep);
   }
   // The still prefilter scores the snow. Prints stay out of that pass.
   if (u.sun.w > 29.5 && u.sun.w < 37.5) { discard; }
@@ -1265,6 +1270,8 @@ async function main() {
     const farBias = Number(window.__glacierFarBias);
     U[184] = Number.isFinite(farBias) ? farBias : 0;
     U[185] = window.__glacierSeamR3 === 1 ? 1 : 0;
+    U[186] = 240 + casc.radii[0];
+    U[187] = 240 + casc.radii[Math.min(1, casc.radii.length - 1)];
   }
 
   function beginPass(enc, clear) {

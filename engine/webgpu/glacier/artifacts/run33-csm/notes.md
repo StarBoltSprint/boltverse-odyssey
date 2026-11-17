@@ -1,3 +1,17 @@
+# Run 33 — cascaded sun shadows, round 11
+
+Not a KEEP. Not merged. Exposure was not changed. The 34° sun stays. The round-10 capture is `r10-fixture/` and it fails the four new gates.
+
+Paw contact is an occlusion darkening under the toes and it stays when the snow is already in cascade shade. The sun-offset blot still draws only as the attached shadow on lit snow. Contact darkening is 0.134, 0.139, 0.169, 0.140, 0.140, 0.132 at the six times. The round-10 shade times were −0.002, 0.033, 0.026, and −0.000, all under 0.04.
+
+The four taps widen with the blocker gap at 0.27° and with 0.032 rad of camera distance, because 0.27° alone is under a pixel on the grazed shelf. In the 25–120 m band the far edge is 3–5 px (it was 1 px) and thin lit spikes are 0–4 (they were 12–25).
+
+The key's 24 s ridge step is 0.394. The rendered step at 34°/132° is 0.036. Elevation 42 at the same azimuth is 0.039. Azimuth 80 at 34° reaches 0.160, still under 0.8 of the key, and it leaves the behind-the-runner heading. The sun was not moved. The 30 s left-to-right slope step is 0.032 against a key step of 0.079. Ice texture energy stays above 0.8 of the key. The slab-to-sky step is 0.022 and 0.012 against key steps of 0.076 and 0.086, so the silhouette gate still fails with the kept sun.
+
+Shade snow b*, lit times first then shade: 5.567 s +2.31, 24 s +2.26, 5.10 s −13.04, 7.9 s −12.03, 11.70 s −12.00, 30 s −13.03. Ambient was not changed.
+
+Vertex IoU is 0.924, 0.921, 0.904, 0.834, 0.802, 0.860. Cascade-factor seam means are 0.014, 0.009, 0.007, 0.008, 0.014, 0.011. Path shadow is 0.832, 0.255, 0.586, 0.645, 0.212, 0.763. Snapped vertex shimmer is 0. Round 2 coverage is still 0.999–1.000. The chases are 720×1280, 30 fps, 2.0 s at 5 s, 24 s, and 30 s.
+
 # Run 33 — cascaded sun shadows, round 10
 
 Not a KEEP. Not merged. Exposure was not changed. The sun, the 16–32 m band, and the ~20 cm filter stay. The 0.1 mm walk is its own commit so it can be folded on its own.

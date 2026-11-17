@@ -91,7 +91,7 @@ export function snapCenter(center, sun, radius, tile) {
 // z is 0 on the sunward plane and 1 past the sphere. The light axes are fixed
 // by the sun, not by lookAt, and the ortho origin is the snapped centre so a
 // camera move smaller than one shadow texel does not move the map.
-const SUNWARD = 240;
+export const SUNWARD = 240;
 export function cascadeMatrix(center, radius, sun) {
   const { s, u, L } = lightAxes(sun);
   const range = SUNWARD + radius;
@@ -220,12 +220,26 @@ fn viewBand(w: vec3f) -> f32 {
   let dist = length(w.xz - u.cam.xz);
   return smoothstep(16.0, 32.0, dist);
 }
-fn shadeCascade(ci: f32, q: vec4f, bias: f32, texelM: f32, penM: f32) -> f32 {
+// Blocker search is one depth load. The sun's angular radius is 0.27 degrees,
+// so the four taps widen with the blocker-receiver gap and stay tight at contact.
+fn penumbraWidth(uv: vec2f, zRef: f32, range: f32, camD: f32) -> f32 {
+  let dims = vec2f(textureDimensions(smap));
+  let stored = textureLoad(smap, vec2i(clamp(uv, vec2f(0.0), vec2f(0.999)) * dims), 0);
+  let gap = select(0.0, max(zRef - stored, 0.0), stored + 0.001 < zRef);
+  // 0.27° against the blocker keeps contact hard. On this grazing ground that
+  // angle is under a pixel past the near shelf, so the view term is 0.032 rad
+  // and a far edge does not stay a one-pixel sliver.
+  let fromBlocker = gap * range * 0.00471239;
+  let fromView = camD * 0.032;
+  return clamp(max(fromBlocker, fromView), 0.05, 2.4);
+}
+fn shadeCascade(ci: f32, q: vec4f, bias: f32, texelM: f32, range: f32, camD: f32) -> f32 {
   if (q.z < 0.0 || q.z > 1.0) { return 1.0; }
   let uv = shadowUv(q, ci);
   let tile = tileOf(ci);
   if (uv.x < tile.x || uv.y < tile.y || uv.x > tile.z || uv.y > tile.w) { return 1.0; }
-  return hw4(uv, q.z - bias, penM, texelM, tile);
+  let zRef = q.z - bias;
+  return hw4(uv, zRef, penumbraWidth(uv, zRef, range, camD), texelM, tile);
 }
 fn slopeBias(z: f32) -> f32 {
   let slope = min(max(abs(dpdx(z)), abs(dpdy(z))), 0.0004);
@@ -241,9 +255,9 @@ fn cascadePair(w: vec3f, nrm: vec3f) -> vec4f {
   let band = viewBand(w);
   // One world width on both maps. Two far texels on the far map and 8 cm on
   // the near map was a penumbra step, which is what the seam crops show.
-  let width = select(max(u.soft.z, u.soft.y), u.soft.z, u.soft.w > 1.5);
-  let s0 = shadeCascade(0.0, q0, b0, u.soft.x, width);
-  let s1 = shadeCascade(1.0, q1, b1, u.soft.y, width);
+  let camD = length(w.xz - u.cam.xz);
+  let s0 = shadeCascade(0.0, q0, b0, u.soft.x, u.extra.z, camD);
+  let s1 = shadeCascade(1.0, q1, b1, u.soft.y, u.extra.w, camD);
   return vec4f(s0, s1, e0, band);
 }
 fn shadowPhone(w: vec3f, nrm: vec3f) -> f32 {
@@ -259,9 +273,9 @@ fn shadowHigh(w: vec3f, nrm: vec3f) -> f32 {
   let b0 = slopeBias(q0.z);
   let b1 = slopeBias(q1.z);
   let e0 = max(abs(q0.x), abs(q0.y));
-  let pen = u.soft.z;
-  if (e0 < 0.98) { return shadeCascade(0.0, q0, b0, u.soft.x, pen); }
-  return shadeCascade(1.0, q1, b1, u.soft.y, pen);
+  let camD = length(w.xz - u.cam.xz);
+  if (e0 < 0.98) { return shadeCascade(0.0, q0, b0, u.soft.x, u.extra.z, camD); }
+  return shadeCascade(1.0, q1, b1, u.soft.y, u.extra.w, camD);
 }
 fn depthProbe(w: vec3f) -> vec4f {
   let q = u.c0 * vec4f(w, 1.0);
@@ -511,8 +525,9 @@ struct TL {
   let pix = vec2i(clamp(clamped, vec2f(0.0), vec2f(0.999)) * dims);
   let stored = textureLoad(smap, pix, 0);
   let cmpv = textureSampleCompareLevel(smap, scmp, clamped, clamp(zRef, 0.0, 1.0));
-  let s0 = shadeCascade(0.0, q0, bias, u.soft.x, width);
-  let s1 = shadeCascade(1.0, q1, bias, u.soft.y, width);
+  let camD = length(v.w.xz - u.cam.xz);
+  let s0 = shadeCascade(0.0, q0, bias, u.soft.x, u.extra.z, camD);
+  let s1 = shadeCascade(1.0, q1, bias, u.soft.y, u.extra.w, camD);
   let factor = shadowAt(v.w, v.n);
   let uv0 = shadowUv(q0, 0.0);
   let uv1 = shadowUv(q1, 1.0);

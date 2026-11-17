@@ -1,0 +1,95 @@
+{
+  "rows": [
+    {
+      "tag": "24",
+      "iceEnergy": 0.0143,
+      "iceEnergyKey": 0.0165,
+      "silhouette": 0.022,
+      "silhouetteKey": 0.076
+    },
+    {
+      "tag": "30",
+      "iceEnergy": 0.0175,
+      "iceEnergyKey": 0.0204,
+      "silhouette": 0.012,
+      "silhouetteKey": 0.086
+    },
+    {
+      "tag": "51",
+      "contact": 0.134,
+      "shadeB": -13.04,
+      "penumbra": {
+        "thin": 1,
+        "near": 6,
+        "far": 4
+      }
+    },
+    {
+      "tag": "5567",
+      "contact": 0.139,
+      "shadeB": 2.31,
+      "penumbra": {
+        "thin": 2,
+        "near": 6,
+        "far": 3
+      }
+    },
+    {
+      "tag": "79",
+      "contact": 0.169,
+      "shadeB": -12.03,
+      "penumbra": {
+        "thin": 0,
+        "near": 7,
+        "far": 4
+      }
+    },
+    {
+      "tag": "117",
+      "contact": 0.14,
+      "shadeB": -12,
+      "penumbra": {
+        "thin": 1,
+        "near": 2,
+        "far": 4
+      }
+    },
+    {
+      "tag": "24",
+      "contact": 0.14,
+      "shadeB": 2.26,
+      "penumbra": {
+        "thin": 0,
+        "near": 7,
+        "far": 5
+      }
+    },
+    {
+      "tag": "30",
+      "contact": 0.132,
+      "shadeB": -13.03,
+      "penumbra": {
+        "thin": 4,
+        "near": 6,
+        "far": 4
+      }
+    },
+    {
+      "form": {
+        "ridgeNow": 0.03587607843137253,
+        "ridgeKey": 0.39417254901960785,
+        "slopeNow": 0.03181508582773973,
+        "slopeKey": 0.07930533347569135
+      },
+      "shadeB": {
+        "24": 2.26,
+        "30": -13.03,
+        "51": -13.04,
+        "79": -12.03,
+        "117": -12,
+        "5567": 2.31
+      }
+    }
+  ],
+  "verdict": "FAIL"
+}

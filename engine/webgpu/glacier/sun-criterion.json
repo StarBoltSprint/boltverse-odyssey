@@ -79,5 +79,22 @@
     "elevationDeg": [22, 26],
     "azimuthFromMinusZDeg": [168, 176, 184],
     "note": "Azimuth 180 places the sun behind the runner, so light travels with the heading. Shadows fall down-course, as bands beyond the spires, and the path in the follow view can be lit. 168 and 184 are 12 degrees off that axis. Elevation stays dawn."
+  },
+  "round11": {
+    "kept": { "elevationDeg": 34, "azimuthFromMinusZDeg": 132, "direction": [0.6161, 0.5592, 0.5547] },
+    "keyRidgeStep": 0.394,
+    "bar": 0.315,
+    "renderedRidgeStep": {
+      "el34az132": 0.036,
+      "el42az132": 0.039,
+      "el34az80": 0.160
+    },
+    "cpuPathOcclusion": {
+      "el34az132": 0.67,
+      "el42az132": 0.63,
+      "el34az80": 0.39,
+      "el40az80": 0.39
+    },
+    "note": "The key's 24 s ridge step is 0.394. Raising elevation to 42 at the same azimuth leaves the rendered step at 0.039. Swinging to azimuth 80 lifts it to 0.160, still under 0.8 of the key, and moves the sun off the behind-the-runner heading that lights the path. The sun stays at 34 degrees. Coverage is not forced."
   }
 }

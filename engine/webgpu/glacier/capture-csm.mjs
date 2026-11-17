@@ -152,25 +152,29 @@ await page(8812, 9412, 'cap=1&w=720&h=1280&csmoff=1', async ({ evalJson }) => {
 
 const frames = path.join(root, 'chase-frames');
 fs.mkdirSync(frames, { recursive: true });
+const segments = [['5s', 5], ['24s', 24], ['30s', 30]];
 await page(8813, 9413, 'cap=1&w=720&h=1280', async ({ evalJson }) => {
   const fps = 30;
   const n = 60;
-  for (let i = 0; i < n; i++) {
-    const t = 5 + i / fps;
-    const payload = await evalJson(`window.__glacierStill(${t}, "beauty").then(r => JSON.stringify(r))`);
-    if (payload.info.gpuErr) throw new Error('chase ' + payload.info.gpuErr);
-    const png = path.join(frames, `f_${String(i).padStart(4, '0')}.png`);
-    fs.writeFileSync(png, Buffer.from(payload.png, 'base64'));
-    if (i % 4 === 0) log('chase ' + i);
+  for (const [name, start] of segments) {
+    const dir = path.join(frames, name);
+    fs.mkdirSync(dir, { recursive: true });
+    for (let i = 0; i < n; i++) {
+      const t = start + i / fps;
+      const payload = await evalJson(`window.__glacierStill(${t}, "beauty").then(r => JSON.stringify(r))`);
+      if (payload.info.gpuErr) throw new Error('chase ' + name + ' ' + payload.info.gpuErr);
+      fs.writeFileSync(path.join(dir, `f_${String(i).padStart(4, '0')}.png`), Buffer.from(payload.png, 'base64'));
+      if (i % 15 === 0) log(`chase ${name} ${i}`);
+    }
+    const enc = spawnSync('ffmpeg', [
+      '-y', '-framerate', '30', '-i', path.join(dir, 'f_%04d.png'),
+      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart',
+      path.join(root, `chase-${name}.mp4`),
+    ], { encoding: 'utf8' });
+    if (enc.status !== 0) throw new Error(enc.stderr.slice(-400));
+    log('chase encoded ' + name);
   }
 });
-const enc = spawnSync('ffmpeg', [
-  '-y', '-framerate', '30', '-i', path.join(frames, 'f_%04d.png'),
-  '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart',
-  path.join(root, 'chase.mp4'),
-], { encoding: 'utf8' });
-if (enc.status !== 0) throw new Error(enc.stderr.slice(-400));
-log('chase encoded');
 
 await page(8814, 9414, 'cap=1&w=540&h=960', async ({ evalJson }) => {
   const perf = await evalJson('window.__glacierPerf(4).then(r => JSON.stringify(r))');
