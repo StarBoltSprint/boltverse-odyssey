@@ -195,7 +195,7 @@ for (const tag of tags) {
   const { w, h } = shadow;
   const blocked = reference(info.eye, info.tgt, w, h);
   const vp = mul(persp(FOV_Y, w / h, 0.08, 14000), lookAt(info.eye, info.tgt, [0, 1, 0]));
-  const counts = { gpuOnly: 0, terrain: 0, drift: 0, wall: 0, none: 0, other: 0, refBlocked: 0, refHit: 0, refMiss: 0 };
+  const counts = { gpuOnly: 0, terrain: 0, drift: 0, wall: 0, none: 0, other: 0, refBlocked: 0, refHit: 0, refMiss: 0, points: [] };
   for (let t = 0; t < verts.length; t += 8 * 4) {
     if (Math.round(verts[t + 3]) !== 0) continue;
     const p = [verts[t], verts[t + 1], verts[t + 2]];
@@ -229,7 +229,7 @@ for (const tag of tags) {
     else if (kind === 'wall' || kind === 'icicle' || kind === 'chunk') counts.wall++;
     else if (kind == null) {
       counts.none++;
-      if (counts.none <= 3) console.log(' clear', tag, p.map((v) => +v.toFixed(2)), 'px', [scr[0] | 0, scr[1] | 0]);
+      counts.points.push([+p[0].toFixed(3), +p[1].toFixed(3), +p[2].toFixed(3)]);
     }
     else counts.other++;
   }

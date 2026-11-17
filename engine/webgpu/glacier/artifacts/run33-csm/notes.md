@@ -1,4 +1,20 @@
-# Run 33 — cascaded sun shadows, round 7
+# Run 33 — cascaded sun shadows, round 8
+
+The shadow pass can write a caster id (draw and primitive) next to the depth. At the class-(b) vertices the centre texel is usually empty. Where it is written, the writer is the world mesh.
+
+| draw at the centre texel | 11.70 s (472) | 24 s (132) |
+| --- | --- | --- |
+| nothing written | 457 | 113 |
+| world mat 6 (canyon wall) | 15 | 18 |
+| world mat 1 | 0 | 1 |
+| Bolt card | 0 | 0 |
+| icicle, chunk, drift, flakes | 0 | 0 |
+| other cascade's tile | 0 | 0 |
+
+Of the empty centres, a wall, an icicle, or a drift sits within two texels for 62 of 457 at 11.70 s and 34 of 113 at 24 s. The rest have no writer that close. The 5.567 s seam pixel is empty on both cascades. No draw was removed. IoU, seams, and coverage are unchanged from round 7. The vertex shimmer gate is still 0 snapped and 0.0292 unsnapped. Round 2 coverage is still 0.999–1.000. The round 3 blocky stills still fail.
+
+# Round 7
+
 
 Not a KEEP. Not live. Not merged. Exposure was not changed. The compare fix, the 24 MiB atlas, the 34° sun, the 16–32 m band, and the shared ~20 cm filter stay.
 

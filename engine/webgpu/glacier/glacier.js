@@ -8,7 +8,7 @@ import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
 import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
-import { buildCascades, shadowFnsWgsl, SHADOW_DRAWS, tierConfig } from './shadows.js';
+import { buildCascades, applyMat, shadowFnsWgsl, SHADOW_DRAWS, tierConfig } from './shadows.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
@@ -881,7 +881,7 @@ async function main() {
   const smTex = dev.createTexture({
     size: CSM_CFG.atlas,
     format: 'depth32float',
-    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC,
   });
   const nC = CSM_CFG.count;
   const bakeProps = (proto, data) => {
@@ -1080,6 +1080,41 @@ async function main() {
     primitive: { topology: 'triangle-list', cullMode: 'none' },
     depthStencil: shDepth,
   });
+  const idFmt = 'rg32uint';
+  const idTex = dev.createTexture({
+    size: CSM_CFG.atlas, format: idFmt,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+  });
+  const idBpr = Math.ceil(CSM_CFG.atlas[0] * 8 / 256) * 256;
+  const depthBpr = Math.ceil(CSM_CFG.atlas[0] * 4 / 256) * 256;
+  const idRb = dev.createBuffer({ size: idBpr * CSM_CFG.atlas[1], usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const depthRb = dev.createBuffer({ size: depthBpr * CSM_CFG.atlas[1], usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const idTarget = [{ format: idFmt }];
+  const pWorldId = dev.createRenderPipeline({
+    layout: shLayout,
+    vertex: { module: mod, entryPoint: 'vsWorldSh', buffers: [vbuf] },
+    fragment: { module: mod, entryPoint: 'fsShadowId', targets: idTarget },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
+  const pBoltId = dev.createRenderPipeline({
+    layout: shBoltLayout,
+    vertex: { module: mod, entryPoint: 'vsBoltSh' },
+    fragment: { module: mod, entryPoint: 'fsBoltId', targets: idTarget },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: shDepth,
+  });
+  const worldTrisN = world.verts.length / 24;
+  const casterRanges = [{ name: 'world', a: 0, b: worldTrisN }];
+  {
+    let cursor = worldTrisN;
+    for (const name of ['icicle', 'chunk', 'drift']) {
+      const inst = world.instances[name];
+      const n = (inst.proto.length / 24) * inst.count;
+      casterRanges.push({ name, a: cursor, b: cursor + n });
+      cursor += n;
+    }
+  }
   const flakeGpu = new Float32Array(FLAKE_N * 8);
   const flakeBuf = dev.createBuffer({
     size: flakeGpu.byteLength,
@@ -1894,6 +1929,104 @@ async function main() {
     maskForce = prevMask;
     gateMode = prevMode;
     return { png: await blobOf(frame.src, 'image/png'), info: poseInfo(frame.gpuErr) };
+  };
+  window.__glacierCasterHist = async (t, points) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    fillU(sim);
+    dev.queue.writeBuffer(ub, 0, U);
+    const enc = dev.createCommandEncoder();
+    const pass = enc.beginRenderPass({
+      colorAttachments: [{ view: idTex.createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] }],
+      depthStencilAttachment: { view: smTex.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'store' },
+    });
+    pass.setBindGroup(0, shBg);
+    pass.setPipeline(pWorldId);
+    pass.setVertexBuffer(0, casterBuf);
+    pass.draw(casterVerts, nC);
+    pass.setPipeline(pBoltId);
+    pass.setBindGroup(0, shBoltBg);
+    pass.draw(6, nC);
+    pass.end();
+    enc.copyTextureToBuffer({ texture: idTex }, { buffer: idRb, bytesPerRow: idBpr }, CSM_CFG.atlas);
+    enc.copyTextureToBuffer({ texture: smTex }, { buffer: depthRb, bytesPerRow: depthBpr }, CSM_CFG.atlas);
+    dev.queue.submit([enc.finish()]);
+    await idRb.mapAsync(GPUMapMode.READ);
+    await depthRb.mapAsync(GPUMapMode.READ);
+    const idU = new Uint32Array(idRb.getMappedRange());
+    const depthF = new Float32Array(depthRb.getMappedRange());
+    const casc = buildCascades({ eye: lastEye, tgt: lastTgt, fovY: FOV_Y, aspect: W / H, sun: sunDir, tier: 'phone' });
+    const atlas = CSM_CFG.atlas;
+    const nameOf = (prim) => {
+      const tri = world.verts;
+      for (const r of casterRanges) if (prim >= r.a && prim < r.b) {
+        if (r.name !== 'world') return r.name;
+        const mat = Math.round(tri[(prim * 3) * 8 + 3]);
+        return mat < 0.5 ? 'snow' : 'world-mat' + mat;
+      }
+      return 'out-of-range';
+    };
+    const hist = {};
+    const bleed = {};
+    const examples = [];
+    const both = [];
+    const bump = (map, k) => { map[k] = (map[k] || 0) + 1; };
+    for (const p of points) {
+      let best = null;
+      const samples = [];
+      for (let ci = 0; ci < 2; ci++) {
+        const q = applyMat(casc.mats[ci], p);
+        const e = Math.max(Math.abs(q[0]), Math.abs(q[1]));
+        if (e >= 0.995 || q[2] < 0 || q[2] > 1) continue;
+        const ndcX = q[0] * 0.5 + 0.5;
+        const ndcY = 0.5 - q[1] * 0.5;
+        const tile = atlas[1] > 3500 ? (ci === 0 ? [0, 0, 1, 0.5] : [0, 0.5, 1, 1]) : (ci === 0 ? [0, 0, 1, 2 / 3] : [0, 2 / 3, 0.5, 1]);
+        const u = tile[0] + (tile[2] - tile[0]) * ndcX;
+        const v = tile[1] + (tile[3] - tile[1]) * ndcY;
+        const x = Math.max(0, Math.min(atlas[0] - 1, (u * atlas[0]) | 0));
+        const y = Math.max(0, Math.min(atlas[1] - 1, (v * atlas[1]) | 0));
+        const stored = depthF[y * (depthBpr / 4) + x];
+        const who = idU[y * (idBpr / 4) + x * 2];
+        const prim = idU[y * (idBpr / 4) + x * 2 + 1];
+        const rec = { ci, stored: +stored.toFixed(4), who, prim, qz: +q[2].toFixed(4), name: (who & 0xffff) === 2 ? 'bolt' : ((who & 0xffff) === 0 ? 'empty' : nameOf(prim)) };
+        samples.push(rec);
+        if (best == null || stored < best.stored) best = { ci, stored, who, prim, qz: q[2], e };
+      }
+      if (both.length < 2) both.push({ p, samples });
+      if (!best) { bump(hist, 'outside'); continue; }
+      const draw = best.who & 0xffff;
+      const writer = best.who >>> 16;
+      if (draw === 0) {
+        bump(hist, best.stored < 0.999 ? 'depth-without-id' : 'empty');
+        const q = applyMat(casc.mats[best.ci], p);
+        const ndcX = q[0] * 0.5 + 0.5, ndcY = 0.5 - q[1] * 0.5;
+        const tile = atlas[1] > 3500 ? (best.ci === 0 ? [0, 0, 1, 0.5] : [0, 0.5, 1, 1]) : (best.ci === 0 ? [0, 0, 1, 2 / 3] : [0, 2 / 3, 0.5, 1]);
+        const u = tile[0] + (tile[2] - tile[0]) * ndcX;
+        const v = tile[1] + (tile[3] - tile[1]) * ndcY;
+        const x0 = (u * atlas[0]) | 0, y0 = (v * atlas[1]) | 0;
+        let nearName = 'no-neighbour';
+        for (let dy = -2; dy <= 2 && nearName === 'no-neighbour'; dy++) {
+          for (let dx = -2; dx <= 2; dx++) {
+            const x = x0 + dx, y = y0 + dy;
+            if (x < 0 || y < 0 || x >= atlas[0] || y >= atlas[1]) continue;
+            const whoN = idU[y * (idBpr / 4) + x * 2];
+            const primN = idU[y * (idBpr / 4) + x * 2 + 1];
+            const d = whoN & 0xffff;
+            if (d === 2) nearName = 'bolt';
+            else if (d === 1) nearName = nameOf(primN);
+          }
+        }
+        bump(hist, 'near-' + nearName);
+        continue;
+      }
+      if (writer !== best.ci) bump(bleed, 'cascade-' + best.ci + '-wrote-' + writer);
+      const name = draw === 2 ? 'bolt' : nameOf(best.prim);
+      bump(hist, name);
+      if (examples.length < 6) examples.push({ name, draw, prim: best.prim, writer, ci: best.ci, stored: +best.stored.toFixed(4), qz: +best.qz.toFixed(4) });
+    }
+    idRb.unmap();
+    depthRb.unmap();
+    return { n: points.length, hist, bleed, examples, ranges: casterRanges };
   };
   window.__glacierVertShadow = async (eye, tgt, snap) => {
     window.__glacierSnap = snap ? 1 : 0;

@@ -288,18 +288,23 @@ struct SH {
   @builtin(position) p: vec4f,
   @location(0) @interpolate(linear) clip: vec4f,
   @location(1) mat: f32,
+  @location(2) @interpolate(flat) who: u32,
+  @location(3) @interpolate(flat) prim: u32,
 };
 struct SB {
   @builtin(position) p: vec4f,
   @location(0) @interpolate(linear) clip: vec4f,
   @location(1) uv: vec2f,
+  @location(2) @interpolate(flat) who: u32,
 };
-@vertex fn vsWorldSh(@location(0) a: vec4f, @builtin(instance_index) inst: u32) -> SH {
+@vertex fn vsWorldSh(@location(0) a: vec4f, @builtin(vertex_index) vi: u32, @builtin(instance_index) inst: u32) -> SH {
   let clip = cascadeOf(inst) * vec4f(a.xyz, 1.0);
   var o: SH;
   o.clip = clip;
   o.p = atlasClip(clip, inst);
   o.mat = a.w;
+  o.who = (inst << 16u) | 1u;
+  o.prim = vi / 3u;
   return o;
 }
 @vertex fn vsInstSh(@location(0) a: vec4f, @location(1) b: vec4f, @location(2) i0: vec4f, @location(3) i1: vec4f, @builtin(instance_index) inst: u32) -> SH {
@@ -318,6 +323,8 @@ struct SB {
   o.clip = clip;
   o.p = atlasClip(clip, ci);
   o.mat = a.w;
+  o.who = (ci << 16u) | 1u;
+  o.prim = 0u;
   return o;
 }
 @vertex fn vsBoltSh(@builtin(vertex_index) vi: u32, @builtin(instance_index) inst: u32) -> SB {
@@ -337,7 +344,13 @@ struct SB {
   o.clip = clip;
   o.p = atlasClip(clip, inst);
   o.uv = vec2f(-c.x + 0.5, 1.0 - c.y);
+  o.who = (inst << 16u) | 2u;
   return o;
+}
+@fragment fn fsShadowId(v: SH) -> @location(0) vec2u {
+  if (abs(v.clip.x) > v.clip.w || abs(v.clip.y) > v.clip.w) { discard; }
+  if (v.mat < 0.5) { discard; }
+  return vec2u(v.who, v.prim);
 }
 @fragment fn fsShadowClip(v: SH) {
   if (abs(v.clip.x) > v.clip.w || abs(v.clip.y) > v.clip.w) { discard; }
@@ -362,6 +375,21 @@ fn boltShA(f: u32, uv: vec2f) -> f32 {
   let lift = 0.045 * lw * ((1.0 - sw) * max(sin(gph), 0.0) + sw * max(-sin(gph), 0.0)) * smoothstep(0.25, 1.2, spd) * (1.0 - u.misc.x);
   let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
   if (mix(boltShA(a, uvs), boltShA(bb, uvs), k) < 0.03) { discard; }
+}
+@fragment fn fsBoltId(v: SB) -> @location(0) vec2u {
+  if (abs(v.clip.x) > v.clip.w || abs(v.clip.y) > v.clip.w) { discard; }
+  let ff = u.bp.w;
+  let a = u32(floor(ff)) % 32u;
+  let bb = (a + 1u) % 32u;
+  let k = fract(ff);
+  let gph = ff / 32.0 * 6.2831853;
+  let lw = smoothstep(0.60, 0.88, v.uv.y);
+  let sw = smoothstep(0.40, 0.60, v.uv.x);
+  let spd = u.bp.z;
+  let lift = 0.045 * lw * ((1.0 - sw) * max(sin(gph), 0.0) + sw * max(-sin(gph), 0.0)) * smoothstep(0.25, 1.2, spd) * (1.0 - u.misc.x);
+  let uvs = idleTailUV(v.uv + vec2f(0.0, lift));
+  if (mix(boltShA(a, uvs), boltShA(bb, uvs), k) < 0.03) { discard; }
+  return vec2u(v.who, 0u);
 }
 struct PR {
   @builtin(position) p: vec4f,

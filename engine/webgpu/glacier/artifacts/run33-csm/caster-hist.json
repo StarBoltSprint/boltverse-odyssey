@@ -1,0 +1,14 @@
+{
+  "note": "Caster id at the class-(b) vertices. Draw 1 is the world-plus-props buffer. Draw 2 would be the Bolt card. Empty means the centre texel was never written. near-* means the centre was empty and that draw sits within two texels. No cross-cascade bleed.",
+  "117": {
+    "n": 472,
+    "centre": { "empty": 457, "world-mat6": 15 },
+    "emptyNeighbour": { "none": 395, "world-mat6": 34, "world-mat1": 12, "icicle": 11, "drift": 5 }
+  },
+  "24": {
+    "n": 132,
+    "centre": { "empty": 113, "world-mat6": 18, "world-mat1": 1 },
+    "emptyNeighbour": { "none": 79, "world-mat6": 29, "world-mat1": 5 }
+  },
+  "5567seam": { "centre": "empty on both cascades" }
+}
