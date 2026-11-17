@@ -263,11 +263,11 @@ fn albedoOf(m: f32, p: vec3f, nrm: vec3f, px: vec3f, py: vec3f) -> vec3f {
   let serac = sampleArr(seracArr, p, nrm, px, py, iceGain, 2.0, 4.0);
   return mix(serac, snow, face * 0.35);
 }
-fn litIce(alb: vec3f, n: vec3f, view: vec3f) -> vec3f {
+fn litIce(alb: vec3f, n: vec3f, view: vec3f, ao: f32) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let graze = smoothstep(0.50, 0.08, ndv);
   let spec = pow(clamp(dot(n, normalize(sunN() + view)), 0.0, 1.0), ${C.specPower}.0);
-  return alb * dawnIrr(n) + alb * spec * graze * ${C.sheen};
+  return alb * (ambientIrr(n) * ao + sunIrr(n)) + alb * spec * graze * ${C.sheen};
 }
 `;
 }
@@ -281,12 +281,13 @@ function smoothstep(e0, e1, x) {
 }
 
 // CPU twin of litIce. Grazing sheen is zero once ndv is above 0.50.
-export function litIce(alb, n, view, light) {
+// irrRgb is the full irradiance (ambient already multiplied by AO, plus sun).
+export function litIce(alb, n, view, light, irrRgb) {
   const nn = norm3(n);
   const vv = norm3(view);
   const sun = norm3((light.sun || light.moon).direction);
   const ndl = Math.max(0, dot(nn, sun));
-  const irr = shadeAt(light, ndl, Math.max(0, nn[1])).rgb;
+  const irr = irrRgb || shadeAt(light, ndl, Math.max(0, nn[1])).rgb;
   const ndv = Math.max(0, dot(nn, vv));
   const graze = smoothstep(0.50, 0.08, ndv);
   const half = norm3(add(sun, vv));

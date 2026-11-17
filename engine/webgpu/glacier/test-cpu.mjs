@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DE76_MAX } from '../biome-factory/cie76.mjs';
-import { shadeAt, norm3 } from '../biome-factory/light-rig.js';
+import { norm3 } from '../biome-factory/light-rig.js';
+import { glacierIrr, shSelfCheck } from './sh-sky.js';
 import { skyLinear, skyDelta, dirFrom } from '../biome-factory/procedural-sky.js';
 import { followEye, lookAt, persp, mul, FOV_Y } from '../engine/bricks/follow-cam.js';
 import { invertMat4 } from '../biome-factory/mat4.js';
@@ -32,6 +33,10 @@ if (span < 3000) bad('rift shorter than 3 km ' + span);
 if (world.budget.totalTris > LIMITS.tris) bad('tris ' + world.budget.totalTris);
 if (world.budget.draws > LIMITS.draws) bad('draws ' + world.budget.draws);
 if (world.budget.draws !== DRAWS.length) bad('draw list mismatch');
+if (!world.budget.ao || world.budget.ao.drawsAdded !== 0) bad('ao bake added a draw');
+if (world.budget.ao.rays !== 64) bad('ao rays ' + world.budget.ao.rays);
+const sh = shSelfCheck();
+if (!sh.ok) bad('sh self-check ' + sh.errs.join('; '));
 if (!world.budget.drawNames.includes('icicle') || !world.budget.drawNames.includes('drift')) bad('missing instanced props');
 
 const zs = [];
@@ -74,18 +79,28 @@ if (card.cardH !== 1.15) bad('bolt card height is not the live 1.15 m');
 if (Math.abs(card.cardW - 1.15 * 224 / 652) > 1e-9) bad('bolt card width drifted');
 
 const sun = norm3(LIGHT.sun.direction);
-const full = shadeAt(LIGHT, 1, 0).rgb;
+const field = glacierIrr([0, 1, 0], 1);
 for (const [name, alb] of Object.entries(ICE)) {
   if (!Array.isArray(alb)) continue;
-  const prod = alb.map((a, i) => a * (LIGHT.ambient.rgb[i] + LIGHT.sun.rgb[i] * LIGHT.sun.intensity));
-  if (Math.max(...prod) >= 0.96) bad(name + ' clips under full sun ' + prod.map((v) => v.toFixed(3)).join(','));
+  const prod = alb.map((a, i) => a * field[i]);
+  if (Math.max(...prod) >= 0.96) bad(name + ' clips on the snow field ' + prod.map((v) => v.toFixed(3)).join(','));
 }
-const blue = ICE.wallBlue.map((a, i) => a * full[i]);
+const sunPeak = glacierIrr(sun, 1);
+let sunPeakMax = 0;
+for (const alb of Object.values(ICE)) {
+  if (!Array.isArray(alb)) continue;
+  sunPeakMax = Math.max(sunPeakMax, ...alb.map((a, i) => a * sunPeak[i]));
+}
+if (sunPeakMax > 1) console.log('NOTE sun-facing peak before present() clamp ' + sunPeakMax.toFixed(3));
+const horiz = Math.hypot(sun[0], sun[2]) || 1;
+const vert = [sun[0] / horiz, 0, sun[2] / horiz];
+const blueIrr = glacierIrr(vert, 1);
+const blue = ICE.wallBlue.map((a, i) => a * blueIrr[i]);
 if (!(blue[2] > blue[0] + 0.05)) bad('sunlit blue strata is not blue ' + blue.map((v) => v.toFixed(3)).join(','));
 const n = [1, 0, 0];
 const view = [1, 0, 0];
-const lit = litIce(ICE.wallPale, n, view, LIGHT);
-const irr = shadeAt(LIGHT, Math.max(0, sun[0]), 0).rgb;
+const irr = glacierIrr(n, 1);
+const lit = litIce(ICE.wallPale, n, view, LIGHT, irr);
 for (let i = 0; i < 3; i++) if (Math.abs(lit[i] - ICE.wallPale[i] * irr[i]) > 1e-6) bad('front face gained specular');
 
 let skyMax = 0;

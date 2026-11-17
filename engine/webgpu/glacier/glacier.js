@@ -6,11 +6,14 @@ import { invertMat4 } from '../biome-factory/mat4.js';
 import { lightWgsl, norm3, sunOf } from '../biome-factory/light-rig.js';
 import { skyWgsl } from '../biome-factory/procedural-sky.js';
 import { albedoWgsl } from './albedo.js';
+import { shWgsl } from './sh-sky.js';
+import { contactProbes, openProbes } from './ao-probes.js';
 import { CANDIDATE, GLACIER, LIGHT, DRAWS, planetCenter, PLANET, FLAKES } from './biome.js';
 import { buildWorld, chaseInput, integrate, spawn, pathX, floorH } from './world.js';
 
 const qs = new URLSearchParams(location.search);
 const CAP = qs.get('cap') === '1';
+const LEGACY = qs.get('legacy') === '1';
 const DEMO = qs.get('demo') === '1' || CAP;
 const SHOT = qs.get('shot');
 const hud = document.getElementById('hud');
@@ -24,6 +27,7 @@ canvas.height = H;
 
 let gatePose = null;
 let gateMode = 0;
+let surfaceOnly = false;
 let gateBreak = 0;
 let skySwim = 0;
 let skyYaw = 0;
@@ -310,12 +314,15 @@ struct U {
 @group(0) @binding(6) var fallArr: texture_2d_array<f32>;
 @group(0) @binding(7) var archArr: texture_2d_array<f32>;
 @group(0) @binding(8) var seracArr: texture_2d_array<f32>;
-struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f };
+struct VO { @builtin(position) p: vec4f, @location(0) w: vec3f, @location(1) n: vec3f, @location(2) uv: vec2f, @location(3) mat: f32, @location(4) lit: vec3f, @location(5) ao: f32 };
 struct SO { @builtin(position) p: vec4f, @location(0) ndc: vec2f };
 struct BO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) w: vec3f };
 struct CO { @builtin(position) p: vec4f, @location(0) uv: vec2f, @location(1) k: f32 };
 
-${lightWgsl(LIGHT)}
+${LEGACY
+    ? `fn ambientIrr(n: vec3f) -> vec3f { return vec3f(${LIGHT.ambient.rgb[0]}, ${LIGHT.ambient.rgb[1]}, ${LIGHT.ambient.rgb[2]}); }`
+    : shWgsl()}
+${lightWgsl(LIGHT, 'ambientIrr(n)')}
 ${skyWgsl(LIGHT.sky)}
 ${albedoWgsl()}
 ${IDLE.wgsl}
@@ -323,13 +330,13 @@ ${IDLE.wgsl}
 @vertex fn vs(@location(0) a: vec4f, @location(1) b: vec4f) -> VO {
   var o: VO;
   o.p = u.vp * vec4f(a.xyz, 1.0);
-  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = b.xyz;
+  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = b.xyz; o.ao = 1.0;
   return o;
 }
-@vertex fn vsWorld(@location(0) a: vec4f, @location(1) b: vec4f, @location(4) shade: vec3f) -> VO {
+@vertex fn vsWorld(@location(0) a: vec4f, @location(1) b: vec4f, @location(4) shade: vec4f) -> VO {
   var o: VO;
   o.p = u.vp * vec4f(a.xyz, 1.0);
-  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = shade;
+  o.w = a.xyz; o.n = b.xyz; o.uv = vec2f(b.w, a.w); o.mat = a.w; o.lit = shade.xyz; o.ao = shade.w;
   return o;
 }
 @vertex fn vsInst(@location(0) a: vec4f, @location(1) b: vec4f, @location(2) i0: vec4f, @location(3) i1: vec4f) -> VO {
@@ -343,7 +350,7 @@ ${IDLE.wgsl}
   let nr = normalize(vec3f(c * nL.x + s * nL.z, nL.y, -s * nL.x + c * nL.z));
   var o: VO;
   o.p = u.vp * vec4f(pr, 1.0);
-  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w;
+  o.w = pr; o.n = nr; o.lit = nr; o.uv = vec2f(b.w, 0.0); o.mat = a.w; o.ao = 1.0;
   return o;
 }
 @vertex fn vsSky(@builtin(vertex_index) vi: u32) -> SO {
@@ -386,7 +393,7 @@ fn darken15(c: vec3f) -> vec3f {
   let ndv = clamp(dot(n, view), 0.0, 1.0);
   let ndl = clamp(dot(n, sunN()), 0.0, 1.0);
   let mode = u.misc.z;
-  if (mode > 1.5) { return present(alb); }
+  if (mode > 1.5 && mode < 2.5) { return present(alb); }
   if (mode > 0.5 && mode < 1.5) {
     let near = select(0.0, 1.0, dist < 40.0);
     return vec4f((m + 0.5) / 8.0, ndl, clamp(n.y, 0.0, 1.0), ndv * near);
@@ -399,7 +406,12 @@ fn darken15(c: vec3f) -> vec3f {
     nLit = normalize(n + vec3f(gAlb.r, 0.0, gAlb.g) * 0.45);
   }
   if (u.sun.w > 5.5 && u.sun.w < 6.5 && m < 0.5) { nLit = vec3f(0.0, 1.0, 0.0); }
-  var col = litIce(alb, nLit, view);
+  let ndlLit = clamp(dot(nLit, sunN()), 0.0, 1.0);
+  let ndvLit = clamp(dot(nLit, view), 0.0, 1.0);
+  let ao = ${LEGACY ? '1.0' : 'v.ao'};
+  if (mode > 2.5 && mode < 3.5) { return vec4f(nLit * 0.5 + 0.5, ao); }
+  if (mode > 4.5 && mode < 5.5) { return vec4f((m + 0.5) / 8.0, ndlLit, ndvLit, ao); }
+  var col = litIce(alb, nLit, view, ao);
   let iceEdge = smoothstep(0.52, 0.06, ndv) * ndl;
   if ((m > 0.5 && m < 3.5) || (m > 5.5 && m < 6.5)) {
     col = col + vec3f(0.03, 0.08, 0.16) * iceEdge;
@@ -878,21 +890,21 @@ async function main() {
     { shaderLocation: 0, offset: 0, format: 'float32x4' },
     { shaderLocation: 1, offset: 16, format: 'float32x4' },
   ] };
-  const SAMPLES = GLACIER.msaa;
+  const SAMPLES = (CAP && qs.get('msaa') === '1') ? 1 : GLACIER.msaa;
   const pipe = (vs, fs, alpha, depthWrite, depthCompare) => dev.createRenderPipeline({
     layout,
     vertex: { module: mod, entryPoint: vs, buffers: vs === 'vs' ? [vbuf] : [] },
     fragment: { module: mod, entryPoint: fs, targets: [{ format: fmt, blend: alpha ? { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } } : undefined }] },
     primitive: { topology: 'triangle-list', cullMode: 'none' },
-    multisample: { count: SAMPLES, alphaToCoverageEnabled: vs === 'vsBolt' },
+    multisample: { count: SAMPLES, alphaToCoverageEnabled: SAMPLES > 1 && vs === 'vsBolt' },
     depthStencil: { format: 'depth24plus', depthWriteEnabled: depthWrite, depthCompare },
   });
   const instBuf = { arrayStride: 32, stepMode: 'instance', attributes: [
     { shaderLocation: 2, offset: 0, format: 'float32x4' },
     { shaderLocation: 3, offset: 16, format: 'float32x4' },
   ] };
-  const shadeBuf = { arrayStride: 12, attributes: [
-    { shaderLocation: 4, offset: 0, format: 'float32x3' },
+  const shadeBuf = { arrayStride: 16, attributes: [
+    { shaderLocation: 4, offset: 0, format: 'float32x4' },
   ] };
   const pWorld = dev.createRenderPipeline({
     layout,
@@ -997,8 +1009,11 @@ async function main() {
   }
 
   function beginPass(enc, clear) {
+    const color = SAMPLES === 1
+      ? { view: off.createView(), loadOp: 'clear', storeOp: 'store', clearValue: clear }
+      : { view: msaa.createView(), resolveTarget: off.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear };
     return enc.beginRenderPass({
-      colorAttachments: [{ view: msaa.createView(), resolveTarget: off.createView(), loadOp: 'clear', storeOp: 'discard', clearValue: clear }],
+      colorAttachments: [color],
       depthStencilAttachment: { view: depth.createView(), depthLoadOp: 'clear', depthClearValue: 1, depthStoreOp: 'discard' },
     });
   }
@@ -1033,7 +1048,7 @@ async function main() {
     pass.setVertexBuffer(0, icicleI.proto); pass.setVertexBuffer(1, icicleI.inst); pass.draw(icicleI.verts, icicleI.count);
     pass.setVertexBuffer(0, chunkI.proto); pass.setVertexBuffer(1, chunkI.inst); pass.draw(chunkI.verts, chunkI.count);
     pass.setVertexBuffer(0, driftI.proto); pass.setVertexBuffer(1, driftI.inst); pass.draw(driftI.verts, driftI.count);
-    if (!gatePose) {
+    if (!gatePose && !surfaceOnly) {
       pass.setPipeline(pContact); pass.draw(96);
       if (!(snowDiag > 29.5 && snowDiag < 37.5)) {
         pass.setPipeline(pFlake);
@@ -1065,6 +1080,9 @@ async function main() {
     driftTris: world.budget.driftTris,
     draws: DRAWS.length,
     drawNames: DRAWS,
+    ao: world.budget.ao,
+    shadeBytes: world.budget.shadeBytes,
+    legacy: LEGACY,
     extentZ: world.extentZ,
     columns: world.columns,
     bolt: 'bolt439_atlas',
@@ -1609,6 +1627,8 @@ async function main() {
     const mask = await readFrame();
     gateMode = 2;
     const albedo = await readFrame();
+    gateMode = 3;
+    const normal = await readFrame();
     gateMode = 0;
     gatePose = null;
     const pix = projectPixel(shot.at);
@@ -1620,7 +1640,56 @@ async function main() {
       colour: cropRead(colour.src, pix[0], pix[1], rad),
       mask: cropRead(mask.src, pix[0], pix[1], rad),
       albedo: cropRead(albedo.src, pix[0], pix[1], rad),
-      gpuErr: colour.gpuErr || mask.gpuErr || albedo.gpuErr,
+      normal: cropRead(normal.src, pix[0], pix[1], rad),
+      gpuErr: colour.gpuErr || mask.gpuErr || albedo.gpuErr || normal.gpuErr,
+    };
+  };
+  window.__glacierAoFrame = async (t) => {
+    const dt = 1 / 60;
+    while (sim < t - 1e-5) { const h = Math.min(dt, t - sim); stepLive(h); sim += h; }
+    surfaceOnly = false;
+    gateMode = 0;
+    const beauty = await readFrame();
+    const beautyPng = await blobOf(beauty.src, 'image/png');
+    surfaceOnly = true;
+    const surface = await readFrame();
+    const surfacePng = await blobOf(surface.src, 'image/png');
+    surfaceOnly = false;
+    renderBoltMask();
+    const boltSrc = await readback();
+    const boltPng = await blobOf(boltSrc, 'image/png');
+    surfaceOnly = true;
+    gateMode = 5;
+    const shade = await readFrame();
+    const shadePng = await blobOf(shade.src, 'image/png');
+    gateMode = 3;
+    const normal = await readFrame();
+    const normalPng = await blobOf(normal.src, 'image/png');
+    gateMode = 2;
+    const albedo = await readFrame();
+    const albedoPng = await blobOf(albedo.src, 'image/png');
+    gateMode = 0;
+    surfaceOnly = false;
+    const bp = [live.x, pawGround(), live.z];
+    const pix = projectPixel(bp);
+    const eye = lastEye.slice();
+    return {
+      beauty: beautyPng,
+      surface: surfacePng,
+      bolt: boltPng,
+      shade: shadePng,
+      normal: normalPng,
+      albedo: albedoPng,
+      contact: contactProbes(world, projectPixel, eye, W, H, pix),
+      open: openProbes(world, live, projectPixel, eye, W, H, pix),
+      info: {
+        x: live.x, z: live.z, psi: live.psi, eye, boltPx: pix,
+        cardH: IDLE.cfg.cardH, cardW: IDLE.cfg.cardW,
+        tris: world.budget.totalTris, draws: DRAWS.length,
+        ao: world.budget.ao, shadeBytes: world.budget.shadeBytes, vertBytes: world.budget.vertBytes,
+        legacy: LEGACY, W, H,
+        gpuErr: beauty.gpuErr || surface.gpuErr || shade.gpuErr || normal.gpuErr || albedo.gpuErr,
+      },
     };
   };
   window.__glacierSky = async (shot) => {

@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { DE76_MAX } from '../biome-factory/cie76.mjs';
 import { shadeAt } from '../biome-factory/light-rig.js';
+import { glacierIrr } from './sh-sky.js';
 import { scoreWindow } from '../biome-factory/render-colour-gate.mjs';
 import { serve, withChrome } from './chrome.mjs';
 import { buildWorld } from './world.js';
@@ -117,7 +118,7 @@ try {
         const frame = await evalJson(`window.__glacierGate(${JSON.stringify({
           eye: shot.eye, tgt: shot.tgt, at: shot.at, breakId: 0, rad: 10,
         })}).then(r => JSON.stringify(r))`);
-        const scored = frame.ok ? scoreWindow(frame, shot.mat, shade) : { ok: false, pixels: 0, verdict: 'UNCERTAIN', dE76: null, reason: frame.reason };
+        const scored = frame.ok ? scoreWindow(frame, shot.mat, shade, (n, ao) => glacierIrr(n, ao)) : { ok: false, pixels: 0, verdict: 'UNCERTAIN', dE76: null, reason: frame.reason };
         rows.push({ id: shot.id, mat: shot.mat, ...scored, gpuErr: frame.gpuErr || null });
       }
       return rows;
@@ -133,7 +134,7 @@ try {
         const frame = await evalJson(`window.__glacierGate(${JSON.stringify({
           eye: shot.eye, tgt: shot.tgt, at: shot.at, breakId: MAT.wall + 1, rad: 10,
         })}).then(r => JSON.stringify(r))`);
-        const scored = frame.ok ? scoreWindow(frame, shot.mat, shade) : { ok: false, pixels: 0, verdict: 'UNCERTAIN', dE76: null, reason: frame.reason };
+        const scored = frame.ok ? scoreWindow(frame, shot.mat, shade, (n, ao) => glacierIrr(n, ao)) : { ok: false, pixels: 0, verdict: 'UNCERTAIN', dE76: null, reason: frame.reason };
         rows.push({ id: shot.id, ...scored });
       }
       return rows;

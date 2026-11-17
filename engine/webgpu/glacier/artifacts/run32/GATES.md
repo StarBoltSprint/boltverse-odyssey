@@ -20,6 +20,8 @@ Snow at least **5 m** from any non-ground occluder (wall, fall, arch, mountain, 
 
 `(max meanL - min meanL) / mean(meanL) < 0.02`.
 
+L here is median linear luma divided by median linear albedo luma in that same window, so a texture variant is not counted as occlusion. The 2% is the light.
+
 AO must not grey the field. A uniform shift of every window is not this gate. The fixture must **pass**.
 
 ## SH ambient (blocking)

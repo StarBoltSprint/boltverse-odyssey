@@ -1,6 +1,8 @@
 // Frozen rift. Noise-displaced sheets, arches, and peaks. No box primitives.
 import { createMesh } from '../engine/bricks/facet-mesh.js';
 import { MAT, GLACIER, planetCenter, PLANET, DRAWS, FLAKES } from './biome.js';
+import { bakeVertexAo } from './vertex-ao.js';
+import { ambientAt, glacierIrr } from './sh-sky.js';
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
@@ -1000,7 +1002,22 @@ export function buildWorld() {
   stampFaceNormals(icicleProto);
   stampFaceNormals(driftProto);
   stampFaceNormals(chunkProto);
-  const shadeNormals = shadeNormalsFor(verts);
+  const shadeRaw = shadeNormalsFor(verts);
+  const luma = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const upAmb = ambientAt([0, 1, 0]);
+  const upIrr = glacierIrr([0, 1, 0], 1);
+  const aoBake = bakeVertexAo(verts, [
+    { verts: icicleProto, instances: new Float32Array(icicles) },
+    { verts: driftProto, instances: new Float32Array(drifts) },
+    { verts: chunkProto, instances: new Float32Array(chunks) },
+  ], floorH, { amb: luma(upAmb), sun: luma(upIrr) - luma(upAmb) });
+  const shadeNormals = new Float32Array(shadeRaw.length / 3 * 4);
+  for (let i = 0; i < aoBake.ao.length; i++) {
+    shadeNormals[i * 4] = shadeRaw[i * 3];
+    shadeNormals[i * 4 + 1] = shadeRaw[i * 3 + 1];
+    shadeNormals[i * 4 + 2] = shadeRaw[i * 3 + 2];
+    shadeNormals[i * 4 + 3] = aoBake.ao[i];
+  }
   const instTris = (proto, list) => (proto.length / 8 / 3) * (list.length / 8);
   const worldTris = verts.length / 24;
   const planetTris = planet.length / 24;
@@ -1017,6 +1034,22 @@ export function buildWorld() {
   budget.particles = FLAKES.near + FLAKES.mid + FLAKES.far + FLAKES.blow;
   budget.puffs = FLAKES.puff;
   budget.totalTris = worldTris + planetTris + budget.icicleTris + budget.driftTris + budget.chunkTris + budget.particleTris;
+  budget.ao = {
+    ms: aoBake.ms,
+    rays: aoBake.rays,
+    radius: aoBake.radius,
+    power: aoBake.power,
+    probeVis: aoBake.probeVis,
+    probeN: aoBake.probeN,
+    aoTarget: aoBake.aoTarget,
+    occluderTris: aoBake.tris,
+    traced: aoBake.traced,
+    meanContactAo: aoBake.meanContactAo,
+    meanOpenAo: aoBake.meanOpenAo,
+    drawsAdded: 0,
+  };
+  budget.shadeBytes = shadeNormals.byteLength;
+  budget.vertBytes = verts.byteLength;
   return {
     verts,
     shadeNormals,
