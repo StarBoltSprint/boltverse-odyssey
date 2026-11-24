@@ -1,0 +1,342 @@
+{
+  "tag": "before",
+  "scores": [
+    {
+      "t": 5.1,
+      "boltPx": [
+        360.00014708186416,
+        1030.4523346882117
+      ],
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "x": 12.119318512450368,
+      "z": -32.829025520434506,
+      "skyFraction": 0.2415084089191232,
+      "skylineRow": 187,
+      "banding": {
+        "pass": false,
+        "columns": 136,
+        "maxStep": 4,
+        "bandRun": 18,
+        "hfRms": 0.818,
+        "smoothRms": 1.19,
+        "smoothMean": 142.7,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 18868,
+        "gradPerPx": 0.28,
+        "brightDeg": -20.688,
+        "sunDeg": 50.085,
+        "angleErr": 70.773,
+        "angleLimit": 15,
+        "litMean": 83.822,
+        "unlitMean": 69.211,
+        "litGap": 14.611,
+        "litN": 4690,
+        "unlitN": 7064,
+        "rings": [
+          71.716,
+          86.939,
+          67.286,
+          65.921
+        ],
+        "rimGap": -1.365,
+        "profileSpan": 21.018,
+        "center": [
+          529.513,
+          188.414
+        ],
+        "rad": 170.98
+      },
+      "pass": false
+    },
+    {
+      "t": 5.567,
+      "boltPx": [
+        360.0000017550615,
+        1025.7113365027076
+      ],
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "x": 11.750737523618582,
+      "z": -36.077180231073264,
+      "skyFraction": 0.2287084278155707,
+      "skylineRow": 183,
+      "banding": {
+        "pass": false,
+        "columns": 126,
+        "maxStep": 5,
+        "bandRun": 13,
+        "hfRms": 0.805,
+        "smoothRms": 0.739,
+        "smoothMean": 141.792,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 18552,
+        "gradPerPx": 0.377,
+        "brightDeg": -16.913,
+        "sunDeg": 50.108,
+        "angleErr": 67.021,
+        "angleLimit": 15,
+        "litMean": 87.216,
+        "unlitMean": 69.487,
+        "litGap": 17.729,
+        "litN": 4611,
+        "unlitN": 7167,
+        "rings": [
+          69.736,
+          84.905,
+          73.42,
+          65.439
+        ],
+        "rimGap": -7.981,
+        "profileSpan": 19.466,
+        "center": [
+          530.068,
+          184.206
+        ],
+        "rad": 171.334
+      },
+      "pass": false
+    },
+    {
+      "t": 7.9,
+      "boltPx": [
+        359.9998063695572,
+        1021.7140169524075
+      ],
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "x": 9.900627786381287,
+      "z": -52.30304345794008,
+      "skyFraction": 0.21839332955404384,
+      "skylineRow": 134,
+      "banding": {
+        "pass": false,
+        "columns": 143,
+        "maxStep": 4,
+        "bandRun": 25,
+        "hfRms": 0.835,
+        "smoothRms": 1.267,
+        "smoothMean": 140.592,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 21347,
+        "gradPerPx": 0.22,
+        "brightDeg": -24.455,
+        "sunDeg": 50.414,
+        "angleErr": 74.869,
+        "angleLimit": 15,
+        "litMean": 75.354,
+        "unlitMean": 68.928,
+        "litGap": 6.426,
+        "litN": 5620,
+        "unlitN": 7354,
+        "rings": [
+          71.976,
+          83.063,
+          68.139,
+          74.043
+        ],
+        "rimGap": 5.904,
+        "profileSpan": 14.924,
+        "center": [
+          534.834,
+          131.071
+        ],
+        "rad": 175.126
+      },
+      "pass": false
+    },
+    {
+      "t": 11.7,
+      "boltPx": [
+        359.9997463388623,
+        1035.6327151498099
+      ],
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "x": 6.857952571763383,
+      "z": -78.72844841633875,
+      "skyFraction": 0.18927626606198034,
+      "skylineRow": 119,
+      "banding": {
+        "pass": false,
+        "columns": 130,
+        "maxStep": 4,
+        "bandRun": 12,
+        "hfRms": 0.99,
+        "smoothRms": 1.492,
+        "smoothMean": 140.088,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 23032,
+        "gradPerPx": 0.101,
+        "brightDeg": -45.275,
+        "sunDeg": 50.119,
+        "angleErr": 95.394,
+        "angleLimit": 15,
+        "litMean": 71.863,
+        "unlitMean": 68.8,
+        "litGap": 3.063,
+        "litN": 7752,
+        "unlitN": 6842,
+        "rings": [
+          87.745,
+          75.631,
+          65.055,
+          72.501
+        ],
+        "rimGap": 7.446,
+        "profileSpan": 22.691,
+        "center": [
+          533.841,
+          185.513
+        ],
+        "rad": 172.682
+      },
+      "pass": false
+    },
+    {
+      "t": 24,
+      "boltPx": [
+        360.0003806810107,
+        1023.5323607101532
+      ],
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "x": -3.185964875808409,
+      "z": -164.24057759259256,
+      "skyFraction": 0.2415556500377929,
+      "skylineRow": 131,
+      "banding": {
+        "pass": false,
+        "columns": 214,
+        "maxStep": 4,
+        "bandRun": 23,
+        "hfRms": 0.841,
+        "smoothRms": 1.229,
+        "smoothMean": 141.913,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 17359,
+        "gradPerPx": 0.519,
+        "brightDeg": -15.191,
+        "sunDeg": 50.513,
+        "angleErr": 65.704,
+        "angleLimit": 15,
+        "litMean": 132.998,
+        "unlitMean": 82.361,
+        "litGap": 50.637,
+        "litN": 2436,
+        "unlitN": 7045,
+        "rings": [
+          143.244,
+          95.56,
+          73.713,
+          75.239
+        ],
+        "rimGap": 1.526,
+        "profileSpan": 69.531,
+        "center": [
+          544.404,
+          118.829
+        ],
+        "rad": 179.803
+      },
+      "pass": false
+    },
+    {
+      "t": 30,
+      "boltPx": [
+        360.00031678247626,
+        1016.3129756679702
+      ],
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "x": -8.157497695002599,
+      "z": -205.9452989327306,
+      "skyFraction": 0.26194491685563115,
+      "skylineRow": 124,
+      "banding": {
+        "pass": false,
+        "columns": 152,
+        "maxStep": 2,
+        "bandRun": 17,
+        "hfRms": 0.449,
+        "smoothRms": 0.708,
+        "smoothMean": 142.402,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 18184,
+        "gradPerPx": 0.681,
+        "brightDeg": -20.132,
+        "sunDeg": 50.287,
+        "angleErr": 70.419,
+        "angleLimit": 15,
+        "litMean": 136.858,
+        "unlitMean": 81.194,
+        "litGap": 55.664,
+        "litN": 3523,
+        "unlitN": 6834,
+        "rings": [
+          117.418,
+          112.683,
+          71.796,
+          63.727
+        ],
+        "rimGap": -8.069,
+        "profileSpan": 53.691,
+        "center": [
+          543.966,
+          160.473
+        ],
+        "rad": 178.572
+      },
+      "pass": false
+    }
+  ],
+  "film": null
+}

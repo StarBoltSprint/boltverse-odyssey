@@ -1,0 +1,345 @@
+{
+  "tag": "after",
+  "scores": [
+    {
+      "t": 5.1,
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "boltX": 360,
+      "terminator": {
+        "pass": true,
+        "err": 6.287,
+        "sunDeg": 50.085,
+        "brightDeg": 43.799,
+        "grad": 2.212,
+        "bandN": 3892,
+        "visible": 0.41
+      },
+      "profile": {
+        "pass": true,
+        "litGap": 49.396,
+        "rimGap": -16.346,
+        "span": 55.663,
+        "litMean": 153.799,
+        "unlitMean": 104.403
+      },
+      "limb": {
+        "pass": true,
+        "nearWhite": 0,
+        "rimWidth": 0.02,
+        "rimWidthPx": 3.42,
+        "yIn": 87.683,
+        "ySky": 140.37,
+        "darkLimb": 49.27,
+        "darkGap": 91.1,
+        "litP99": 205,
+        "limbMaxChannel": 178,
+        "limbUnderP99": true
+      },
+      "shaderErr": 4.083,
+      "banding": {
+        "pass": true,
+        "columns": 137,
+        "maxStep": 1,
+        "bandRun": 5,
+        "hfRms": 1,
+        "smoothRms": 1.181,
+        "smoothMean": 142.799,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "skyFraction": 0.24270360922146636,
+      "skylineRow": 187,
+      "skyDe": 0.66,
+      "pass": true
+    },
+    {
+      "t": 5.567,
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "boltX": 360,
+      "terminator": {
+        "pass": true,
+        "err": 6.309,
+        "sunDeg": 50.108,
+        "brightDeg": 43.799,
+        "grad": 2.152,
+        "bandN": 3954,
+        "visible": 0.436
+      },
+      "profile": {
+        "pass": true,
+        "litGap": 54.546,
+        "rimGap": -14.392,
+        "span": 54.863,
+        "litMean": 159.549,
+        "unlitMean": 105.003
+      },
+      "limb": {
+        "pass": true,
+        "nearWhite": 0,
+        "rimWidth": 0.02,
+        "rimWidthPx": 3.427,
+        "yIn": 87.917,
+        "ySky": 140.122,
+        "darkLimb": 47.914,
+        "darkGap": 92.208,
+        "litP99": 207,
+        "limbMaxChannel": 197,
+        "limbUnderP99": true
+      },
+      "shaderErr": 4.368,
+      "banding": {
+        "pass": true,
+        "columns": 131,
+        "maxStep": 1,
+        "bandRun": 5,
+        "hfRms": 0.983,
+        "smoothRms": 0.737,
+        "smoothMean": 142.498,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "skyFraction": 0.22990126606198036,
+      "skylineRow": 183,
+      "skyDe": 0.7,
+      "pass": true
+    },
+    {
+      "t": 7.9,
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "boltX": 360,
+      "terminator": {
+        "pass": true,
+        "err": 5.797,
+        "sunDeg": 50.414,
+        "brightDeg": 44.618,
+        "grad": 1.948,
+        "bandN": 4280,
+        "visible": 0.351
+      },
+      "profile": {
+        "pass": true,
+        "litGap": 56.211,
+        "rimGap": -37.668,
+        "span": 75.952,
+        "litMean": 163.82,
+        "unlitMean": 107.609
+      },
+      "limb": {
+        "pass": true,
+        "nearWhite": 0,
+        "rimWidth": 0.02,
+        "rimWidthPx": 3.503,
+        "yIn": 94.406,
+        "ySky": 138.164,
+        "darkLimb": 48.799,
+        "darkGap": 89.365,
+        "litP99": 219,
+        "limbMaxChannel": 168,
+        "limbUnderP99": true
+      },
+      "shaderErr": 7.641,
+      "banding": {
+        "pass": true,
+        "columns": 143,
+        "maxStep": 1,
+        "bandRun": 5,
+        "hfRms": 1.012,
+        "smoothRms": 1.268,
+        "smoothMean": 140.589,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "skyFraction": 0.21870748299319728,
+      "skylineRow": 134,
+      "skyDe": 0.37,
+      "pass": true
+    },
+    {
+      "t": 11.7,
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "boltX": 360,
+      "terminator": {
+        "pass": true,
+        "err": 4.923,
+        "sunDeg": 50.119,
+        "brightDeg": 45.196,
+        "grad": 2.275,
+        "bandN": 3779,
+        "visible": 0.453
+      },
+      "profile": {
+        "pass": true,
+        "litGap": 59.163,
+        "rimGap": -33.865,
+        "span": 63.283,
+        "litMean": 163.315,
+        "unlitMean": 104.151
+      },
+      "limb": {
+        "pass": true,
+        "nearWhite": 0,
+        "rimWidth": 0.02,
+        "rimWidthPx": 3.454,
+        "yIn": 87.889,
+        "ySky": 137.592,
+        "darkLimb": 47.485,
+        "darkGap": 90.107,
+        "litP99": 216,
+        "limbMaxChannel": 178,
+        "limbUnderP99": true
+      },
+      "shaderErr": 4.942,
+      "banding": {
+        "pass": true,
+        "columns": 130,
+        "maxStep": 1,
+        "bandRun": 5,
+        "hfRms": 1.144,
+        "smoothRms": 1.494,
+        "smoothMean": 140.081,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "skyFraction": 0.19043131141345426,
+      "skylineRow": 135,
+      "skyDe": 0.72,
+      "pass": true
+    },
+    {
+      "t": 24,
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "boltX": 360,
+      "terminator": {
+        "pass": true,
+        "err": 14.918,
+        "sunDeg": 50.513,
+        "brightDeg": 35.595,
+        "grad": 2.385,
+        "bandN": 2569,
+        "visible": 0.321
+      },
+      "profile": {
+        "pass": true,
+        "litGap": 48.786,
+        "rimGap": -35.955,
+        "span": 67.944,
+        "litMean": 137.296,
+        "unlitMean": 88.51
+      },
+      "limb": {
+        "pass": true,
+        "nearWhite": 0,
+        "rimWidth": 0.02,
+        "rimWidthPx": 3.596,
+        "yIn": 79.46,
+        "ySky": 137.714,
+        "darkLimb": 48.868,
+        "darkGap": 88.846,
+        "litP99": 152,
+        "limbMaxChannel": 149,
+        "limbUnderP99": true
+      },
+      "shaderErr": 14.644,
+      "banding": {
+        "pass": true,
+        "columns": 214,
+        "maxStep": 1,
+        "bandRun": 5,
+        "hfRms": 1.024,
+        "smoothRms": 1.227,
+        "smoothMean": 141.914,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "skyFraction": 0.24167139077853364,
+      "skylineRow": 131,
+      "skyDe": 0.36,
+      "pass": true
+    },
+    {
+      "t": 30,
+      "tris": 195818,
+      "draws": 9,
+      "cardH": 1.15,
+      "boltX": 360,
+      "terminator": {
+        "pass": true,
+        "err": 13.186,
+        "sunDeg": 50.287,
+        "brightDeg": 37.101,
+        "grad": 2.291,
+        "bandN": 2701,
+        "visible": 0.359
+      },
+      "profile": {
+        "pass": true,
+        "litGap": 56.968,
+        "rimGap": -16.274,
+        "span": 67.667,
+        "litMean": 145.435,
+        "unlitMean": 88.467
+      },
+      "limb": {
+        "pass": true,
+        "nearWhite": 0,
+        "rimWidth": 0.02,
+        "rimWidthPx": 3.571,
+        "yIn": 83.221,
+        "ySky": 137.149,
+        "darkLimb": 49.387,
+        "darkGap": 87.762,
+        "litP99": 209,
+        "limbMaxChannel": 189,
+        "limbUnderP99": true
+      },
+      "shaderErr": 7.856,
+      "banding": {
+        "pass": true,
+        "columns": 153,
+        "maxStep": 1,
+        "bandRun": 5,
+        "hfRms": 0.747,
+        "smoothRms": 0.707,
+        "smoothMean": 142.582,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "skyFraction": 0.2629417044595616,
+      "skylineRow": 124,
+      "skyDe": 0.6,
+      "pass": true
+    }
+  ],
+  "film": {
+    "file": "chase-2s.mp4",
+    "probe": {
+      "programs": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 720,
+          "height": 1280,
+          "duration": "2.000000",
+          "nb_frames": "60"
+        }
+      ]
+    }
+  },
+  "round": 3
+}

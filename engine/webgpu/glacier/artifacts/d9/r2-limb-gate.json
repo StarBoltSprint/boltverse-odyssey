@@ -1,0 +1,96 @@
+{
+  "fixture": "r2",
+  "mustFail": true,
+  "failedFrames": 6,
+  "limit": {
+    "nearWhite": 0,
+    "rimWidth": 0.06,
+    "darkGap": 20
+  },
+  "rows": [
+    {
+      "t": 5.1,
+      "pass": false,
+      "nearWhite": 610,
+      "rimWidth": 0.32,
+      "rimWidthPx": 54.713,
+      "yIn": 61.194,
+      "ySky": 140.45,
+      "darkLimb": 137.404,
+      "darkGap": 3.046,
+      "litP99": 208,
+      "limbMaxChannel": 246,
+      "limbUnderP99": false
+    },
+    {
+      "t": 5.567,
+      "pass": false,
+      "nearWhite": 620,
+      "rimWidth": 0.32,
+      "rimWidthPx": 54.827,
+      "yIn": 62.141,
+      "ySky": 140.225,
+      "darkLimb": 137.146,
+      "darkGap": 3.078,
+      "litP99": 213,
+      "limbMaxChannel": 246,
+      "limbUnderP99": false
+    },
+    {
+      "t": 7.9,
+      "pass": false,
+      "nearWhite": 0,
+      "rimWidth": 0.36,
+      "rimWidthPx": 63.045,
+      "yIn": 64.167,
+      "ySky": 138.594,
+      "darkLimb": 136.26,
+      "darkGap": 2.334,
+      "litP99": 224,
+      "limbMaxChannel": 180,
+      "limbUnderP99": true
+    },
+    {
+      "t": 11.7,
+      "pass": false,
+      "nearWhite": 590,
+      "rimWidth": 0.3,
+      "rimWidthPx": 51.805,
+      "yIn": 63.072,
+      "ySky": 137.665,
+      "darkLimb": 137.098,
+      "darkGap": 0.567,
+      "litP99": 224,
+      "limbMaxChannel": 246,
+      "limbUnderP99": false
+    },
+    {
+      "t": 24,
+      "pass": false,
+      "nearWhite": 0,
+      "rimWidth": 0.34,
+      "rimWidthPx": 61.133,
+      "yIn": 57.796,
+      "ySky": 137.919,
+      "darkLimb": 136.552,
+      "darkGap": 1.367,
+      "litP99": 157,
+      "limbMaxChannel": 149,
+      "limbUnderP99": true
+    },
+    {
+      "t": 30,
+      "pass": false,
+      "nearWhite": 0,
+      "rimWidth": 0.32,
+      "rimWidthPx": 57.143,
+      "yIn": 63.661,
+      "ySky": 137.373,
+      "darkLimb": 136.638,
+      "darkGap": 0.736,
+      "litP99": 220,
+      "limbMaxChannel": 246,
+      "limbUnderP99": false
+    }
+  ]
+}

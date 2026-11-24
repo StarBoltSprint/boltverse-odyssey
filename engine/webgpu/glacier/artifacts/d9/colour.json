@@ -1,0 +1,219 @@
+{
+  "limit": 10,
+  "includesLightness": true,
+  "mask": "planet pixels only (N·L mask, ice excluded)",
+  "split": "analytic shader N·L: lit > 0.25, dark < -0.05",
+  "note": "The key disc is front-lit. Lit versus lit is reported and was not tuned toward the key. Sheet is the disc at 7.9 (top) and 11.7 (bottom), key on the left and this round on the right. Ice in front of the disc is the existing spires. The CIE76 rows exclude it.",
+  "rows": [
+    {
+      "t": 5.1,
+      "planetPx": 27244,
+      "keyLit": [
+        50,
+        59,
+        75
+      ],
+      "keyDark": [
+        45,
+        54,
+        72
+      ],
+      "keyN": [
+        16181,
+        11063
+      ],
+      "afterLit": [
+        139,
+        127,
+        126
+      ],
+      "afterDark": [
+        49,
+        54,
+        66
+      ],
+      "afterN": [
+        16181,
+        11063
+      ],
+      "keyInternal": 2.63,
+      "lit": 32.54,
+      "shadow": 4.18
+    },
+    {
+      "t": 5.567,
+      "planetPx": 26859,
+      "keyLit": [
+        53,
+        61,
+        77
+      ],
+      "keyDark": [
+        45,
+        55,
+        72
+      ],
+      "keyN": [
+        15694,
+        11165
+      ],
+      "afterLit": [
+        139,
+        128,
+        127
+      ],
+      "afterDark": [
+        49,
+        55,
+        67
+      ],
+      "afterN": [
+        15694,
+        11165
+      ],
+      "keyInternal": 2.99,
+      "lit": 31.73,
+      "shadow": 3.55
+    },
+    {
+      "t": 7.9,
+      "planetPx": 19978,
+      "keyLit": [
+        47,
+        56,
+        74
+      ],
+      "keyDark": [
+        44,
+        53,
+        70
+      ],
+      "keyN": [
+        8172,
+        11806
+      ],
+      "afterLit": [
+        166,
+        150,
+        147
+      ],
+      "afterDark": [
+        47,
+        53,
+        66
+      ],
+      "afterN": [
+        8172,
+        11806
+      ],
+      "keyInternal": 1.51,
+      "lit": 43.21,
+      "shadow": 2.83
+    },
+    {
+      "t": 11.7,
+      "planetPx": 28359,
+      "keyLit": [
+        51,
+        60,
+        77
+      ],
+      "keyDark": [
+        44,
+        53,
+        70
+      ],
+      "keyN": [
+        17547,
+        10812
+      ],
+      "afterLit": [
+        155,
+        141,
+        139
+      ],
+      "afterDark": [
+        48,
+        54,
+        66
+      ],
+      "afterN": [
+        17547,
+        10812
+      ],
+      "keyInternal": 3.15,
+      "lit": 37.73,
+      "shadow": 3.52
+    },
+    {
+      "t": 24,
+      "planetPx": 13058,
+      "keyLit": [
+        34,
+        44,
+        62
+      ],
+      "keyDark": [
+        42,
+        52,
+        69
+      ],
+      "keyN": [
+        2016,
+        11042
+      ],
+      "afterLit": [
+        141,
+        134,
+        139
+      ],
+      "afterDark": [
+        47,
+        52,
+        64
+      ],
+      "afterN": [
+        2016,
+        11042
+      ],
+      "keyInternal": 3.77,
+      "lit": 40.4,
+      "shadow": 3.73
+    },
+    {
+      "t": 30,
+      "planetPx": 17540,
+      "keyLit": [
+        41,
+        51,
+        69
+      ],
+      "keyDark": [
+        43,
+        53,
+        70
+      ],
+      "keyN": [
+        5666,
+        11874
+      ],
+      "afterLit": [
+        144,
+        133,
+        134
+      ],
+      "afterDark": [
+        47,
+        52,
+        64
+      ],
+      "afterN": [
+        5666,
+        11874
+      ],
+      "keyInternal": 1.15,
+      "lit": 38.04,
+      "shadow": 3.7
+    }
+  ]
+}

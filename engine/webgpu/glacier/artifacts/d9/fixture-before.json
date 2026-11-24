@@ -1,0 +1,173 @@
+{
+  "fixture": "run31",
+  "sun": {
+    "direction": [
+      0.6161,
+      0.5592,
+      0.5547
+    ],
+    "elevationDeg": 34.001,
+    "elevationOk": true,
+    "unchanged": true
+  },
+  "required": "each frame FAILs the terminator gate and the banding gate",
+  "rows": [
+    {
+      "t": 11.7,
+      "w": 720,
+      "h": 1280,
+      "banding": {
+        "pass": false,
+        "columns": 149,
+        "maxStep": 2,
+        "bandRun": 16,
+        "hfRms": 1.034,
+        "smoothRms": 1.621,
+        "smoothMean": 140.697,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 7130,
+        "bandN": 4777,
+        "gradPerPx": 0.279,
+        "brightDeg": -86.145,
+        "sunDeg": 50.119,
+        "angleErr": 136.264,
+        "angleLimit": 15,
+        "litMean": 82.001,
+        "unlitMean": 68.417,
+        "litGap": 13.584,
+        "litN": 7067,
+        "unlitN": 6625,
+        "rings": [
+          81.651,
+          73.802,
+          73.101,
+          70.346
+        ],
+        "rimGap": -2.755,
+        "profileSpan": 11.305,
+        "center": [
+          533.841,
+          185.513
+        ],
+        "rad": 172.682
+      },
+      "skyFraction": 0.226,
+      "skylineRow": 144,
+      "pass": false,
+      "file": "artifacts/run31/frames/t10.jpg",
+      "name": "t10"
+    },
+    {
+      "t": 24,
+      "w": 720,
+      "h": 1280,
+      "banding": {
+        "pass": false,
+        "columns": 214,
+        "maxStep": 1,
+        "bandRun": 21,
+        "hfRms": 0.908,
+        "smoothRms": 1.281,
+        "smoothMean": 141.194,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 4110,
+        "bandN": 4920,
+        "gradPerPx": 0.511,
+        "brightDeg": -37.276,
+        "sunDeg": 50.513,
+        "angleErr": 87.789,
+        "angleLimit": 15,
+        "litMean": 131.273,
+        "unlitMean": 80.238,
+        "litGap": 51.034,
+        "litN": 2197,
+        "unlitN": 6897,
+        "rings": [
+          143.715,
+          92.4,
+          71.968,
+          71.365
+        ],
+        "rimGap": -0.603,
+        "profileSpan": 72.35,
+        "center": [
+          544.404,
+          118.829
+        ],
+        "rad": 179.803
+      },
+      "skyFraction": 0.277,
+      "skylineRow": 128,
+      "pass": false,
+      "file": "artifacts/run31/frames/t24.jpg",
+      "name": "t24"
+    },
+    {
+      "t": 30,
+      "w": 720,
+      "h": 1280,
+      "banding": {
+        "pass": false,
+        "columns": 151,
+        "maxStep": 2,
+        "bandRun": 12,
+        "hfRms": 0.563,
+        "smoothRms": 0.832,
+        "smoothMean": 141.518,
+        "stepLimit": 1,
+        "runLimit": 10,
+        "hfLimit": 2.5
+      },
+      "planet": {
+        "pass": false,
+        "terminatorPass": false,
+        "profilePass": false,
+        "pixels": 5914,
+        "bandN": 4548,
+        "gradPerPx": 0.586,
+        "brightDeg": -55.814,
+        "sunDeg": 50.287,
+        "angleErr": 106.101,
+        "angleLimit": 15,
+        "litMean": 134.433,
+        "unlitMean": 75.188,
+        "litGap": 59.245,
+        "litN": 3007,
+        "unlitN": 6352,
+        "rings": [
+          112.62,
+          108.301,
+          67.064,
+          60.782
+        ],
+        "rimGap": -6.282,
+        "profileSpan": 51.838,
+        "center": [
+          543.966,
+          160.473
+        ],
+        "rad": 178.572
+      },
+      "skyFraction": 0.283,
+      "skylineRow": 123,
+      "pass": false,
+      "file": "artifacts/run31/frames/t30.jpg",
+      "name": "t30"
+    }
+  ],
+  "bothFailed": true
+}
