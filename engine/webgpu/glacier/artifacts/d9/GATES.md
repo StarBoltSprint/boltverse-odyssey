@@ -23,3 +23,15 @@ Measured on the real 720×1280 follow camera, same seed and route.
 | Sun vector | the scene sun above is used and not edited. `dawn-light.json` is not edited |
 
 Scene sun is world-locked. The planet plate stays the existing 1024×1024 Imagine still. A new plate at or above 2560 px is not cooked.
+
+## Round 3
+
+The bright outer-ring clause (rho 0.88–0.96 at least 4 luma above the pre-rim) is the wide night haze. It is replaced, not lowered. The lit-half gap of 8 and the ring span of 8 stay. The new limb gates were written against the round-2 stills first. Those six frames fail (`r2-limb-gate.json`).
+
+| Gate | Pass |
+| --- | --- |
+| Near-white | 0 planet pixels with every channel ≥ 235, disc and rim, at all six times |
+| Rim width | 10%–90% of the night-side luma rise ≤ 6% of the radius |
+| Dark limb | dark-limb luma < adjacent sky − 20 |
+| Sun limb | max channel on the sun-facing limb (N·L > 0.25, rho > 0.86) stays under the lit-disc p99. No output clamp |
+| Heading | the round-1 ±15° band, not moved. At 24 s the visible fraction is over 30%, so the angle stands |

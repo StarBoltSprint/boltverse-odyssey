@@ -1,6 +1,9 @@
 // D9 gates. Thresholds are fixed. They are not lowered after a miss.
 // Terminator: brightness gradient on the disc within 15 deg of the scene sun.
 // Banding: top-band 8-bit steps <= 1 and no posterized edge.
+// Limb: no channel-triple at or above 235, night rim at most 6% of the radius,
+// dark limb at least 20 levels under the adjacent sky. The old bright-rim gap
+// was that haze, so it is not a pass condition.
 // Measured on 720x1280 follow frames.
 import { spawnSync } from 'child_process';
 import { SCENE_SUN } from './scene-sun.js';
@@ -22,6 +25,8 @@ export const GRAD_MIN = 0.04;
 export const HF_MAX = 2.5;
 export const SKY_ANCHOR = 0.015;
 export const DE76_MAX = 10;
+export const RIM_WIDTH_MAX = 0.06;
+export const DARK_LIMB_GAP = 20;
 
 const SUN = SCENE_SUN;
 
@@ -279,15 +284,17 @@ function maskedNl(mask, w, x, y) {
 }
 function maskIsNl(mask, w, h) {
   if (!mask) return false;
-  const i = ((h >> 1) * w + (w >> 1)) * 3;
-  if (mask[i + 1] > 200) return true;
-  let hi = 0;
-  for (let y = 0; y < h; y += 16) {
-    for (let x = 0; x < w; x += 16) {
-      if (mask[(y * w + x) * 3 + 1] > 200) hi++;
+  // N·L debug is green on the planet and blue = 0. The planet-id mask is red ≈ 9
+  // and blue = 255. The sky-id mask is green = 255 and blue = 255, so green alone
+  // is not enough.
+  let nl = 0;
+  for (let y = 0; y < h; y += 8) {
+    for (let x = 0; x < w; x += 8) {
+      const i = (y * w + x) * 3;
+      if (mask[i + 1] > 200 && mask[i + 2] < 16) nl++;
     }
   }
-  return hi > 8;
+  return nl > 8;
 }
 function ndlSampler(pose) {
   const eye = pose.eye;
@@ -403,7 +410,7 @@ export function scorePlanet(rgb, w, h, pose, mask) {
   const edge = fitGrad(band);
   const brightDeg = edge ? edge.deg : null;
   const err = brightDeg == null || sunDeg == null ? null : angDiff(brightDeg, sunDeg);
-  const magEdge = edge ? edge.mag : mag;
+  const magEdge = edge ? edge.mag : 0;
   const sunRad = (sunDeg || 0) * Math.PI / 180;
   const sdx = Math.cos(sunRad);
   const sdy = -Math.sin(sunRad);
@@ -430,7 +437,9 @@ export function scorePlanet(rgb, w, h, pose, mask) {
   const litGap = litMean != null && unlitMean != null ? litMean - unlitMean : null;
   const rimGap = rim != null && preRim != null ? rim - preRim : null;
   const terminatorPass = err != null && err <= TERMINATOR_DEG && band.length >= 80;
-  const profilePass = litGap != null && litGap >= LIT_GAP && rimGap != null && rimGap >= RIM_GAP && profileSpan >= PROFILE_SPAN;
+  // The bright outer ring (rimGap >= 4) was the wide night haze. Round 3
+  // replaces it with the thin-rim gate in scoreLimb. Lit gap and span stay.
+  const profilePass = litGap != null && litGap >= LIT_GAP && profileSpan >= PROFILE_SPAN;
   return {
     pass: terminatorPass && profilePass,
     terminatorPass,
@@ -640,6 +649,100 @@ export function terminatorVisibility(mask, w, h, pose) {
 
 function cross(a, b) {
   return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+// Near-white: every channel >= 235 on planet pixels (disc and rim share the mesh).
+// Rim width: 10%–90% of the night-side luma rise, as a fraction of the radius.
+export function scoreLimb(rgb, nl, w, h, pose) {
+  const cx = pose.center[0];
+  const cy = pose.center[1];
+  const rad = pose.rad;
+  const sun = (pose.sunDeg || 0) * Math.PI / 180;
+  const sdx = Math.cos(sun);
+  const sdy = -Math.sin(sun);
+  let white = 0;
+  const litCh = [];
+  let limbCh = 0;
+  const darkY = [];
+  const bins = new Map();
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 3;
+      const dx = x - cx;
+      const dy = y - cy;
+      const rho = Math.hypot(dx, dy) / Math.max(rad, 1);
+      const planet = nl[i + 1] > 200;
+      const ndl = (nl[i] / 255) * 2 - 1;
+      const r = rgb[i];
+      const g = rgb[i + 1];
+      const b = rgb[i + 2];
+      const Y = luma(r, g, b);
+      if (planet && r >= 235 && g >= 235 && b >= 235) white++;
+      if (planet && ndl > 0.35 && rho < 0.72) litCh.push(Math.max(r, g, b));
+      if (planet && ndl > 0.25 && rho > 0.86) limbCh = Math.max(limbCh, r, g, b);
+      if (planet && ndl < -0.05 && rho > 0.97) darkY.push(Y);
+      // Planet-only night profile, so ice in the wedge does not set the rise.
+      if (planet && ndl < -0.02 && rho <= 1.02) {
+        const key = Math.round(rho * 50) / 50;
+        const slot = bins.get(key) || { y: 0, n: 0, planet: 0 };
+        slot.y += Y;
+        slot.n++;
+        slot.planet++;
+        bins.set(key, slot);
+      }
+      if (!planet && rho > 1.02 && rho < 1.18) {
+        const along = dx * sdx + dy * sdy;
+        if (along < -rad * 0.2) {
+          const key = Math.round(rho * 50) / 50;
+          const slot = bins.get(key) || { y: 0, n: 0, planet: 0 };
+          slot.y += Y;
+          slot.n++;
+          bins.set(key, slot);
+        }
+      }
+    }
+  }
+  const keys = [...bins.keys()].sort((a, b) => a - b);
+  const meanOf = (list) => {
+    let y = 0;
+    let n = 0;
+    for (const k of list) { y += bins.get(k).y; n += bins.get(k).n; }
+    return n ? y / n : null;
+  };
+  const inside = keys.filter((k) => k >= 0.45 && k <= 0.62 && bins.get(k).n >= 8);
+  const outside = keys.filter((k) => k >= 1.04 && k <= 1.16 && bins.get(k).n >= 8);
+  const yIn = meanOf(inside);
+  const ySky = meanOf(outside);
+  let rho10 = null;
+  let rho90 = null;
+  if (yIn != null && ySky != null && ySky > yIn + 5) {
+    const l10 = yIn + 0.1 * (ySky - yIn);
+    const l90 = yIn + 0.9 * (ySky - yIn);
+    // Walk in from the sky so an interior bump does not start the rise.
+    const inward = keys.filter((k) => k <= 1.2).sort((a, b) => b - a);
+    for (const k of inward) {
+      const v = bins.get(k).y / bins.get(k).n;
+      if (rho90 == null && v <= l90) rho90 = k;
+      if (v <= l10) { rho10 = k; break; }
+    }
+  }
+  const width = rho10 != null && rho90 != null ? rho90 - rho10 : null;
+  litCh.sort((a, b) => a - b);
+  const p99 = litCh.length ? litCh[Math.min(litCh.length - 1, Math.floor(litCh.length * 0.99))] : null;
+  const dark = darkY.length ? darkY.reduce((s, v) => s + v, 0) / darkY.length : null;
+  return {
+    pass: white === 0 && width != null && width <= RIM_WIDTH_MAX && dark != null && ySky != null && dark < ySky - DARK_LIMB_GAP,
+    nearWhite: white,
+    rimWidth: width == null ? null : round(width),
+    rimWidthPx: width == null ? null : round(width * rad),
+    yIn: yIn == null ? null : round(yIn),
+    ySky: ySky == null ? null : round(ySky),
+    darkLimb: dark == null ? null : round(dark),
+    darkGap: dark != null && ySky != null ? round(ySky - dark) : null,
+    litP99: p99,
+    limbMaxChannel: limbCh || null,
+    limbUnderP99: p99 != null && limbCh < p99,
+  };
 }
 
 export function sunCheck() {

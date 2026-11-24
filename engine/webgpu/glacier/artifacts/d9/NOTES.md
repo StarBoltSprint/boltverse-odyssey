@@ -2,37 +2,39 @@
 
 Not a KEEP. The stills are for the Director and the Critic.
 
-The planet is lit by the scene sun `[0.6161, 0.5592, 0.5547]` (elevation 34 deg). That vector is not the dawn-light sun, and `dawn-light.json` was not edited. The normal is the radial vector from the planet centre. The plate's own broad light is divided out with mip 5 so the photograph's frontal grade does not fight the sun. Craters stay. A thin blue rim sits on the silhouette, stronger on the day side. The sky is the same function plus a 64×64 blue-noise dither of ±1 code before the 8-bit store.
+The planet is lit by the scene sun `[0.6161, 0.5592, 0.5547]` (elevation 34 deg). That vector is not the dawn-light sun, and `dawn-light.json` was not edited. The normal is the radial vector from the planet centre. The plate's own broad light is divided out with mip 5. There is no output clamp. The sun-facing silhouette is darkened and given a blue tint so crater highlights stay under the lit-disc p99. A blue lift sits on the N·L ≈ 0 band and dies before the deep night limb. The atmospheric shell is a few percent of the radius. The sky dither is unchanged: ±1 code of 64×64 blue noise.
 
 No new Imagine plate. `tex/glacier-planet-surface.jpg` is still 1024×1024.
 
-## Gates
+## Round 3 gates
 
-Limits were not lowered. The run-31 fixture still fails the terminator and the banding gates (`fixture-before.json`).
+The round-2 stills fail the new limb gates on all six times (`r2-limb-gate.json`): hundreds of near-white pixels where the limb burned, a night rim about 30% of the radius, and a dark limb within a few levels of the sky. The ±15° heading bar was not moved.
 
-The first heading was a sector average of the whole disc, so craters and the hidden side pulled it. The shader N·L mask agrees with the projected sun (the zero line is in world space). The edge is now the luma gradient on the band where analytic N·L is within 0.12 of zero.
+The old bright-rim gap (outer ring at least 4 above the pre-rim) is the haze those gates forbid. It is not a pass condition anymore. The measured gap is negative, which is the dark limb.
 
-| t | shader N·L error | edge error | terminator visible | lit − unlit | rim gap | sky step | band run |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 5.10 | 4.1 | 0.6 | 0.41 | 93.0 | 30.0 | 1 | 5 |
-| 5.567 | 4.4 | 0.8 | 0.44 | 92.1 | 45.1 | 1 | 5 |
-| 7.9 | 7.6 | 1.2 | 0.35 | 92.7 | 13.1 | 1 | 5 |
-| 11.70 | 4.9 | 0.4 | 0.45 | 97.1 | 12.8 | 1 | 5 |
-| 24 | 14.6 | 13.2 | 0.32 | 73.4 | 18.3 | 1 | 5 |
-| 30 | 7.9 | 0.4 | 0.36 | 80.7 | 31.8 | 1 | 5 |
+| t | shader N·L | edge | visible | near-white | rim width | dark gap | limb max | lit p99 | lit − unlit | sky step |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 5.10 | 4.1 | 6.3 | 0.41 | 0 | 0.02 | 91.1 | 178 | 205 | 49.4 | 1 |
+| 5.567 | 4.4 | 6.3 | 0.44 | 0 | 0.02 | 92.2 | 197 | 207 | 54.5 | 1 |
+| 7.9 | 7.6 | 5.8 | 0.35 | 0 | 0.02 | 89.4 | 168 | 219 | 56.2 | 1 |
+| 11.70 | 4.9 | 4.9 | 0.45 | 0 | 0.02 | 90.1 | 178 | 216 | 59.2 | 1 |
+| 24 | 14.6 | 14.9 | 0.32 | 0 | 0.02 | 88.8 | 149 | 152 | 48.8 | 1 |
+| 30 | 7.9 | 13.2 | 0.36 | 0 | 0.02 | 87.8 | 189 | 209 | 57.0 | 1 |
 
-Heading limit ±15, not moved. Every time is inside it. At 24 s, 32% of the on-screen terminator arc is free of ice, which is over the 30% line, so the 13.2° stands. Shader N·L is the debug mask, not a beauty retune.
+Band run is 5 at every time. Heading limit ±15. At 24 s, 32% of the on-screen terminator arc is free of ice, over the 30% line, so 14.9° stands. Shader N·L at 24 s is 14.6°.
 
-The key planet is front-lit. Its own lit-versus-shadow CIE76 is 0.68, 0, 2.01, 3.91, 24.15, and 1.37. Five of those are a flat disc. The new shadow side against that key is 7.0–8.4. The new lit side is 18.8–45.7, because the key has no day side. It was not pulled toward the key. Crops: `colour/t7.9-key-vs-after.jpg` (key lit, new lit, key shadow, new shadow).
+## Colour, planet pixels only
 
-Sky anchor worst 0.00762, limit 0.015. The screen-space control is 0.052 and still fails, as required.
+Ice is excluded with the N·L mask. Lit is N·L > 0.25. Dark is N·L < −0.05. The key disc is front-lit. Its own lit-versus-dark CIE76 is 2.63, 2.99, 1.51, 3.15, 3.77, 1.15.
 
-Left-side terrain silhouette moves by at most 2 rows. Sky fraction is 1.02× the pre-change frames. Sky CIE76 against those frames is 0.00–0.96, lightness included.
+The dark side against that key is 4.18, 3.55, 2.83, 3.52, 3.73, 3.70, inside 10, lightness included. The lit side is 32.5, 31.7, 43.2, 37.7, 40.4, 38.0, because the key has no day side. It was not pulled toward the key. Sheet: `colour/planet-only-7.9-11.7.jpg` (7.9 on top, 11.7 below, key on the left). 11.7 has the larger lit set (17547 planet pixels).
 
-Bolt centre x = 360.00 at every still. Card height 1.15 m. Draws 9. The live page reports 195818 triangles. The CPU budget is 195634. Both are under 200000. Texel gate PASS at 2048 px/m. Planet magnification 0.950. The equirect stretch of 2.0 is the old report, not a new scale.
+## Kept
 
-`dawn-light.json` is unchanged. The sky function is unchanged apart from the ±1 code dither, whose mean is zero. An SH fit of this sky would move by less than the sky's own ΔE of 1. It was not rebaked.
+Sky step 1 and band run 5. Dither grain about 1 level. Sky anchor worst 0.00762, limit 0.015, not re-fit: the sky function was not edited. Clear-sky CIE76 against the pre-change frames is 0.36–0.72, lightness included. Draws 9. Live page 195818 triangles. CPU budget 195634. Both under 200000. Texel gate PASS at 2048 px/m. Bolt at x = 360.00, card 1.15 m. Sun vector untouched. No new plate. No fog. SH was not rebaked.
+
+4× crops of the sun-facing limb and the dark limb are in `after/edge/`. The ice spires in front of the disc are the existing terrain.
 
 ## Still open
 
-The key disc is front-lit, so the new day side is not the same colour as the key. The run-31 dark line on the horizon is untouched. No fog was added.
+The key disc is front-lit, so the new day side is not the same colour as the key. The run-31 dark line on the horizon is untouched. At 24 s the beauty edge is 14.9°, inside 15 and close to the shader's 14.6°.
